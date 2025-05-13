@@ -33,7 +33,7 @@ export default function Header() {
 
             {/* Right Navigation Group */}
             <div className="flex space-x-8">
-              <a href="/create" className="text-white hover:text-gray-300">
+              <a href="/create-campaign" className="text-white hover:text-gray-300">
                 Create Campaign
               </a>
               <a href="/login" className="text-white hover:text-gray-300">

@@ -18,6 +18,9 @@ import Submitted from "./Pages/ContactUs/Submitted";
 import DonationScreen from "./Pages/DonationScreen";
 import AboutUs from "./Pages/AboutUs";
 import PaymentScreen from "./Pages/PaymentScreen";
+import CampaignCreation01 from "./Pages/CampaignsCreation/CampCreation01";
+import CampaignCreation02 from "./Pages/CampaignsCreation/CampCreation02";
+import CampaignCreation03 from "./Pages/CampaignsCreation/CampCreation03";
 
 function App() {
   return (
@@ -43,6 +46,10 @@ function App() {
         <Route path="/donate" element={<DonationScreen />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/payment" element={<PaymentScreen />} />
+        <Route path="/create-campaign" element={<CampaignCreation01 />} />
+        <Route path="/campaign-creation-02" element={<CampaignCreation02 />} />
+        <Route path="/campaign-creation-03" element={<CampaignCreation03 />} />
+
       </Routes>
     </Router>
   );
