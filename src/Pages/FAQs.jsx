@@ -59,8 +59,8 @@ const FaqPage = () => {
                   className="flex items-center justify-between w-full p-4 text-left"
                 >
                   <div className="flex items-center">
-                    <span className="mr-3 text-[#4B5842]">•</span>
-                    <span className="font-medium text-[#4B5842]">{item.question}</span>
+                    <span className="mr-3 text-[#020202]">•</span>
+                    <span className="font-medium text-[#000000]">{item.question}</span>
                   </div>
                   <span className="text-[#4B5842] text-xl">{expandedIndex === index ? "×" : "+"}</span>
                 </button>
@@ -79,7 +79,7 @@ const FaqPage = () => {
           </div>
 
           <div className="text-center">
-            <button className="text-[#4B5842] text-sm font-medium hover:underline">Read more</button>
+            <button className="text-[#000000] text-sm font-medium hover:underline">Read more</button>
           </div>
         </div>
       </main>

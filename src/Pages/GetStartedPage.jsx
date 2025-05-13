@@ -58,7 +58,7 @@ export default function GetStartedPage() {
         {/* Join Button */}
         <div className="flex justify-center mb-16">
           <button 
-            onClick={() => navigate("/donation")} 
+            onClick={() => navigate("/donate")} 
             className="bg-[#4A5D45] text-white px-6 py-2 rounded hover:bg-opacity-90 transition-colors">
             Join Fundify
           </button>

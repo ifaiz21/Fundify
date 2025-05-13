@@ -14,26 +14,27 @@ export default function Hero() {
         {/* Content */}
         <div className="relative container mx-auto px-6 text-center mt-16">
           <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
-            <span className="block">Empower Dreams</span>
+            <span className="block"><span className="text-[#B2C9AD]">Empower </span> 
+               Dreams</span>
             <span className="block">
-              Through <span className="text-mint-green">Support</span>
+              Through <span className="text-[#B2C9AD]">Support</span>
             </span>
           </h1>
   
-          <p className="text-lg md:text-xl text-gray-200 mb-12 max-w-2xl mx-auto">
+          <p className="text-lg md:text-xl text-[#B2C9AD] mb-12 max-w-2xl mx-auto">
             Be a part of the breakthrough and make someone's dream come true.
           </p>
   
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <a
               href="/create"
-              className="px-8 py-3 bg-mint-green text-white rounded-full hover:bg-mint-green/90 transition-colors w-full sm:w-auto text-center font-medium"
+              className="px-8 py-3 bg-white/10 text-white rounded-full hover:bg-[#4A5D45] transition-colors backdrop-blur-sm w-full sm:w-auto text-center font-medium"
             >
               Start a Campaign
             </a>
             <a
               href="/explore"
-              className="px-8 py-3 bg-white/10 text-white rounded-full hover:bg-white/20 transition-colors backdrop-blur-sm w-full sm:w-auto text-center font-medium"
+              className="px-8 py-3 bg-white/10 text-white rounded-full hover:bg-[#4A5D45] transition-colors backdrop-blur-sm w-full sm:w-auto text-center font-medium"
             >
               Explore Campaigns
             </a>
@@ -41,4 +42,4 @@ export default function Hero() {
         </div>
       </section>
     );
-  }
+  } 

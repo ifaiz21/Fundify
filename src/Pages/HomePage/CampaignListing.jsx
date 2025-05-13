@@ -1,4 +1,6 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 
 const categories = [
   { id: "all", label: "All" },
@@ -73,6 +75,8 @@ export default function CampaignListing() {
   const [searchQuery, setSearchQuery] = useState("");
   const [currentPage, setCurrentPage] = useState(2);
 
+  const navigate = useNavigate();
+
   const filteredCampaigns = campaigns.filter((campaign) => {
     const matchesCategory =
       selectedCategory === "all" || campaign.category === selectedCategory;
@@ -86,10 +90,10 @@ export default function CampaignListing() {
     <div className="max-w-7xl mx-auto px-4 py-12">
       {/* Headings */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-semibold text-gray-800 mb-2">
+        <h1 className="text-4xl font-semibold text-[#4A5D45] mb-2">
           Compassion Unites!
         </h1>
-        <h2 className="text-2xl text-gray-600">
+        <h2 className="text-2xl text-[#4A5D45]">
           Choose a Cause, Change a Life!
         </h2>
       </div>
@@ -152,7 +156,8 @@ export default function CampaignListing() {
               <p className="text-gray-500 text-sm mb-2">{campaign.date}</p>
               <h3 className="text-xl font-semibold mb-2">{campaign.title}</h3>
               <p className="text-gray-600 mb-4">{campaign.description}</p>
-              <button className="w-full px-4 py-2 border-2 border-[#B2C9AD] text-[#4A5D45] rounded-full hover:bg-[#B2C9AD] hover:text-white transition-colors">
+              <button onClick={() => navigate("/donate")}
+              className="w-full px-4 py-2 border-2 border-[#B2C9AD] text-[#4A5D45] rounded-full hover:bg-[#70836b] hover:text-white transition-colors">
                 Donate now
               </button>
             </div>

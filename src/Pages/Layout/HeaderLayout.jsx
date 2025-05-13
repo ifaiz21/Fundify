@@ -9,7 +9,7 @@ const HeaderLayout = () => {
       <div className="flex items-center space-x-6"> {/* CHANGED: Wrapped logo & nav in a div */}
         {/* Logo */}
         <div className="flex items-center">
-          <img src="./images/fundify-transparent-logo.png" alt="Fundify Logo" className="w-10 h-10 mr-2" />
+          <img src="./images/fundify-transparent-logo.png" alt="Fundify Logo" className="w-12 h-12 mr-2" />
           {/*
           <span className="font-bold text-lg text-gray-700">
             FUND<span className="text-green-600">iFY</span>
@@ -17,8 +17,8 @@ const HeaderLayout = () => {
         </div>
  
         {/* Left-aligned Navigation Links */}
-        <nav className="flex space-x-6 text-gray-600">  {/* CHANGED: Moved nav inside the new div */}
-          <Link to="/homepage" className="hover:underline">Home</Link>
+        <nav className="flex space-x-6 text-[#000000]">  {/* CHANGED: Moved nav inside the new div */}
+          <Link to="/" className="hover:underline">Home</Link>
           <Link to="/donate" className="hover:underline">Donate</Link>
           <Link to="/about" className="hover:underline">About Us</Link>
         </nav>

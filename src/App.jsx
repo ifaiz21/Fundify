@@ -13,6 +13,11 @@ import FAQs from "./Pages/FAQs";
 import Home from "./Pages/Home";
 import ExploreCampaigns from "./Pages/ExploreCampaigns";
 import GetStartedPage from "./Pages/GetStartedPage";
+import ContactUsPage from "./Pages/ContactUs/ContactUsPage";
+import Submitted from "./Pages/ContactUs/Submitted";
+import DonationScreen from "./Pages/DonationScreen";
+import AboutUs from "./Pages/AboutUs";
+import PaymentScreen from "./Pages/PaymentScreen";
 
 function App() {
   return (
@@ -33,6 +38,11 @@ function App() {
         <Route path="/homepage" element={<Home />} />
         <Route path="/explore" element={<ExploreCampaigns />} />
         <Route path="/how-to" element={<GetStartedPage />} />
+        <Route path="/contact" element={<ContactUsPage />} />
+        <Route path="/submitted" element={<Submitted />} />
+        <Route path="/donate" element={<DonationScreen />} />
+        <Route path="/about" element={<AboutUs />} />
+        <Route path="/payment" element={<PaymentScreen />} />
       </Routes>
     </Router>
   );
