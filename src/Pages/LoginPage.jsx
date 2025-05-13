@@ -15,7 +15,8 @@ const LoginPage = () => {
     <SideLayout>
       <div className="h-screen bg-white overflow-y-hidden font-Inter">
         <div className="absolute p-4">
-          <button className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">
+          <button onClick={() => navigate("/")}
+          className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">
             <IoChevronBackOutline size={20} /> Back
           </button>
         </div>

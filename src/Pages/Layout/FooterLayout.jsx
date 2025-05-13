@@ -5,10 +5,10 @@ const Footer = () => {
   return (
     <footer className="bg-[#4B5842] text-white py-8">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-0">
           {/* Logo Column */}
-          <div className="flex flex-col items-start">
-            <Link to="/" className="mb-6">
+          <div className="flex flex-cols items-start justify-start w-auto">
+            <Link to="/" className="mb-2">
               <div className="flex flex-col items-center">
                 {/*  (Line 13) Increased the logo size */}
                 <img src="./images/logo.png" alt="Fundify" className="h-24 w-24 mb-0" />
@@ -65,7 +65,7 @@ const Footer = () => {
               <p>C-II, Johar Town Lahore, Pakistan.</p>
               <p>ZIP 54782</p>
             </address>
-            <p className="text-sm text-gray-300 mt-4">2023 © Fundify Platform.</p>
+            <p className="text-sm text-gray-300 mt-4">2025 © Fundify Platform.</p>
           </div>
         </div>
       </div>

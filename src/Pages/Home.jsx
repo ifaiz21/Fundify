@@ -1,9 +1,9 @@
 import Header from "./Layout/Header";
 import Hero from "./Layout/Hero";
-import CampaignListing from "./CampaignListing";
-import AboutSection from "./AboutSection";
-import CampaignStats from "./CampaignStats";
-import PartnersSection from "./PartnersSection";
+import CampaignListing from "./HomePage/CampaignListing";
+import AboutSection from "./HomePage/AboutSection";
+import CampaignStats from "./HomePage/CampaignStats";
+import PartnersSection from "./HomePage/PartnersSection";
 import FooterLayout from "./Layout/FooterLayout";
 export default function Home() {
   return (

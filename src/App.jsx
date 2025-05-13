@@ -12,6 +12,7 @@ import TrustSafety from "./Pages/TrustSafety";
 import FAQs from "./Pages/FAQs";
 import Home from "./Pages/Home";
 import ExploreCampaigns from "./Pages/ExploreCampaigns";
+import GetStartedPage from "./Pages/GetStartedPage";
 
 function App() {
   return (
@@ -23,6 +24,7 @@ function App() {
         <Route path="/email-verification" element={<EmailVerification />} />
         <Route path="/password-reset" element={<PasswordReset />} />
         <Route path="/success" element={<Success />} />
+        <Route path="/" element={<Home />} />
         <Route path="/privacy-policy" element={<PrivacyPolicy />} />
         <Route path="/terms-of-use" element={<TermsOfUse />} />
         <Route path="/cookie-policy" element={<CookiePolicy />} />
@@ -30,7 +32,7 @@ function App() {
         <Route path="/faq" element={<FAQs />} />
         <Route path="/homepage" element={<Home />} />
         <Route path="/explore" element={<ExploreCampaigns />} />
-
+        <Route path="/how-to" element={<GetStartedPage />} />
       </Routes>
     </Router>
   );
