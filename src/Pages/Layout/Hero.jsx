@@ -27,7 +27,7 @@ export default function Hero() {
   
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <a
-              href="/create"
+              href="/create-campaign"
               className="px-8 py-3 bg-white/10 text-white rounded-full hover:bg-[#4A5D45] transition-colors backdrop-blur-sm w-full sm:w-auto text-center font-medium"
             >
               Start a Campaign
