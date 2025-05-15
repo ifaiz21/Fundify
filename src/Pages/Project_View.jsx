@@ -397,4 +397,4 @@ function ProjectView() {
   )
 }
 
-export default ProjectView
+export default ProjectView;
