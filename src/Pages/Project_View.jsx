@@ -46,7 +46,7 @@ function ProjectView() {
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
-      currency: "INR",
+      currency: "PKR",
       maximumFractionDigits: 0,
     })
       .format(amount)
@@ -72,7 +72,7 @@ function ProjectView() {
               strokeLinecap="round"
               strokeLinejoin="round"
               className="text-gray-700"
-            >
+            > 
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
