@@ -31,20 +31,21 @@ const HeaderLayout = () => {
 
         {/* User Account Icon */}
         <Link to="/login" className="flex items-center">
-          <div className="w-10 h-10 rounded-full border-2 border-gray-300 flex items-center justify-center">
+          <div className="w-10 h-10 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center">
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="30"
-              height="30"
+              width="32"
+              height="32"
               viewBox="0 0 24 24"
               fill="none"
-              stroke="black"
+              stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
+              className="text-gray-700"
             >
               <circle cx="12" cy="8" r="4"></circle>
-              <path d="M4 21v-1a7 7 0 0 1 14 0v1"></path>
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             </svg>
           </div>
         </Link>

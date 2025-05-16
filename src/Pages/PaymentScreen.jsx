@@ -20,10 +20,10 @@ const PaymentPage = () => {
     <div className="flex flex-col min-h-screen">
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
             {/* Left Column - Logo */}
-            <div className="flex flex-col items-center justify-center">
-              <div className="w-40 h-40 mb-4">
+            <div className="flex flex-col items-center ">
+              <div className="w-64 h-64 mb-6">
                 <img src="./Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
               </div>
               {/* <h1 className="text-3xl font-bold text-center mb-2">FUNDIFY</h1>
@@ -95,7 +95,7 @@ const PaymentPage = () => {
                   <h3 className="text-md font-semibold mb-4">Payment methods</h3>
 
                   <div className="flex flex-wrap gap-3">
-                    {["visa", "amex", "mastercard", "discover", "clearpay"].map((method) => (
+                    {["visa", "stripe", "mastercard", "JazzCash", "EasyPaisa"].map((method) => (
                       <label
                         key={method}
                         className={`flex items-center justify-center border rounded-md p-2 cursor-pointer ${
@@ -110,7 +110,7 @@ const PaymentPage = () => {
                           onChange={() => setPaymentMethod(method)}
                           className="sr-only"
                         />
-                        <img src={`/${method}-logo.svg`} alt={method} className="h-6" />
+                        <img src={`/Images/${method}-logo.png`} alt={method} className="h-6" />
                       </label>
                     ))}
                   </div>
