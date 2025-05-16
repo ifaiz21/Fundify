@@ -24,6 +24,7 @@ import CampaignCreation03 from "./Pages/CampaignsCreation/CampCreation03";
 import CampaignCreation04 from "./Pages/CampaignsCreation/CampCreation04";
 import CampaignCreation05 from "./Pages/CampaignsCreation/CampCreation05";
 import CampaignSubmission from "./Pages/CampaignsCreation/CampSubmission";
+import ProfileSetitng from "./Pages/ProfileSetting";
 import ProjectView from "./Pages/Project_View";
 
 
@@ -60,6 +61,8 @@ function App() {
         <Route path="/campaign-creation-04" element={<CampaignCreation04 />} />
         <Route path="/campaign-creation-05" element={<CampaignCreation05 />} />
         <Route path="/campaign-submission" element={<CampaignSubmission />} />
+        <Route path="/profile-setting" element={<ProfileSetitng />} />
+
         <Route path="/ProjectView" element={<ProjectView />} />
 
       </Routes>
