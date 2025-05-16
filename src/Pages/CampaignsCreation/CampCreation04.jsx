@@ -12,6 +12,8 @@ const CampaignCreation04 = () => {
   const [isBold, setIsBold] = useState(false)
   const [isItalic, setIsItalic] = useState(false)
   const [isUnderline, setIsUnderline] = useState(false)
+  const [textAlign, setTextAlign] = useState("left");
+
 
   const handleStoryChange = (e) => {
     setStory(e.target.value)
@@ -149,7 +151,9 @@ const CampaignCreation04 = () => {
                     </svg>
                   </button>
                   <div className="h-4 w-px bg-gray-300 mx-1"></div>
-                  <button className="p-1 rounded hover:bg-gray-100" title="Align Left">
+                  <button className={`p-1 rounded ${textAlign === "left" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                          title="Align Left"
+                          onClick={() => setTextAlign("left")}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -167,7 +171,9 @@ const CampaignCreation04 = () => {
                       <line x1="17" y1="18" x2="3" y2="18"></line>
                     </svg>
                   </button>
-                  <button className="p-1 rounded hover:bg-gray-100" title="Align Center">
+                  <button  className={`p-1 rounded ${textAlign === "center" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                           title="Align Center"
+                           onClick={() => setTextAlign("center")}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -185,7 +191,9 @@ const CampaignCreation04 = () => {
                       <line x1="18" y1="18" x2="6" y2="18"></line>
                     </svg>
                   </button>
-                  <button className="p-1 rounded hover:bg-gray-100" title="Align Right">
+                  <button  className={`p-1 rounded ${textAlign === "right" ? "bg-gray-200" : "hover:bg-gray-100"}`}
+                           title="Align Right"
+                           onClick={() => setTextAlign("right")}>
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       viewBox="0 0 24 24"
@@ -203,7 +211,7 @@ const CampaignCreation04 = () => {
                       <line x1="21" y1="18" x2="7" y2="18"></line>
                     </svg>
                   </button>
-                  <div className="h-4 w-px bg-gray-300 mx-1"></div>
+                  <div className="h-4 w-px bg-gray-300 mx-1"></div> {/*}
                   <button className="p-1 rounded hover:bg-gray-100" title="Bullet List">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
@@ -243,7 +251,7 @@ const CampaignCreation04 = () => {
                       <path d="M4 10h2"></path>
                       <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
                     </svg>
-                  </button>
+                  </button> */}
                 </div>
 
                 {/* Text Area */}
@@ -258,6 +266,7 @@ const CampaignCreation04 = () => {
                       fontWeight: isBold ? "bold" : "normal",
                       fontStyle: isItalic ? "italic" : "normal",
                       textDecoration: isUnderline ? "underline" : "none",
+                      textAlign: textAlign,
                     }}
                   ></textarea>
 
