@@ -27,6 +27,7 @@ const CampaignCreation05 = () => {
   const handleDelete = () => {
     console.log("Delete campaign")
     // Delete logic with confirmation
+    navigate("/campaign-deletion")
   }
 
   const handleBack = () => {
