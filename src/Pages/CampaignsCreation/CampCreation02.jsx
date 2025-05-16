@@ -40,7 +40,7 @@ const CampaignCreation02 = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <Header hideCreate={true} />
 
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
