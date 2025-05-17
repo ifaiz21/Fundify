@@ -30,7 +30,9 @@ import UserProfileSettings from "./Pages/UserProfileSettings";
 
 import AdminDashboard from "./Pages/AdminSide/AdminDashboard";
 import UserManagement from "./Pages/AdminSide/Users";
-
+import DonationHistory from "./Pages/AdminSide/DonationHistory";
+import WalletPage from "./Pages/AdminSide/Wallet";
+import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
 
 
 function App() {
@@ -69,6 +71,10 @@ function App() {
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserManagement />} />
+        <Route path="/admin/donations" element={<DonationHistory />} />
+        <Route path="/admin/wallet" element={<WalletPage />} />
+        <Route path="/admin/campaigns" element={<CampaignsPage />} />
+
 
       </Routes>
     </Router>
