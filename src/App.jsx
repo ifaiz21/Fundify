@@ -33,6 +33,8 @@ import UserManagement from "./Pages/AdminSide/Users";
 import DonationHistory from "./Pages/AdminSide/DonationHistory";
 import WalletPage from "./Pages/AdminSide/Wallet";
 import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
+import VerificationPage from "./Pages/AdminSide/VerificationPage";
+import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
 
 
 function App() {
@@ -74,6 +76,8 @@ function App() {
         <Route path="/admin/donations" element={<DonationHistory />} />
         <Route path="/admin/wallet" element={<WalletPage />} />
         <Route path="/admin/campaigns" element={<CampaignsPage />} />
+        <Route path="/admin/verifications" element={<VerificationPage />} />
+        <Route path="/admin/feedbacks" element={<FeedbacksPage />} />
 
 
       </Routes>

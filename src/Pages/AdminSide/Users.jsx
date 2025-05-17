@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import Sidebar from "./SideBar"
-import { Eye, Edit, Trash } from "lucide-react"
+import { Eye, Edit, Trash, Search } from "lucide-react"
 
 const UserManagement = () => {
   // Sample data for campaign creators
@@ -100,7 +100,21 @@ const UserManagement = () => {
   // Pagination state
   const [creatorsPage, setCreatorsPage] = useState(1)
   const [backersPage, setBackersPage] = useState(1)
-  const itemsPerPage = 6
+  const [searchQuery, setSearchQuery] = useState("")
+  const itemsPerPage = 5
+
+  const filteredCreators = creators.filter((creator) =>
+    Object.values(creator).some((value) =>
+      value.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+  
+  const filteredBackers = backers.filter((backer) =>
+    Object.values(backer).some((value) =>
+      value.toLowerCase().includes(searchQuery.toLowerCase())
+    )
+  );
+  
 
   const handleView = (id, type) => {
     console.log(`View ${type} with ID: ${id}`)
@@ -113,6 +127,9 @@ const UserManagement = () => {
   const handleDelete = (id, type) => {
     console.log(`Delete ${type} with ID: ${id}`)
   }
+  const handleSearch = (e) => {
+    setSearchQuery(e.target.value)
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -123,7 +140,18 @@ const UserManagement = () => {
           {/* Campaign Creators Section */}
           <div className="mb-8">
             <h1 className="text-2xl font-bold mb-6">Campaign Creators</h1>
-
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <input
+                type="text"
+                placeholder="Search"
+                value={searchQuery}
+                onChange={handleSearch}
+                className="pl-10 pr-4 py-2 rounded-full bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4B5842] focus:border-transparent"
+              />
+            </div>
+          </div>
+          
             <div className="bg-white rounded-lg shadow-sm overflow-hidden">
               <div className="overflow-x-auto">
                 <table className="w-full">
@@ -138,7 +166,9 @@ const UserManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {creators.map((creator) => (
+                  {filteredCreators
+                       .slice((creatorsPage - 1) * itemsPerPage, creatorsPage * itemsPerPage)
+                       .map((creator) => (
                       <tr key={creator.id} className="border-b last:border-b-0 hover:bg-gray-50">
                         <td className="px-6 py-4 text-sm">{creator.id}</td>
                         <td className="px-6 py-4 text-sm">{creator.name}</td>
@@ -183,7 +213,7 @@ const UserManagement = () => {
               {/* Pagination */}
               <div className="px-6 py-3 flex items-center justify-between border-t">
                 <div className="text-sm text-gray-500">
-                  Showing 1-{Math.min(itemsPerPage, creators.length)} of {creators.length}
+                Showing {(creatorsPage - 1) * itemsPerPage + 1}–{Math.min(creatorsPage * itemsPerPage, filteredCreators.length)} of {filteredCreators.length}
                 </div>
                 <div className="flex space-x-1">
                   <button
@@ -203,7 +233,7 @@ const UserManagement = () => {
                 </div>
               </div>
             </div>
-          </div>
+          
 
           {/* Backers Section */}
           <div>
@@ -223,7 +253,9 @@ const UserManagement = () => {
                     </tr>
                   </thead>
                   <tbody>
-                    {backers.map((backer) => (
+                  {filteredBackers
+                      .slice((backersPage - 1) * itemsPerPage, backersPage * itemsPerPage)
+                      .map((backer) => (
                       <tr key={backer.id} className="border-b last:border-b-0 hover:bg-gray-50">
                         <td className="px-6 py-4 text-sm">{backer.id}</td>
                         <td className="px-6 py-4 text-sm">{backer.name}</td>
@@ -268,7 +300,7 @@ const UserManagement = () => {
               {/* Pagination */}
               <div className="px-6 py-3 flex items-center justify-between border-t">
                 <div className="text-sm text-gray-500">
-                  Showing 1-{Math.min(itemsPerPage, backers.length)} of {backers.length}
+                Showing {(backersPage - 1) * itemsPerPage + 1}–{Math.min(backersPage * itemsPerPage, filteredBackers.length)} of {filteredBackers.length}
                 </div>
                 <div className="flex space-x-1">
                   <button
@@ -294,5 +326,4 @@ const UserManagement = () => {
     </div>
   )
 }
-
 export default UserManagement;
