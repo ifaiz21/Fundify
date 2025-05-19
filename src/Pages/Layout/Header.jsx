@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function Header() {
+export default function Header( {hideHome}) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
   return (
@@ -20,9 +20,9 @@ export default function Header() {
           <div className="hidden lg:flex items-center justify-between flex-1 max-w-4xl mx-auto px-8">
             {/* Left Navigation Group */}
             <div className="flex space-x-8">
-              <a href="/" className="text-white hover:text-gray-300">
+              {!hideHome && <a href="/" className="text-white hover:text-gray-300">
                 Home
-              </a>
+              </a> }
               <a href="/donate" className="text-white hover:text-gray-300">
                 Donate
               </a>

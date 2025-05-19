@@ -8,7 +8,7 @@ import FooterLayout from "./Layout/FooterLayout";
 export default function Home() {
   return (
     <main>
-      <Header />
+      <Header hideHome={true} />
       <Hero />
       <CampaignListing />
       <AboutSection />

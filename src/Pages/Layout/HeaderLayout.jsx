@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 
-const HeaderLayout = () => {
+const HeaderLayout = ({hideCreate}) => {
   return (
     <header className="flex items-center justify-between px-6 py-4 bg-white shadow-md">
       
@@ -18,7 +18,7 @@ const HeaderLayout = () => {
  
         {/* Left-aligned Navigation Links */}
         <nav className="flex space-x-6 text-[#000000]">  {/* CHANGED: Moved nav inside the new div */}
-          <Link to="/" className="hover:underline">Home</Link>
+          <Link to="/" className="hover:underline">Home</Link> 
           <Link to="/donate" className="hover:underline">Donate</Link>
           <Link to="/about" className="hover:underline">About Us</Link>
         </nav>
@@ -26,7 +26,7 @@ const HeaderLayout = () => {
 
       {/* Right Side - User Account & Extra Links */}
       <div className="flex items-center space-x-6">
-        <Link to="/create-campaign" className="hover:underline">Create Campaign</Link>
+        {!hideCreate && <Link to="/create-campaign" className="hover:underline">Create Campaign</Link> }
         <Link to="/contact" className="hover:underline">Contact Us</Link>
 
         {/* User Account Icon */}
