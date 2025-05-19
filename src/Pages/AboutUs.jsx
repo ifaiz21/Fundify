@@ -4,11 +4,11 @@ import Footer from "./Layout/FooterLayout"
 const AboutUsPage = () => {
   // Team members data
   const teamMembers = [
-    { id: 1, name: "Ava Patel", role: "Founder", image: "/team-member-1.png" },
-    { id: 2, name: "Dr. Michaela", role: "CTO", image: "/team-member-2.png" },
-    { id: 3, name: "Benjamin Blake", role: "CFO", image: "/team-member-3.png" },
-    { id: 4, name: "Ali Jafri", role: "COO", image: "/team-member-4.png" },
-    { id: 5, name: "Eleanor Rivera", role: "CMO", image: "/team-member-5.png" },
+    { id: 1, name: "Kamran Shahid", role: "Founder", image: "./Images/KamranShahid.jpg" },
+    { id: 2, name: "M. Faiz", role: "CTO", image: "/team-member-2.png" },
+    { id: 3, name: "M. Ibraheem Qamar", role: "CFO", image: "./Images/Ibraheem.jpg" },
+    { id: 4, name: "M. Noukhaiz", role: "COO", image: "./Images/Noukhaiz.jpg" },
+    { id: 5, name: "Rameen Khan", role: "CMO", image: "./Images/Rameen.jpeg" },
   ]
 
   return (
