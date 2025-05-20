@@ -25,7 +25,6 @@ import CampaignCreation04 from "./Pages/CampaignsCreation/CampCreation04";
 import CampaignCreation05 from "./Pages/CampaignsCreation/CampCreation05";
 import CampaignSubmission from "./Pages/CampaignsCreation/CampSubmission";
 import CampaignDeletion from "./Pages/CampaignsCreation/CampDeletion";
-import CampaignEdit from "./Pages/CampaignsCreation/CampEdit";
 import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
 
@@ -72,7 +71,6 @@ function App() {
         <Route path="/campaign-deletion" element={<CampaignDeletion />} />
         <Route path="/ProjectView" element={<ProjectView />} />
         <Route path="/campaign-update" element={<CampaignUpdate />} />
-        <Route path="/campaign-Edit" element={<CampaignEdit />} />
         <Route path="/user-profile" element={< UserProfileSettings/>} />
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />

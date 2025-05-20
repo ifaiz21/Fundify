@@ -14,11 +14,6 @@ const CampaignCreation05 = () => {
     image: "/Images/cycle.png",
   })
 
-  const handleEdit = () => {
-    console.log("Edit campaign")
-  navigate("/campaign-Edit", { state: { campaign } });
-  }
-
 const handleUpdate = () => {
   navigate("/campaign-update", { state: { campaign } });
 };
@@ -80,12 +75,6 @@ const handleUpdate = () => {
             <div className="flex flex-wrap justify-between">
               {/* Left side buttons */}
               <div className="flex flex-wrap gap-3 mb-4 md:mb-0">
-             <button
-                  onClick={handleEdit}
-                  className="bg-[#4B5842] text-white py-2 px-4 rounded-md hover:bg-[#3A4433] transition-colors"
-             >
-                  Edit
-            </button>
             <button
                   onClick={handleUpdate}
                   className="bg-[#4B5842] text-white py-2 px-4 rounded-md hover:bg-[#3A4433] transition-colors"
