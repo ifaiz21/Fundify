@@ -1,18 +1,25 @@
 "use client"
 
 import React  from "react";
+import { useLocation } from "react-router-dom";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
+
 const CampaignCreation05 = () => {
-    const navigate = useNavigate();
-  const [campaign, setCampaign] = useState({
-    title: "Your Story",
-    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse dictum ut nisl vitae dignissim. Sed ullamcorper magna quis magna aliquam ultricies. In quis velit cursus ut commodo mauris. Nullam hendrerit, ipsum in tempus fermentum, orci ante commodo urna, a volutpat enim felis vitae magna. Donec aliquet hendrerit ex rutrum, ut sit cursus arcu molestie. Phasellus sed ante magna. Donec nec elit quam. Cras pellentesque ex rutrum felis rhoncus. Nulla quis velit quis elit tempor varius quis ut lacus. Sed commodo, magna eu elementum molestie, lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et.",
-    image: "/Images/cycle.png",
-  })
+  const location = useLocation(); 
+ // const story = location.state?.story || ""; // fallback in case it's undefined
+  const navigate = useNavigate();
+  const defaultCampaign = {
+  title: "Your Story",
+  content: "story",
+  image: "/Images/cycle.png",
+};
+
+// Use location.state if available
+const [campaign, setCampaign] = useState(location.state?.campaign || defaultCampaign);
 
 const handleUpdate = () => {
   navigate("/campaign-update", { state: { campaign } });
