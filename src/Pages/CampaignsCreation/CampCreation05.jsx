@@ -10,19 +10,18 @@ const CampaignCreation05 = () => {
     const navigate = useNavigate();
   const [campaign, setCampaign] = useState({
     title: "Your Story",
-    content: `Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse dictum ut nisl vitae dignissim. Sed ullamcorper magna quis magna aliquam ultricies. In quis velit cursus ut commodo mauris. Nullam hendrerit, ipsum in tempus fermentum, orci ante commodo urna, a volutpat enim felis vitae magna. Donec aliquet hendrerit ex rutrum, ut sit cursus arcu molestie. Phasellus sed ante magna. Donec nec elit quam. Cras pellentesque ex rutrum felis rhoncus. Nulla quis velit quis elit tempor varius quis ut lacus. Sed commodo, magna eu elementum molestie, lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et.`,
+    content: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse dictum ut nisl vitae dignissim. Sed ullamcorper magna quis magna aliquam ultricies. In quis velit cursus ut commodo mauris. Nullam hendrerit, ipsum in tempus fermentum, orci ante commodo urna, a volutpat enim felis vitae magna. Donec aliquet hendrerit ex rutrum, ut sit cursus arcu molestie. Phasellus sed ante magna. Donec nec elit quam. Cras pellentesque ex rutrum felis rhoncus. Nulla quis velit quis elit tempor varius quis ut lacus. Sed commodo, magna eu elementum molestie, lorem ipsum dolor sit amet consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et.",
     image: "/Images/cycle.png",
   })
 
   const handleEdit = () => {
     console.log("Edit campaign")
-    // Navigate to edit page
+  navigate("/campaign-Edit", { state: { campaign } });
   }
 
-  const handleUpdate = () => {
-    console.log("Update campaign")
-    // Unpublish logic
-  }
+const handleUpdate = () => {
+  navigate("/campaign-update", { state: { campaign } });
+};
 
   const handleDelete = () => {
     console.log("Delete campaign")

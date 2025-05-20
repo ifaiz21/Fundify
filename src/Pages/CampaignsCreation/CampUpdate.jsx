@@ -75,7 +75,7 @@ const CampaignUpdate = () => {
 
           {/* Toolbar */}
           <div className="flex flex-wrap items-center gap-2 border-b px-4 py-2">
-            {[{ icon: "🖼️" }, { icon: "🎥" }].map((btn, idx) => (
+            {[{ icon: "🖼" }, { icon: "🎥" }].map((btn, idx) => (
               <button
                 key={idx}
                 type="button"
@@ -102,9 +102,9 @@ const CampaignUpdate = () => {
             ))}
 
             {[
-              { align: "left", icon: "⬅️" },
+              { align: "left", icon: "⬅" },
               { align: "center", icon: "🔲" },
-              { align: "right", icon: "➡️" },
+              { align: "right", icon: "➡" },
             ].map((btn) => (
               <button
                 key={btn.align}
