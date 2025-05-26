@@ -21,7 +21,7 @@ const CampaignSubmission = () => {
               className="h-2/3 w-auto z-10"
             />
           </div>
-          <div className="absolute bottom-32 z-50 text-center space-y-4">
+          <div className="absolute bottom-6 z-50 text-center space-y-4">
             <h1 className="font-Inter font-bold text-4xl">
                 Your Campaign has been submitted for Verification
             </h1>

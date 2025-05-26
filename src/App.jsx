@@ -29,6 +29,7 @@ import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
 import CodeVerification from "./Pages/CodeVerification";
 
+import CampaignUpdate from "./Pages/CampaignsCreation/CampUpdate";
 import AdminDashboard from "./Pages/AdminSide/AdminDashboard";
 import UserManagement from "./Pages/AdminSide/Users";
 import DonationHistory from "./Pages/AdminSide/DonationHistory";
@@ -70,7 +71,8 @@ function App() {
         <Route path="/campaign-submission" element={<CampaignSubmission />} />
         <Route path="/campaign-deletion" element={<CampaignDeletion />} />
         <Route path="/ProjectView" element={<ProjectView />} />
-        <Route path="/user-profile-settings" element={<UserProfileSettings />} />
+        <Route path="/campaign-update" element={<CampaignUpdate />} />
+        <Route path="/user-profile" element={< UserProfileSettings/>} />
         <Route path="/code-verification" element={<CodeVerification />} />
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
