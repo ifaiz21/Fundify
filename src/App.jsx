@@ -27,6 +27,7 @@ import CampaignSubmission from "./Pages/CampaignsCreation/CampSubmission";
 import CampaignDeletion from "./Pages/CampaignsCreation/CampDeletion";
 import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
+import CodeVerification from "./Pages/CodeVerification";
 
 import AdminDashboard from "./Pages/AdminSide/AdminDashboard";
 import UserManagement from "./Pages/AdminSide/Users";
@@ -70,6 +71,7 @@ function App() {
         <Route path="/campaign-deletion" element={<CampaignDeletion />} />
         <Route path="/ProjectView" element={<ProjectView />} />
         <Route path="/user-profile-settings" element={<UserProfileSettings />} />
+        <Route path="/code-verification" element={<CodeVerification />} />
 
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
         <Route path="/admin/users" element={<UserManagement />} />

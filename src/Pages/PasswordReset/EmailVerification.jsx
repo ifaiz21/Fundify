@@ -64,7 +64,7 @@ const EmailVerification = () => {
         <div className="bg-white p-8 w-3/5 text-center">
           <h2 className="text-3xl font-bold mb-2">Verify your email address</h2>
           <p className="text-md text-gray-500 mb-6">
-            A verification code has been sent to <b>ibrahim***@gmail.com</b>
+            A verification code has been sent to <b>*********@gmail.com</b>
           </p>
           <p className="text-md text-gray-500 mb-6">
             Please check your email and enter the verification code below. The
