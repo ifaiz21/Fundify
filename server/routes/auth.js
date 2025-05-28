@@ -112,6 +112,44 @@ router.post('/verify', async (req, res) => {
   }
 });
 
+// POST /api/auth/resend-code
+router.post('/resend-code', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.status(404).json({ message: 'User not found' });
+
+    if (user.verified)
+      return res.status(400).json({ message: 'User already verified' });
+
+    const newCode = generateCode();
+    user.verificationCode = newCode;
+    await user.save();
+
+    console.log("Sending new code to:", email, "Code:", newCode);
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your new verification code',
+      html: `
+        <p>Hello ${user.name},</p>
+        <p>Here is your new verification code:</p>
+        <h2>${newCode}</h2>
+        <p>If you did not request this, please ignore this email.</p>
+      `
+    });
+
+    res.status(200).json({ message: 'Verification code resent' });
+  } catch (err) {
+    console.error('Resend code error:', err);
+    res.status(500).json({ message: 'Failed to resend code', error: err.message });
+  }
+});
+
 
 // Login Route
 router.post('/login', async (req, res) => {

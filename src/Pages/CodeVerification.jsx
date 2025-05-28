@@ -7,18 +7,14 @@ import { useNavigate } from "react-router-dom";
 
 const EmailVerificationCode = () => {
     const navigate = useNavigate();
-  
     const [email, setEmail] = useState(""); // email will be passed via location state
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
-    
+    const [otp, setOtp] = useState(new Array(6).fill(""));
+    const inputRefs = useRef([]);
+    const [timeLeft, setTimeLeft] = useState(5 * 60);
 
-  const [otp, setOtp] = useState(new Array(6).fill(""));
-  const inputRefs = useRef([]);
-  const [timeLeft, setTimeLeft] = useState(10 * 60);
-
-
-  const location = useLocation();
+    const location = useLocation();
 
   useEffect(() => {
     if (location.state && location.state.email) {
@@ -72,7 +68,6 @@ const EmailVerificationCode = () => {
       });
   
       const data = await response.json();
-      console.log("Server response:", data);
   
       if (response.ok) {
         alert("Email verified! You can now login.");
@@ -87,10 +82,30 @@ const EmailVerificationCode = () => {
     }
   };
 
-  const handleResendCode = () => {
-    setOtp(new Array(6).fill(""));
-    inputRefs.current[0].focus();
-    setTimeLeft(7 * 60 + 35);
+  const handleResendCode = async () => {
+    try {
+      setOtp(new Array(6).fill(""));
+      inputRefs.current[0].focus();
+      setTimeLeft(5 * 60);
+      setError("");
+
+      const response = await fetch("http://localhost:5000/api/auth/resend-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email }),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        alert("A new verification code has been sent to your email.");
+      } else {
+        setError(data.message || "Failed to resend code.");
+      }
+    } catch (error) {
+      console.error("Resend code error:", error);
+      setError("Something went wrong while resending the code.");
+    }
   };
 
   return (
@@ -115,6 +130,12 @@ const EmailVerificationCode = () => {
           </p>
 
           <form onSubmit={handleVerify}>
+             {error && (
+             <div className="text-red-600 font-medium mb-4">
+              {error}
+             </div>
+            )}
+  
           <div className="flex gap-2 justify-center mb-6">
             {otp.map((digit, index) => (
               <input
@@ -133,13 +154,18 @@ const EmailVerificationCode = () => {
 
           <button
           type="submit"
-            
-            className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] ease-in-out transition duration-300 font-semibold text-md"
+          disabled={loading || otp.includes("")}
+          className={`w-full text-white p-3 rounded font-semibold text-md transition duration-300 ease-in-out ${
+            loading || otp.includes("")
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#91ac8f] hover:bg-[#667964]"
+          }`}
           >
-            Verify
+            {loading ? "Verifying..." : "Verify"}
           </button>
 
           <button
+            type="button"
             onClick={handleResendCode}
             className="mt-4 text-[#4b5945] hover:underline font-semibold"
           >
