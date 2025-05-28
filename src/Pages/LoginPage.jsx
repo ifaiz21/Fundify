@@ -1,32 +1,58 @@
-import React from "react";
-import SideLayout from "./Layout/SideLayout";
-import { IoChevronBackOutline } from "react-icons/io5";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { IoChevronBackOutline } from "react-icons/io5";
+import axios from "axios";
+import SideLayout from "./Layout/SideLayout"; // Make sure this exists
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [error, setError] = useState("");
 
-  const handleContinue = (event) => {
+  const handleContinue = async (event) => {
     event.preventDefault();
-    navigate("/homepage");
+
+    try {
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
+        email,
+        password,
+      });
+
+      const { token, role } = response.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("role", role);
+
+      if (role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/homepage");
+      }
+    } catch (err) {
+      console.error("Login failed:", err.response?.data);
+      setError(err.response?.data?.message || "Login failed. Try again.");
+    }
   };
 
   return (
     <SideLayout>
       <div className="h-screen bg-white overflow-y-hidden font-Inter">
         <div className="absolute p-4">
-          <button onClick={() => navigate("/")}
-          className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">
+          <button
+            onClick={() => navigate("/")}
+            className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold"
+          >
             <IoChevronBackOutline size={20} /> Back
           </button>
         </div>
+
         <div className="flex h-full">
           <div className="w-full flex items-center justify-center">
             <div className="w-3/5 p-8 rounded-md">
               <h2 className="text-3xl font-bold mb-2">Account Login</h2>
               <p className="text-md text-gray-500 mb-6">
-                If you are already a member you can login with your email
-                address and password.
+                If you are already a member, login with your email and password.
               </p>
 
               <form className="space-y-4" onSubmit={handleContinue}>
@@ -37,10 +63,13 @@ const LoginPage = () => {
                   <input
                     type="email"
                     placeholder="Email address"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                     className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none"
                     required
                   />
                 </div>
+
                 <div className="space-y-2 text-[#696f79]">
                   <label htmlFor="password" className="font-semibold">
                     Password
@@ -48,6 +77,8 @@ const LoginPage = () => {
                   <input
                     type="password"
                     placeholder="Password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
                     className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none"
                     required
                   />
@@ -60,15 +91,17 @@ const LoginPage = () => {
                   </label>
                   <a
                     href="/forget-password"
-                    className="text-md text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 font-semibold"
+                    className="text-md text-[#91ac8f] hover:text-[#667964] font-semibold"
                   >
                     Forgot Password?
                   </a>
                 </div>
 
+                {error && <p className="text-red-600 text-sm">{error}</p>}
+
                 <button
                   type="submit"
-                  className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] ease-in-out transition duration-300 font-semibold text-md"
+                  className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] font-semibold text-md"
                 >
                   Continue
                 </button>
@@ -78,7 +111,7 @@ const LoginPage = () => {
                 Don't have an account?{" "}
                 <a
                   href="/sign-up"
-                  className="text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 font-semibold"
+                  className="text-[#91ac8f] hover:text-[#667964] font-semibold"
                 >
                   Sign up here
                 </a>

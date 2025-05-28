@@ -1,15 +1,31 @@
+import { useLocation } from "react-router-dom";
 import React, { useState, useRef, useEffect } from "react";
-import SideLayout from "../Layout/SideLayout";
+import SideLayout from "./Layout/SideLayout";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
-const EmailVerification = () => {
+
+const EmailVerificationCode = () => {
     const navigate = useNavigate();
+  
+    const [email, setEmail] = useState(""); // email will be passed via location state
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
+    
 
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
   const [timeLeft, setTimeLeft] = useState(10 * 60);
 
+
+  const location = useLocation();
+
+  useEffect(() => {
+    if (location.state && location.state.email) {
+      setEmail(location.state.email);
+    }
+  }, [location]);
+  
   useEffect(() => {
     if (timeLeft > 0) {
       const timer = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
@@ -41,8 +57,34 @@ const EmailVerification = () => {
     }
   };
 
-  const handleVerify = () => {
-    navigate("/password-reset");
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+  
+    try {
+      const code = otp.join("");
+      console.log("Sending verification:", { email, code });
+      const response = await fetch("http://localhost:5000/api/auth/verify", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" } ,
+        body: JSON.stringify({ email, code }),
+      });
+  
+      const data = await response.json();
+      console.log("Server response:", data);
+  
+      if (response.ok) {
+        alert("Email verified! You can now login.");
+        navigate("/login");
+      } else {
+        setError(data.message || "Invalid code");
+      }
+    } catch (err) {
+      setError("Something went wrong.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleResendCode = () => {
@@ -55,7 +97,7 @@ const EmailVerification = () => {
     <SideLayout>
       <div className="h-screen bg-white overflow-y-hidden font-Inter">
       <div className="absolute p-4">
-        <button onClick={() => navigate("/forget-password")}
+        <button onClick={() => navigate("/sign-up")}
           className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">
           <IoChevronBackOutline size={20} /> Back
         </button>
@@ -64,7 +106,7 @@ const EmailVerification = () => {
         <div className="bg-white p-8 w-3/5 text-center">
           <h2 className="text-3xl font-bold mb-2">Verify your email address</h2>
           <p className="text-md text-gray-500 mb-6">
-            A verification code has been sent to <b>*********@gmail.com</b>
+          A verification code has been sent to <b>{email.replace(/(.{2})(.*)(?=@)/, (_, a, b) => a + '*'.repeat(b.length))}</b>
           </p>
           <p className="text-md text-gray-500 mb-6">
             Please check your email and enter the verification code below. The
@@ -111,4 +153,4 @@ const EmailVerification = () => {
   );
 };
 
-export default EmailVerification;
+export default EmailVerificationCode;
