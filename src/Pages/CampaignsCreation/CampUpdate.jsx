@@ -1,45 +1,49 @@
-"use client";
+"use client"
 
-import React, { useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import Header from "../Layout/HeaderLayout";
-import Footer from "../Layout/FooterLayout";
+import { useState } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
+import Header from "../Layout/HeaderLayout"
+import Footer from "../Layout/FooterLayout"
 
 const CampaignUpdate = () => {
-  const navigate = useNavigate();
-  const location = useLocation();
+  const navigate = useNavigate()
+  const location = useLocation()
 
   const initialData = location.state?.campaign || {
     title: "",
     content: "",
-  };
+  }
 
-  const [title, setTitle] = useState(initialData.title);
-  const [content, setContent] = useState(initialData.content);
-  const [isBold, setIsBold] = useState(false);
-  const [isItalic, setIsItalic] = useState(false);
-  const [isUnderline, setIsUnderline] = useState(false);
-  const [textAlign, setTextAlign] = useState("left");
+  const [title, setTitle] = useState(initialData.title)
+  const [content, setContent] = useState(initialData.content)
+  const [isBold, setIsBold] = useState(false)
+  const [isItalic, setIsItalic] = useState(false)
+  const [isUnderline, setIsUnderline] = useState(false)
+  const [textAlign, setTextAlign] = useState("left")
 
   const handleFormatClick = (format) => {
-    if (format === "bold") setIsBold(!isBold);
-    if (format === "italic") setIsItalic(!isItalic);
-    if (format === "underline") setIsUnderline(!isUnderline);
-  };
+    if (format === "bold") setIsBold(!isBold)
+    if (format === "italic") setIsItalic(!isItalic)
+    if (format === "underline") setIsUnderline(!isUnderline)
+  }
 
   const handleUpdate = (e) => {
-    e.preventDefault();
-    const updatedCampaign = { ...initialData, title, content };
-    navigate("/campaign-creation-05", { state: { campaign: updatedCampaign } });
-  };
+    e.preventDefault()
+    const updatedCampaign = { ...initialData, title, content }
+    // Navigate back with success flag
+    navigate("/campaign-creation-05", {
+      state: {
+        campaign: updatedCampaign,
+        updateSuccess: true,
+      },
+    })
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <div className="bg-gray-100 py-2 px-4 text-gray-500 text-sm">
-        Update campaign
-      </div>
+      <div className="bg-gray-100 py-2 px-4 text-gray-500 text-sm">Update campaign</div>
 
       <div className="flex flex-1 px-20 py-12 gap-12">
         {/* Logo */}
@@ -54,13 +58,8 @@ const CampaignUpdate = () => {
         </div>
 
         {/* Form */}
-        <form
-          onSubmit={handleUpdate}
-          className="w-full max-w-xl bg-white border border-gray-300 rounded-md shadow"
-        >
-          <div className="border-b bg-gray-100 px-4 py-3 text-sm font-medium">
-            Project Updates
-          </div>
+        <form onSubmit={handleUpdate} className="w-full max-w-xl bg-white border border-gray-300 rounded-md shadow">
+          <div className="border-b bg-gray-100 px-4 py-3 text-sm font-medium">Project Updates</div>
 
           <div className="px-4 py-3 border-b">
             <label className="block text-sm font-semibold mb-1">Title:</label>
@@ -85,7 +84,8 @@ const CampaignUpdate = () => {
               </button>
             ))}
 
-            {[{ format: "bold", active: isBold, icon: "𝗕" },
+            {[
+              { format: "bold", active: isBold, icon: "𝗕" },
               { format: "italic", active: isItalic, icon: "𝘐" },
               { format: "underline", active: isUnderline, icon: "U̲" },
             ].map((btn) => (
@@ -93,9 +93,7 @@ const CampaignUpdate = () => {
                 key={btn.format}
                 type="button"
                 onClick={() => handleFormatClick(btn.format)}
-                className={`px-2 py-1 text-sm border rounded ${
-                  btn.active ? "bg-gray-200" : "hover:bg-gray-100"
-                }`}
+                className={`px-2 py-1 text-sm border rounded ${btn.active ? "bg-gray-200" : "hover:bg-gray-100"}`}
               >
                 {btn.icon}
               </button>
@@ -119,11 +117,7 @@ const CampaignUpdate = () => {
             ))}
 
             {[{ icon: "🔗" }, { icon: "🔢" }].map((btn, idx) => (
-              <button
-                key={idx}
-                type="button"
-                className="px-2 py-1 text-sm border rounded hover:bg-gray-100"
-              >
+              <button key={idx} type="button" className="px-2 py-1 text-sm border rounded hover:bg-gray-100">
                 {btn.icon}
               </button>
             ))}
@@ -154,7 +148,7 @@ const CampaignUpdate = () => {
 
       <Footer />
     </div>
-  );
-};
+  )
+}
 
-export default CampaignUpdate;
+export default CampaignUpdate

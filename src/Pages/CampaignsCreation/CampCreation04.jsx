@@ -35,12 +35,14 @@ const CampaignCreation04 = () => {
     }
   }
 
-  const handleSubmit = (e) => {
-    e.preventDefault()
-    // Process form submission
-    console.log("Story submitted:", story)
-    // Navigate to next step
-    navigate("/campaign-creation-05");
+const handleSubmit = (e) => {
+  e.preventDefault();
+  console.log("Story submitted:", story);
+
+  navigate("/campaign-creation-05", {
+    state: { story },
+  });
+
   }
 
   const handleBack = () => {
