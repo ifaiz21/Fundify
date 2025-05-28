@@ -42,7 +42,7 @@ router.post('/sign-up', async (req, res) => {
     // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser)
-      return res.status(400).json({ message: 'User already exists' });
+      return res.status(400).json({ message: 'User already registered with this email.' });
 
     // Hash the password
     const salt = await bcrypt.genSalt(10);
@@ -86,6 +86,32 @@ router.post('/sign-up', async (req, res) => {
     res.status(500).json({ message: "Signup failed", error: err.message });
   }
 });
+
+// POST /api/auth/verify
+router.post('/verify', async (req, res) => {
+  try {
+    const { email, code } = req.body;
+
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+
+    if (user.verificationCode !== code) {
+      return res.status(400).json({ message: 'Invalid verification code' });
+    }
+      user.verified = true;
+      user.verificationCode = undefined; // Optional: clear code after use
+      await user.save();
+
+      return res.status(200).json({ message: 'Email verified successfully' });
+  } catch (err) {
+    console.error('Verification error:', err);
+    res.status(500).json({ message: 'Verification failed', error: err.message });
+  }
+});
+
 
 // Login Route
 router.post('/login', async (req, res) => {

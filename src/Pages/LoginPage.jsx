@@ -14,7 +14,7 @@ const LoginPage = () => {
     event.preventDefault();
 
     try {
-      const response = await axios.post("http://localhost:3000/api/auth/login", {
+      const response = await axios.post("http://localhost:5000/api/auth/login", {
         email,
         password,
       });
@@ -30,7 +30,8 @@ const LoginPage = () => {
         navigate("/homepage");
       }
     } catch (err) {
-      setError("Invalid email or password. Please try again.");
+      console.error("Login failed:", err.response?.data);
+      setError(err.response?.data?.message || "Login failed. Try again.");
     }
   };
 
