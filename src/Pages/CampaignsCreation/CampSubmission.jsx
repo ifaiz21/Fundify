@@ -5,7 +5,7 @@ const CampaignSubmission = () => {
       const navigate = useNavigate();
       const handleSubmitRequest = (event) => {
         event.preventDefault();
-        navigate("/");
+    navigate("/create-campaign") // Navigate back to create-campaign page instead of home
       };
   return (
     <div className="bg-[#4b5945]">

@@ -15,9 +15,11 @@ import ExploreCampaigns from "./Pages/ExploreCampaigns";
 import GetStartedPage from "./Pages/GetStartedPage";
 import ContactUsPage from "./Pages/ContactUs/ContactUsPage";
 import Submitted from "./Pages/ContactUs/Submitted";
+import Submitted2 from "./Pages/Payment/Submitted2";
+
 import DonationScreen from "./Pages/DonationScreen";
 import AboutUs from "./Pages/AboutUs";
-import PaymentScreen from "./Pages/PaymentScreen";
+import PaymentScreen from "./Pages/Payment/PaymentScreen";
 import CampaignCreation01 from "./Pages/CampaignsCreation/CampCreation01";
 import CampaignCreation02 from "./Pages/CampaignsCreation/CampCreation02";
 import CampaignCreation03 from "./Pages/CampaignsCreation/CampCreation03";
@@ -60,6 +62,7 @@ function App() {
         <Route path="/how-to" element={<GetStartedPage />} />
         <Route path="/contact" element={<ContactUsPage />} />
         <Route path="/submitted" element={<Submitted />} />
+        <Route path="/submit-2" element={<Submitted2 />} />
         <Route path="/donate" element={<DonationScreen />} />
         <Route path="/about" element={<AboutUs />} />
         <Route path="/payment" element={<PaymentScreen />} />

@@ -1,23 +1,51 @@
 "use client"
 
-import { useState } from "react";
-import Footer from "./Layout/FooterLayout";
-import { useNavigate } from "react-router-dom";
-
+import { useState } from "react"
+import Footer from "../Layout/FooterLayout"
+import Header from "../Layout/HeaderLayout"
+import { useNavigate } from "react-router-dom"
 
 const PaymentPage = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
   const [paymentMethod, setPaymentMethod] = useState("visa")
+  const [showConfirmation, setShowConfirmation] = useState(false)
+  const [formData, setFormData] = useState({
+    address: "",
+    city: "",
+    state: "",
+    postalCode: "",
+    cardholderName: "",
+    cardNumber: "",
+    expiry: "",
+    cvc: "",
+  })
+
+  const handleInputChange = (e) => {
+    const { id, value } = e.target
+    setFormData((prev) => ({
+      ...prev,
+      [id]: value,
+    }))
+  }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Add your payment processing logic here
+    setShowConfirmation(true)
+  }
+
+  const handleConfirmPayment = () => {
     console.log("Processing payment")
-    navigate("/Submitted");
+    setShowConfirmation(false)
+    navigate("/submit-2")
+  }
+
+  const handleCancelPayment = () => {
+    setShowConfirmation(false)
   }
 
   return (
     <div className="flex flex-col min-h-screen">
+      <Header />
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
@@ -26,8 +54,6 @@ const PaymentPage = () => {
               <div className="w-64 h-64 mb-6">
                 <img src="./Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
               </div>
-              {/* <h1 className="text-3xl font-bold text-center mb-2">FUNDIFY</h1>
-              <p className="text-sm text-gray-600 text-center">INVEST LOCALLY, IMPACT GLOBALLY</p> */}
             </div>
 
             {/* Right Column - Payment Form */}
@@ -47,6 +73,8 @@ const PaymentPage = () => {
                       <input
                         type="text"
                         id="address"
+                        value={formData.address}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       />
@@ -59,6 +87,8 @@ const PaymentPage = () => {
                       <input
                         type="text"
                         id="city"
+                        value={formData.city}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       />
@@ -71,6 +101,8 @@ const PaymentPage = () => {
                       <input
                         type="text"
                         id="state"
+                        value={formData.state}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       />
@@ -83,6 +115,8 @@ const PaymentPage = () => {
                       <input
                         type="text"
                         id="postalCode"
+                        value={formData.postalCode}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       />
@@ -128,6 +162,8 @@ const PaymentPage = () => {
                       <input
                         type="text"
                         id="cardholderName"
+                        value={formData.cardholderName}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         placeholder="Enter your name"
                         required
@@ -141,6 +177,8 @@ const PaymentPage = () => {
                       <input
                         type="text"
                         id="cardNumber"
+                        value={formData.cardNumber}
+                        onChange={handleInputChange}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         placeholder="Enter your card number"
                         required
@@ -155,6 +193,8 @@ const PaymentPage = () => {
                         <input
                           type="text"
                           id="expiry"
+                          value={formData.expiry}
+                          onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                           placeholder="MM/YY"
                           required
@@ -168,6 +208,8 @@ const PaymentPage = () => {
                         <input
                           type="text"
                           id="cvc"
+                          value={formData.cvc}
+                          onChange={handleInputChange}
                           className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                           placeholder="123"
                           required
@@ -207,10 +249,75 @@ const PaymentPage = () => {
         </div>
       </main>
 
+      {/* Payment Confirmation Modal */}
+      {showConfirmation && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+            <div className="p-6">
+              <div className="flex items-center justify-center w-12 h-12 mx-auto mb-4 bg-[#4B5842] rounded-full">
+                <svg
+                  className="w-6 h-6 text-white"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"
+                  />
+                </svg>
+              </div>
+
+              <h3 className="text-lg font-semibold text-gray-900 text-center mb-2">Confirm Payment</h3>
+
+              <p className="text-gray-600 text-center mb-6">Is your information correct?</p>
+
+              {/* Summary of entered information */}
+              <div className="bg-gray-50 p-4 rounded-md mb-6 text-sm">
+                <div className="space-y-2">
+                  <div>
+                    <span className="font-medium">Address:</span> {formData.address}
+                  </div>
+                  <div>
+                    <span className="font-medium">City:</span> {formData.city}, {formData.state} {formData.postalCode}
+                  </div>
+                  <div>
+                    <span className="font-medium">Payment Method:</span> {paymentMethod.toUpperCase()}
+                  </div>
+                  <div>
+                    <span className="font-medium">Cardholder:</span> {formData.cardholderName}
+                  </div>
+                  <div>
+                    <span className="font-medium">Card Number:</span> ****{formData.cardNumber.slice(-4)}
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={handleCancelPayment}
+                  className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleConfirmPayment}
+                  className="flex-1 px-4 py-2 text-white bg-[#4B5842] rounded-md hover:bg-[#3A4433] transition-colors"
+                >
+                  Confirm Payment
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <Footer />
     </div>
   )
 }
 
 export default PaymentPage
-
