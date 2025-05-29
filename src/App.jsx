@@ -70,6 +70,7 @@ function App() {
         <Route path="/campaign-creation-05" element={<CampaignCreation05 />} />
         <Route path="/campaign-submission" element={<CampaignSubmission />} />
         <Route path="/campaign-deletion" element={<CampaignDeletion />} />
+
         <Route path="/ProjectView" element={<ProjectView />} />
         <Route path="/campaign-update" element={<CampaignUpdate />} />
         <Route path="/user-profile" element={< UserProfileSettings/>} />
