@@ -1,11 +1,11 @@
 "use client"
 import { useNavigate } from "react-router-dom"
 
-const Submitted = () => {
+const Submitted2 = () => {
   const navigate = useNavigate()
   const handleSubmitRequest = (event) => {
     event.preventDefault()
-    navigate("/contact") // Navigate back to contact page instead of home
+    navigate("/payment") // Navigate back to payment page instead of home
   }
 
   return (
@@ -34,4 +34,4 @@ const Submitted = () => {
   )
 }
 
-export default Submitted
+export default Submitted2

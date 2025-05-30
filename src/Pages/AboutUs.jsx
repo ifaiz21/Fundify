@@ -6,7 +6,7 @@ const AboutUsPage = () => {
   const teamMembers = [
     { id: 1, name: "Kamran Shahid", role: "Founder", image: "./Images/KamranShahid.jpg" },
     { id: 2, name: "M. Faiz", role: "CTO", image: "./Images/Faiz.jpg" },
-    { id: 3, name: "M. Ibraheem", role: "CFO", image: "./Images/Ibrahim2.jpg" },
+    { id: 3, name: "M. Ibraheem", role: "CFO", image: "./Images/Ibraheem.jpg" },
     { id: 4, name: "M. Noukhaiz", role: "COO", image: "./Images/Noukhaiz.jpg" },
     { id: 5, name: "Rameen khan", role: "CMO", image: "./Images/Rameen.jpeg" },
   ]
