@@ -1,15 +1,37 @@
-import React from "react";
+import React, { useState } from "react";
 import SideLayout from "../Layout/SideLayout";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
 
 const ForgetPassword = () => {
   const navigate = useNavigate();
+  const [email, setEmail] = useState("");
 
-  const handleContinue = (event) => {
+
+  const handleContinue = async (event) => {
     event.preventDefault();
-    navigate("/email-verification");
-  };
+  
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/send-verification-code-for-reset", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      });
+  
+      const data = await res.json();
+  
+      if (res.ok) {
+        navigate("/email-verification", { state: { email } });
+      } else {
+        alert(data.message || "Failed to send code.");
+      }
+    } catch (error) {
+      console.error("Fetch error:", error);
+      alert("Something went wrong.");
+    }
+  };  
 
   return (
     <SideLayout>
@@ -42,6 +64,8 @@ const ForgetPassword = () => {
                     placeholder="Email address"
                     className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none"
                     required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
                   />
                 </div>
 

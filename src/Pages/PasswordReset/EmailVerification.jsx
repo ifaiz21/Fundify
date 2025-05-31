@@ -4,11 +4,15 @@ import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
 
 const EmailVerification = () => {
-    const navigate = useNavigate();
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
   const [timeLeft, setTimeLeft] = useState(5 * 60);
+  const [code, setCode] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [resendLoading, setResendLoading] = useState(false);
+
 
   const location = useLocation();
 
@@ -19,11 +23,11 @@ const EmailVerification = () => {
     }
   }, [timeLeft]);
 
-   useEffect(() => {
-      if (location.state && location.state.email) {
+  useEffect(() => {
+    if (location.state && location.state.email) {
         setEmail(location.state.email);
-      }
-    }, [location]);
+    }
+  }, [location]);
 
   const formatTime = () => {
     const minutes = Math.floor(timeLeft / 60);
@@ -49,14 +53,64 @@ const EmailVerification = () => {
     }
   };
 
-  const handleVerify = () => {
-    navigate("/password-reset");
+  const handleVerify = async (event) => {
+    event.preventDefault();
+
+  const combinedCode = otp.join(""); // Combine OTP input values
+  setLoading(true);
+
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/verify-reset-code", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email, code: combinedCode })
+      });
+
+      const data = await res.json();
+
+      if (res.ok) {
+        alert("Email verified successfully!");
+        navigate("/password-reset"); // or redirect wherever needed
+      } else {
+        alert(data.message || "Verification failed.");
+      }
+    } catch (error) {
+      console.error("Verification error:", error);
+      alert("Something went wrong.");
+    }finally {
+      setLoading(false);
+    }
   };
 
-  const handleResendCode = () => {
+  const handleResendCode = async () => {
+    setResendLoading(true);
     setOtp(new Array(6).fill(""));
     inputRefs.current[0].focus();
-    setTimeLeft(7 * 60 + 35);
+    setTimeLeft(5 * 60);
+    
+    try {
+      const res = await fetch("http://localhost:5000/api/auth/resend-code-pr", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ email })
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        alert("Verification code resent to your email.");
+      } else {
+        alert(data.message || "Failed to resend code.");
+      }
+    } catch (error) {
+      console.error("Resend error:", error);
+      alert("Something went wrong.");
+    } finally {
+      setResendLoading(false);
+    }
   };
 
   return (
@@ -99,17 +153,23 @@ const EmailVerification = () => {
 
           <button
           type="submit"
-            
-            className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] ease-in-out transition duration-300 font-semibold text-md"
+          disabled={loading || otp.includes("")}
+          className={`w-full text-white p-3 rounded font-semibold text-md transition duration-300 ease-in-out ${
+            loading || otp.includes("")
+              ? "bg-gray-400 cursor-not-allowed"
+              : "bg-[#91ac8f] hover:bg-[#667964]"
+          }`}
           >
-            Verify
+            {loading ? "Verifying..." : "Verify"}
           </button>
 
           <button
+            type="button"
             onClick={handleResendCode}
+            disabled={resendLoading}
             className="mt-4 text-[#4b5945] hover:underline font-semibold"
           >
-            Resend code
+            {resendLoading ? "Resending..." : "Resend Code"}
           </button>
           </form>
         </div>

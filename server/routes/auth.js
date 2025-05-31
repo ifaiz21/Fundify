@@ -150,7 +150,6 @@ router.post('/resend-code', async (req, res) => {
   }
 });
 
-
 // Login Route
 router.post('/login', async (req, res) => {
   const { email, password } = req.body;
@@ -189,7 +188,7 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 });
-
+//code-verification-process
 router.post('/code-verification', async (req, res) => {
   const { email, code } = req.body;
 
@@ -206,7 +205,7 @@ router.post('/code-verification', async (req, res) => {
       return res.status(400).json({ message: 'Invalid verification code' });
 
     user.verified = true;
-    user.verificationCode = undefined; // Optional: clear the code
+    user.verificationCode = code; // Optional: clear the code
     await user.save();
 
     res.status(200).json({ message: 'Email verified successfully' });
@@ -216,5 +215,105 @@ router.post('/code-verification', async (req, res) => {
   }
 });
 
+//forget-password-email-vericiation-code
+router.post('/send-verification-code-for-reset', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.status(404).json({ message: 'User not found' });
+
+    // Generate and save new code
+    const code = generateCode();
+    user.verificationCode = code;
+    await user.save();
+
+    // Send email
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Password Reset Verification Code',
+      html: `
+        <p>Hello ${user.name},</p>
+        <p>Use the following code to reset your password:</p>
+        <h2>${code}</h2>
+        <p>If you did not request this, ignore this email.</p>
+      `
+    });
+
+    res.status(200).json({ message: 'Reset code sent to email' });
+  } catch (err) {
+    console.error("Reset code error:", err);
+    res.status(500).json({ message: 'Failed to send reset code', error: err.message });
+  }
+});
+
+// POST /api/auth/resend-code-for-password-resetting
+router.post('/resend-code-pr', async (req, res) => {
+  const { email } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.status(404).json({ message: 'User not found' });
+
+   // if (user.verified)
+     // return res.status(400).json({ message: 'User already verified' });
+
+    const newCode = generateCode();
+    user.verificationCode = newCode;
+    await user.save();
+
+    console.log("Sending new code to:", email, "Code:", newCode);
+
+    await transporter.sendMail({
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Your new verification code',
+      html: `
+        <p>Hello ${user.name},</p>
+        <p>Here is your new verification code:</p>
+        <h2>${newCode}</h2>
+        <p>If you did not request this, please ignore this email.</p>
+      `
+    });
+
+    res.status(200).json({ message: 'Verification code resent' });
+  } catch (err) {
+    console.error('Resend code error:', err);
+    res.status(500).json({ message: 'Failed to resend code', error: err.message });
+  }
+});
+
+// verify the code for password reset
+router.post('/verify-reset-code', async (req, res) => {
+  const { email, code } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.status(404).json({ message: 'User not found' });
+
+    if (!user.verificationCode)
+      return res.status(400).json({ message: 'No code found. Please resend code.' });
+
+    if (user.verificationCode !== code.toString()) {
+      return res.status(400).json({ message: 'Invalid verification code' });
+    }
+
+    // You can optionally clear the code now
+    user.verificationCode = undefined;
+    await user.save();
+
+    return res.status(200).json({ message: 'Verification successful' });
+  } catch (err) {
+    console.error("Verification error:", err);
+    return res.status(500).json({ message: 'Something went wrong' });
+  }
+});
 
 module.exports = router;
