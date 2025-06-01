@@ -209,7 +209,7 @@ const CampaignCreation05 = () => {
                 </button>
                 <button
                   onClick={handleConfirmDelete}
-                  className="flex-1 px-4 py-2 text-white bg-[#4B5842] rounded-md bg-[#4a5741] transition-colors"
+                  className="flex-1 px-4 py-2 text-white rounded-md bg-[#4a5741] transition-colors"
                 >
                   Confirm
                 </button>

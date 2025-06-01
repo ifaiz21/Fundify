@@ -316,4 +316,28 @@ router.post('/verify-reset-code', async (req, res) => {
   }
 });
 
+router.post("/reset-password", async (req, res) => {
+  const { email, newPassword } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+
+    if (!user)
+      return res.status(404).json({ message: "User not found" });
+
+    // Hash the new password
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Update password in DB
+    user.password = hashedPassword;
+    user.verificationCode = undefined; // optional: clear the reset code
+    await user.save();
+
+    res.status(200).json({ message: "Password updated successfully" });
+  } catch (err) {
+    console.error("Password reset error:", err);
+    res.status(500).json({ message: "Internal server error" });
+  }
+});
+
 module.exports = router;

@@ -72,7 +72,7 @@ const EmailVerification = () => {
 
       if (res.ok) {
         alert("Email verified successfully!");
-        navigate("/password-reset"); // or redirect wherever needed
+        navigate("/password-reset", { state: { email } });
       } else {
         alert(data.message || "Verification failed.");
       }
