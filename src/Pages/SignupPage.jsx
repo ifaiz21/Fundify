@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import SideLayout from "./Layout/SideLayout";
 import { IoChevronBackOutline } from "react-icons/io5";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; 
 
@@ -14,6 +15,9 @@ const SignupPage = () => {
     confirmPassword: "",
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({
@@ -24,6 +28,11 @@ const SignupPage = () => {
 
   const handleContinue = async (e) => {
     e.preventDefault();
+
+    if (formData.password.length < 6) {
+      alert("Password must be at least 6 characters long.");
+      return;
+    }
 
     if (formData.password !== formData.confirmPassword) {
       alert("Passwords do not match!");
@@ -101,32 +110,61 @@ const SignupPage = () => {
                 <label htmlFor="password" className="font-semibold">
                   Password
                 </label>
+                <div className="relative">
                 <input
-                  type="password"
+                  type={showPassword ? "text" : "password"}
                   name="password"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Password"
                   className="w-full p-4 border rounded border-[#8692a6] outline-none"
                   required
+                  minLength={6}
                 />
+                <span
+                    className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer text-gray-600"
+                    onClick={() => setShowPassword(!showPassword)}
+                  >
+                    {showPassword ? (
+                      <AiOutlineEyeInvisible size={20} />
+                    ) : (
+                      <AiOutlineEye size={20} />
+                    )}
+                  </span>
+                </div>
+                {formData.password.length > 0 && formData.password.length < 6 && (
+                  <p className="text-sm text-red-500">Password must be at least 6 characters long.</p>
+                )}
               </div>
 
               <div className="space-y-2 text-[#696f79]">
                 <label htmlFor="confirmPassword" className="font-semibold">
                   Confirm Password
                 </label>
+                <div className="relative">
                 <input
-                  type="password"
+                  type={showConfirmPassword ? "text" : "password"}
                   name="confirmPassword"
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm Password"
                   className="w-full p-4 border rounded border-[#8692a6] outline-none"
                   required
+                  minLength={6}
                 />
+                 <span
+                    className="absolute top-1/2 right-4 transform -translate-y-1/2 cursor-pointer text-gray-600"
+                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                  >
+                    {showConfirmPassword ? (
+                      <AiOutlineEyeInvisible size={20} />
+                    ) : (
+                      <AiOutlineEye size={20} />
+                    )}
+                  </span>
+                </div>
               </div>
-
+              
               <button
                 type="submit"
                 className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] transition duration-300 font-semibold text-md"

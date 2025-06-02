@@ -1,17 +1,24 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBackOutline } from "react-icons/io5";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
-import SideLayout from "./Layout/SideLayout"; // Make sure this exists
+import SideLayout from "./Layout/SideLayout";
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
 
   const handleContinue = async (event) => {
     event.preventDefault();
+
+    if (password.length < 6) {
+      setError("Incomplete Password.");
+      return;
+    }
 
     try {
       const response = await axios.post("http://localhost:5000/api/auth/login", {
@@ -74,14 +81,22 @@ const LoginPage = () => {
                   <label htmlFor="password" className="font-semibold">
                     Password
                   </label>
+                  <div className="relative">
                   <input
-                    type="password"
+                    type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none"
+                    className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none pr-12"
                     required
                   />
+                  <span
+                      className="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-600"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+                    </span>
+                    </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-4">

@@ -315,7 +315,7 @@ router.post('/verify-reset-code', async (req, res) => {
     return res.status(500).json({ message: 'Something went wrong' });
   }
 });
-
+// reset-password 
 router.post("/reset-password", async (req, res) => {
   const { email, newPassword } = req.body;
 
