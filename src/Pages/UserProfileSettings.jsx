@@ -1,12 +1,11 @@
 "use client"
-import React from "react";
-import { useState } from "react"
-import PaymentMethodIcons from "./Layout/PaymentMethodIcons";
-import HeaderLayout from "./Layout/HeaderLayout";
-import FooterLayout from "./Layout/FooterLayout";
+import React, { useState } from "react"
+import { useNavigate } from "react-router-dom"
+import PaymentMethodIcons from "./Layout/PaymentMethodIcons"
+import HeaderLayout from "./Layout/HeaderLayout"
+import FooterLayout from "./Layout/FooterLayout"
 
 function UserProfileSettings() {
-  // State for profile data
   const [profileData, setProfileData] = useState({
     fullName: "Ibn e Batuta",
     userId: "346",
@@ -20,23 +19,15 @@ function UserProfileSettings() {
     expiryDate: "",
   })
 
-  // State for additional emails
   const [additionalEmails, setAdditionalEmails] = useState([])
-
-  // State for new email being added
   const [newEmail, setNewEmail] = useState("")
-
-  // State for email input validation
   const [emailError, setEmailError] = useState("")
-
-  // State to track if profile is in edit mode
   const [isEditMode, setIsEditMode] = useState(false)
-
-  // State to track if adding new email
   const [isAddingEmail, setIsAddingEmail] = useState(false)
-
-  // Temporary state to hold edits before saving
   const [editedProfile, setEditedProfile] = useState({ ...profileData })
+  const [showConfirmLogout, setShowConfirmLogout] = useState(false)
+
+  const navigate = useNavigate()
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -55,40 +46,30 @@ function UserProfileSettings() {
   }
 
   const handleSave = () => {
-    console.log("Saving profile data:", profileData)
-    // API call to save profile data
+    console.log("Saving profile data:", editedProfile)
+    setProfileData(editedProfile)
+    setIsEditMode(false)
+    setIsAddingEmail(false)
+    // API logic can go here
   }
 
   const handleWithdraw = () => {
     console.log("Withdraw funds")
-    // Handle withdrawal logic
   }
 
   const handleKYC = () => {
     console.log("KYC verification")
-    // Handle KYC verification
   }
 
   const handleEdit = () => {
-    if (isEditMode) {
-      // Save the edited profile data
-      setProfileData(editedProfile)
-      setIsEditMode(false)
-      setIsAddingEmail(false) // Reset adding email state when exiting edit mode
-      console.log("Profile updated:", editedProfile)
-    } else {
-      // Enter edit mode
-      setEditedProfile({ ...profileData })
-      setIsEditMode(true)
-      console.log("Editing profile")
-    }
+    setIsEditMode(true)
+    setEditedProfile({ ...profileData })
   }
 
   const handleCancelEdit = () => {
     setIsEditMode(false)
-    setIsAddingEmail(false) // Reset adding email state when canceling edit
+    setIsAddingEmail(false)
     setEditedProfile({ ...profileData })
-    console.log("Edit cancelled")
   }
 
   const handleAddEmailClick = () => {
@@ -96,8 +77,7 @@ function UserProfileSettings() {
   }
 
   const validateEmail = (email) => {
-    const re =
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
+    const re = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
     return re.test(String(email).toLowerCase())
   }
 
@@ -127,16 +107,24 @@ function UserProfileSettings() {
     setAdditionalEmails(additionalEmails.filter((email) => email !== emailToRemove))
   }
 
+  // Modified handleSignOut to show confirmation modal
+  const handleSignOut = () => {
+    setShowConfirmLogout(true)
+  }
+
+  // Actual logout logic: clear token and redirect
+  const handleLogout = () => {
+    localStorage.removeItem("authToken") // or your auth key
+    setShowConfirmLogout(false)
+    navigate("/login")
+  }
+
   return (
     <div className="flex flex-col min-h-screen">
-      {/* Header */}
       <HeaderLayout />
 
-      {/* Main Content */}
       <main className="flex-grow container mx-auto px-4 py-6">
-        <div className="flex justify-between items-center mb-6">
-          <h1 className="text-2xl font-bold">Settings</h1>
-        </div>
+        <h1 className="text-2xl font-bold mb-6">Settings</h1>
 
         {/* Profile Section */}
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -145,21 +133,13 @@ function UserProfileSettings() {
             <div className="space-y-2">
               {isEditMode ? (
                 <div className="flex space-x-2">
-                  <button onClick={handleEdit} className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">
-                    Save
-                  </button>
-                  <button onClick={handleCancelEdit} className="bg-gray-300 text-gray-700 py-2 px-4 rounded text-sm">
-                    Cancel
-                  </button>
+                  <button onClick={handleSave} className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">Save</button>
+                  <button onClick={handleCancelEdit} className="bg-gray-300 text-gray-700 py-2 px-4 rounded text-sm">Cancel</button>
                 </div>
               ) : (
-                <button onClick={handleEdit} className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">
-                  Edit
-                </button>
+                <button onClick={handleEdit} className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">Edit</button>
               )}
-              <button onClick={handleKYC} className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">
-                KYC
-              </button>
+              <button onClick={handleKYC} className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">KYC</button>
             </div>
           </div>
 
@@ -168,13 +148,7 @@ function UserProfileSettings() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Full Name</label>
                 {isEditMode ? (
-                  <input
-                    type="text"
-                    name="fullName"
-                    value={editedProfile.fullName}
-                    onChange={handleProfileEditChange}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                  <input type="text" name="fullName" value={editedProfile.fullName} onChange={handleProfileEditChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500" />
                 ) : (
                   <div className="text-gray-600">{profileData.fullName}</div>
                 )}
@@ -183,13 +157,7 @@ function UserProfileSettings() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Email</label>
                 {isEditMode ? (
-                  <input
-                    type="email"
-                    name="email"
-                    value={editedProfile.email}
-                    onChange={handleProfileEditChange}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                  <input type="email" name="email" value={editedProfile.email} onChange={handleProfileEditChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500" />
                 ) : (
                   <div className="text-blue-500">{profileData.email}</div>
                 )}
@@ -198,23 +166,12 @@ function UserProfileSettings() {
                 {additionalEmails.length > 0 && (
                   <div className="mt-2">
                     {additionalEmails.map((email, index) => (
-                      <div key={index} className="flex items-center justify-between text-blue-500 text-sm mt-1">
+                      <div key={index} className="flex justify-between text-blue-500 text-sm mt-1">
                         <span>{email}</span>
                         {isEditMode && (
                           <button onClick={() => handleRemoveEmail(email)} className="text-red-500 hover:text-red-700">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="h-4 w-4"
-                              fill="none"
-                              viewBox="0 0 24 24"
-                              stroke="currentColor"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M6 18L18 6M6 6l12 12"
-                              />
+                            <svg className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
                             </svg>
                           </button>
                         )}
@@ -223,34 +180,20 @@ function UserProfileSettings() {
                   </div>
                 )}
 
-                {/* Add Email UI - Only shown in edit mode */}
-                {isEditMode && isAddingEmail ? (
-                  <div className="mt-2">
-                    <div className="flex items-center">
-                      <input
-                        type="email"
-                        value={newEmail}
-                        onChange={(e) => setNewEmail(e.target.value)}
-                        placeholder="Enter new email address"
-                        className="flex-grow border border-gray-300 rounded-l px-3 py-1 focus:outline-none focus:ring-2 focus:ring-green-500 text-sm"
-                      />
-                      <button onClick={handleAddEmail} className="bg-[#4A5D45] text-white px-3 py-1 rounded-r text-sm">
-                        Add
-                      </button>
+                {/* Add Email */}
+                {isEditMode && (
+                  isAddingEmail ? (
+                    <div className="mt-2">
+                      <div className="flex items-center">
+                        <input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="Enter new email" className="flex-grow border border-gray-300 rounded-l px-3 py-1 focus:ring-green-500 text-sm" />
+                        <button onClick={handleAddEmail} className="bg-[#4A5D45] text-white px-3 py-1 rounded-r text-sm">Add</button>
+                      </div>
+                      {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
                     </div>
-                    {emailError && <p className="text-red-500 text-xs mt-1">{emailError}</p>}
-                  </div>
-                ) : (
-                  isEditMode && (
+                  ) : (
                     <button onClick={handleAddEmailClick} className="text-blue-500 text-sm mt-1 flex items-center">
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        className="h-4 w-4 mr-1"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        stroke="currentColor"
-                      >
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                      <svg className="h-4 w-4 mr-1" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
                       </svg>
                       Add Email Address
                     </button>
@@ -273,13 +216,7 @@ function UserProfileSettings() {
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Contact No</label>
                 {isEditMode ? (
-                  <input
-                    type="text"
-                    name="contactNo"
-                    value={editedProfile.contactNo}
-                    onChange={handleProfileEditChange}
-                    className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  />
+                  <input type="text" name="contactNo" value={editedProfile.contactNo} onChange={handleProfileEditChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500" />
                 ) : (
                   <div className="text-blue-500">{profileData.contactNo}</div>
                 )}
@@ -297,21 +234,14 @@ function UserProfileSettings() {
         <div className="bg-white rounded-lg shadow-md p-6">
           <div className="flex justify-between items-start mb-6">
             <h2 className="text-xl font-semibold">Account Details</h2>
-            <button onClick={handleWithdraw} className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">
-              Withdraw
-            </button>
+            <button onClick={handleWithdraw} className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">Withdraw</button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Choose Account type</label>
-                <select
-                  name="accountType"
-                  value={profileData.accountType}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                >
+                <select name="accountType" value={profileData.accountType} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500">
                   <option value="Visa">Visa</option>
                   <option value="Debit">Debit Card</option>
                   <option value="Stripe">Stripe</option>
@@ -322,60 +252,66 @@ function UserProfileSettings() {
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">CVC</label>
-                <input
-                  type="text"
-                  name="cvc"
-                  value={profileData.cvc}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="XXX"
-                />
+                <input type="text" name="cvc" value={profileData.cvc} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500" placeholder="XXX" />
               </div>
             </div>
 
             <div>
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Account Number</label>
-                <input
-                  type="text"
-                  name="accountNumber"
-                  value={profileData.accountNumber}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="XXXXXXXXXXXXXXXXXXXX"
-                />
+                <input type="text" name="accountNumber" value={profileData.accountNumber} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500" placeholder="XXXXXXXXXXXXXXXXXXXX" />
               </div>
 
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-1">Expiry Date</label>
-                <input
-                  type="text"
-                  name="expiryDate"
-                  value={profileData.expiryDate}
-                  onChange={handleChange}
-                  className="w-full border border-gray-300 rounded px-3 py-2 focus:outline-none focus:ring-2 focus:ring-green-500"
-                  placeholder="XXXX-XX-XX"
-                />
+                <input type="text" name="expiryDate" value={profileData.expiryDate} onChange={handleChange} className="w-full border border-gray-300 rounded px-3 py-2 focus:ring-green-500" placeholder="YYYY-MM-DD" />
               </div>
             </div>
           </div>
 
           <div className="mt-4">
-            <PaymentMethodIcons /> 
+            <PaymentMethodIcons />
           </div>
 
           <div className="flex justify-end mt-6">
-            <button onClick={handleSave} className="bg-[#4A5D45] text-white py-2 px-8 rounded">
-              Save
-            </button>
+            <button onClick={handleSave} className="bg-[#4A5D45] text-white py-2 px-8 rounded">Save</button>
           </div>
         </div>
       </main>
 
-      {/* Footer */}
+      <div className="flex justify-center py-6 bg-white shadow-inner">
+        <button onClick={handleSignOut} className="bg-[#710C04] text-white py-2 px-6 rounded text-sm">
+          Sign Out
+        </button>
+      </div>
+
+      {/* Confirmation Modal */}
+      {showConfirmLogout && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+            <h2 className="text-lg font-semibold mb-4">Confirm Sign Out</h2>
+            <p className="mb-6">Are you sure you want to sign out?</p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setShowConfirmLogout(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-[#4b5945] bg-[#4b5945] text-white px-4 py-2 rounded"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       <FooterLayout />
     </div>
   )
 }
 
-export default UserProfileSettings;
+export default UserProfileSettings

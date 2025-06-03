@@ -61,20 +61,26 @@ router.post('/sign-up', async (req, res) => {
       verificationCode
     });
 
-    await newUser.save();
-
-    // Send verification email
-    await transporter.sendMail({
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: 'Verify your email address',
-      html: `
-        <p>Hello ${name},</p>
-        <p>Thank you for signing up. Please use the following code to verify your email address:</p>
-        <h2>${verificationCode}</h2>
-        <p>This code will expire soon.</p>
-      `
-    });
+try {
+  await transporter.sendMail({
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Verify your email address',
+    html: `
+    <p>Hello ${name},</p>
+    <p>Thank you for signing up on Fundify.</p>
+    <p>Your email verification code is:</p>
+    <h2>${verificationCode}</h2>
+    <p>Please enter this code in the app to complete your registration.</p>
+    <br>
+    <p>Regards,<br>Fundify Team</p>
+  `
+  });
+  await newUser.save();  // Save only after email sent successfully
+} catch (emailErr) {
+  console.error("Email sending failed:", emailErr);
+  return res.status(500).json({ message: "Signup failed: unable to send verification email" });
+}
 
     res.status(201).json({
       message: 'Verification code sent to email',

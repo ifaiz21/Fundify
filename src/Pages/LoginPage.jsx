@@ -72,7 +72,7 @@ const LoginPage = () => {
                     placeholder="Email address"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none"
+                    className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none"
                     required
                   />
                 </div>
@@ -87,7 +87,7 @@ const LoginPage = () => {
                     placeholder="Password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="w-full p-4 border rounded mb-4 border-[#8692a6] outline-none pr-12"
+                    className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none pr-12"
                     required
                   />
                   <span

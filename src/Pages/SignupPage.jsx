@@ -86,7 +86,7 @@ const SignupPage = () => {
                   value={formData.fullName}
                   onChange={handleChange}
                   placeholder="Enter your Full Name"
-                  className="w-full p-4 border rounded border-[#8692a6] outline-none"
+                  className="w-full p-2 border rounded border-[#8692a6] outline-none"
                   required
                 />
               </div>
@@ -101,7 +101,7 @@ const SignupPage = () => {
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="Email address"
-                  className="w-full p-4 border rounded border-[#8692a6] outline-none"
+                  className="w-full p-2 border rounded border-[#8692a6] outline-none"
                   required
                 />
               </div>
@@ -117,7 +117,7 @@ const SignupPage = () => {
                   value={formData.password}
                   onChange={handleChange}
                   placeholder="Password"
-                  className="w-full p-4 border rounded border-[#8692a6] outline-none"
+                  className="w-full p-2 border rounded border-[#8692a6] outline-none"
                   required
                   minLength={6}
                 />
@@ -148,7 +148,7 @@ const SignupPage = () => {
                   value={formData.confirmPassword}
                   onChange={handleChange}
                   placeholder="Confirm Password"
-                  className="w-full p-4 border rounded border-[#8692a6] outline-none"
+                  className="w-full p-2 border rounded border-[#8692a6] outline-none"
                   required
                   minLength={6}
                 />
