@@ -43,7 +43,7 @@ function Footer() {
   
               {/* Terms Column */}
               <div>
-                <h3 className="text-lg font-medium mb-4">TERMS & CONDITIONS</h3>
+                <h3 className="text-lg font-medium mb-4">Support</h3>
                 <ul className="space-y-3">
                   <li>
                     <a href="/trust-safety" className="hover:underline">

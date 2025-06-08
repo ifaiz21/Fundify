@@ -39,7 +39,7 @@ const FooterLayout = () => {
 
             {/* Terms Column */}
             <div className="flex flex-col items-start">
-              <h3 className="text-sm font-semibold mb-4 uppercase">Terms & Conditions</h3>
+              <h3 className="text-sm font-semibold mb-4 uppercase">Support</h3>
               <ul className="space-y-2">
                 <li>
                   <Link to="/trust-safety" className="text-sm text-gray-300 hover:text-white">Trust and Safety</Link>
