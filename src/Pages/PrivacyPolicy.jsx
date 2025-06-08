@@ -66,7 +66,7 @@ const PrivacyPolicy = () => {
 
           <h3 className="text-lg font-semibold text-gray-700">10. Contact Us</h3>
           <p>If you have any questions or concerns, contact us at:</p>
-          <p>Email: support@fundify.com<br />Phone: [Insert Number]<br />Address: [Insert Address]</p>
+          <p><strong>Email:</strong> support@fundify.com<br /><strong>Phone:</strong> [Insert Number]<br /><strong>Address:</strong> [Insert Address]</p>
         </div>
       </main>
 

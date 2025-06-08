@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 
-const HeaderLayout = ({ hideCreate }) => {
+const HeaderLayout = ({ hideCreate , hideContact , hideDonate , hideAboutUS }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -44,8 +44,12 @@ const HeaderLayout = ({ hideCreate }) => {
           {/* Navigation Links */}
           <nav className="flex space-x-6 text-[#000000]">
             <Link to="/" className="hover:underline">Home</Link>
+            {!hideDonate && (
             <Link to="/donate" className="hover:underline">Donate</Link>
+            )}
+            {!hideAboutUS && (
             <Link to="/about" className="hover:underline">About Us</Link>
+            )}
           </nav>
         </div>
 
@@ -54,9 +58,11 @@ const HeaderLayout = ({ hideCreate }) => {
           {!hideCreate && (
             <Link to="/create-campaign" className="hover:underline">
               Create Campaign
-            </Link>
+            </Link> 
           )}
+          {!hideContact && (
           <Link to="/contact" className="hover:underline">Contact Us</Link>
+          )}
 
           {/* User Account Icon with Login Check */}
           <button

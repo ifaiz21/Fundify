@@ -67,9 +67,7 @@ const CookiePolicy = () => {
           <p>
             If you have any questions about our Cookie Policy, contact us at:
           </p>
-          <p>Email: support@fundify.com</p>
-          <p>Phone: [Insert Phone Number]</p>
-          <p>Address: [Insert Office Address]</p>
+          <p><strong>Email:</strong> support@fundify.com<br /><strong>Phone:</strong> [Insert Number]<br /><strong>Address:</strong> [Insert Address]</p>
         </div>
       </main>
 

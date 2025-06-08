@@ -1,4 +1,4 @@
-import Header from "./Layout/Header";
+// import Header from "./Layout/Header";
 import Hero from "./Layout/Hero";
 import CampaignListing from "./HomePage/CampaignListing";
 import AboutSection from "./HomePage/AboutSection";
@@ -8,7 +8,7 @@ import FooterLayout from "./Layout/FooterLayout";
 export default function Home() {
   return (
     <main>
-      <Header hideHome={true} />
+     {/* <Header hideHome={true} /> */}
       <Hero />
       <CampaignListing />
       <AboutSection />

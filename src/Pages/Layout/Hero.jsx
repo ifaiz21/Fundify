@@ -1,3 +1,5 @@
+import Header from "./Header";
+
 export default function Hero() {
     return (
       <section className="relative min-h-screen flex items-center justify-center">
@@ -10,6 +12,11 @@ export default function Hero() {
         >
           <div className="absolute inset-0 bg-black/60" />
         </div>
+
+        {/* Header overlay */}
+      <div className="absolute top-0 left-0 w-full z-10">
+        <Header hideHome={true} />
+      </div>
   
         {/* Content */}
         <div className="relative container mx-auto px-6 text-center mt-16">
