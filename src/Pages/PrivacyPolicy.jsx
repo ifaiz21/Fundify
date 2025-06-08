@@ -10,33 +10,84 @@ const PrivacyPolicy = () => {
 
       {/* Main Content */}
       <main className="max-w-4xl mx-auto my-10 p-6 bg-white shadow-md rounded-lg">
-        <h1 className="text-2xl font-bold text-gray-700 mb-4">Privacy and Policy</h1>
+        <h1 className="text-2xl font-bold text-gray-700 mb-4">Privacy Policy</h1>
         <h2 className="text-lg font-semibold text-gray-600 mb-2">We value your privacy</h2>
 
         <div className="text-gray-700 space-y-4">
-          {/* Add actual privacy content here */}
-          <p>[Insert Privacy Policy Content Here]</p>
+          <p><strong>Effective Date:</strong> [08 JUN 2025] </p>
+
+          <p>
+            At <strong>Fundify</strong>, we respect and protect the privacy of our users. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services. By using Fundify, you agree to the practices described in this policy.
+          </p>
+
+          <h3 className="text-lg font-semibold text-gray-700">1. Information We Collect</h3>
+          <p><strong>Personal Information:</strong> Full name, email, encrypted password, contact number, and payment details (via third-party processors).</p>
+          <p><strong>Non-Personal Information:</strong> Browser, IP address, usage behavior, device type, etc.</p>
+
+          <h3 className="text-lg font-semibold text-gray-700">2. How We Use Your Information</h3>
+          <ul className="list-disc pl-6">
+            <li>To provide and maintain the platform</li>
+            <li>Manage user accounts and projects</li>
+            <li>Process transactions securely</li>
+            <li>Improve performance and experience</li>
+            <li>Respond to feedback and support requests</li>
+            <li>Send updates and promotional materials (opt-out available)</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold text-gray-700">3. How We Share Your Information</h3>
+          <p>We do not sell or rent your data. We may share information with:</p>
+          <ul className="list-disc pl-6">
+            <li>Trusted payment processors</li>
+            <li>Third-party service providers (hosting, analytics, email)</li>
+            <li>Authorities, if required by law</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold text-gray-700">4. Cookies and Tracking Technologies</h3>
+          <p>We use cookies to enhance your experience and collect analytics. You can disable cookies in your browser settings.</p>
+
+          <h3 className="text-lg font-semibold text-gray-700">5. Data Security</h3>
+          <p>We use HTTPS, encryption, and secure storage. No system is 100% secure, but we strive to protect your data at all times.</p>
+
+          <h3 className="text-lg font-semibold text-gray-700">6. Your Rights and Choices</h3>
+          <ul className="list-disc pl-6">
+            <li>Access and update your information</li>
+            <li>Request deletion of your account</li>
+            <li>Opt-out of marketing communications</li>
+          </ul>
+
+          <h3 className="text-lg font-semibold text-gray-700">7. Third-Party Links</h3>
+          <p>We are not responsible for the privacy practices of other websites linked from our platform. Please review their policies separately.</p>
+
+          <h3 className="text-lg font-semibold text-gray-700">8. Children's Privacy</h3>
+          <p>Fundify is not intended for users under 13. We do not knowingly collect data from children. If we learn we have, we will delete it immediately.</p>
+
+          <h3 className="text-lg font-semibold text-gray-700">9. Changes to This Policy</h3>
+          <p>We may update this policy. Changes will be posted on this page with an updated effective date.</p>
+
+          <h3 className="text-lg font-semibold text-gray-700">10. Contact Us</h3>
+          <p>If you have any questions or concerns, contact us at:</p>
+          <p>Email: support@fundify.com<br />Phone: [Insert Number]<br />Address: [Insert Address]</p>
         </div>
       </main>
 
       {/* Chat Button */}
       <div className="fixed bottom-8 right-8">
-            <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </button>
+        <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
       </div>
 
       {/* Footer */}
