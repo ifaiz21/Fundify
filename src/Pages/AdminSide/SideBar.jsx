@@ -23,7 +23,7 @@ export default function AdminSidebar() {
         <SidebarLink to="/admin/verifications" label="Verifications" icon="🔍" currentPath={location.pathname} />
         <SidebarLink to="/admin/feedbacks" label="Feedbacks" icon="💬" currentPath={location.pathname} />
         <SidebarLink to="/admin/settings" label="Settings" icon="⚙️" currentPath={location.pathname} />
-        <SidebarLink to="/admin/logout" label="Logout" icon="⏻" currentPath={location.pathname} />
+        <SidebarLink to="/login" label="Logout" icon="⏻" currentPath={location.pathname} />
       </nav>
     </aside>
   );

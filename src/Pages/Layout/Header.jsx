@@ -89,9 +89,6 @@ export default function Header({ hideHome }) {
 
               {showDropdown && (
                 <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40">
-                  <a href="/admin-dashboard" className="block px-4 py-2 hover:bg-gray-100">
-                    Dashboard
-                  </a>
                   <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
                     My Profile
                   </a>

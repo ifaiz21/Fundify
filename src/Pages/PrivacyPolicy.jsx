@@ -17,7 +17,7 @@ const PrivacyPolicy = () => {
           <p><strong>Effective Date:</strong> [08 JUN 2025] </p>
 
           <p>
-            At <strong>Fundify</strong>, we respect and protect the privacy of our users. This Privacy Policy explains how we collect, use, disclose, and safeguard your information when you visit our website or use our services. By using Fundify, you agree to the practices described in this policy.
+            At <strong>Fundify</strong>, we respect and protect the privacy of our users. This Privacy Policy explains how Fundify collects, uses, and protects your personal data in accordance with <strong>Pakistan's PECA 2016 and international best practices.</strong> By using Fundify, you agree to the practices described in this policy.
           </p>
 
           <h3 className="text-lg font-semibold text-gray-700">1. Information We Collect</h3>
@@ -39,7 +39,7 @@ const PrivacyPolicy = () => {
           <ul className="list-disc pl-6">
             <li>Trusted payment processors</li>
             <li>Third-party service providers (hosting, analytics, email)</li>
-            <li>Authorities, if required by law</li>
+            <li>Authorities, if required by law enforcement under PECA or other legal orders.</li>
           </ul>
 
           <h3 className="text-lg font-semibold text-gray-700">4. Cookies and Tracking Technologies</h3>
@@ -66,7 +66,7 @@ const PrivacyPolicy = () => {
 
           <h3 className="text-lg font-semibold text-gray-700">10. Contact Us</h3>
           <p>If you have any questions or concerns, contact us at:</p>
-          <p><strong>Email:</strong> support@fundify.com<br /><strong>Phone:</strong> [Insert Number]<br /><strong>Address:</strong> [Insert Address]</p>
+          <p><strong>Email:</strong> support@fundify.com<br /><strong>Phone:</strong> [Insert Number]<br /><strong>Address:</strong> 📍 Lahore, Pakistan</p>
         </div>
       </main>
 

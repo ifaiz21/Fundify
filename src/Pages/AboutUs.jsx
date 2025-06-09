@@ -8,7 +8,7 @@ const AboutUsPage = () => {
     { id: 2, name: "M. Faiz", role: "CTO", image: "./Images/Faiz.jpg" },
     { id: 3, name: "M. Ibraheem", role: "CFO", image: "./Images/Ibraheem.jpg" },
     { id: 4, name: "M. Noukhaiz", role: "COO", image: "./Images/Noukhaiz.jpg" },
-    { id: 5, name: "Rameen khan", role: "CMO", image: "./Images/Rameen.jpeg" },
+    { id: 5, name: "Rameen khan", role: "COO", image: "./Images/Rameen.jpeg" },
   ]
 
   return (
@@ -51,7 +51,7 @@ const AboutUsPage = () => {
               <div>
                 <h2 className="text-2xl font-bold text-[#4B5842] mb-4">Why We Started?</h2>
                 <p className="text-gray-600 mb-4">
-                  Fundify was born in 2018 from a simple idea: what if we could help entrepreneurs access funding
+                  Fundify was born in 2024 from a simple idea: what if we could help entrepreneurs access funding
                   without the traditional barriers? Our founder, Ava Patel, experienced firsthand the challenges of
                   raising capital for her startup and recognized the need for a more inclusive approach to fundraising.
                 </p>

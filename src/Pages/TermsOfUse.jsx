@@ -66,7 +66,7 @@ const TermsOfUse = () => {
           <p>If you have any questions, please contact us at: <br />
             <strong>Email:</strong> support@fundify.com<br />
             <strong>Phone:</strong> [Insert Phone Number]<br />
-            <strong>Address:</strong> [Insert Office Address]
+            <strong>Address:</strong> 📍 Lahore, Pakistan
           </p>
         </div>
       </main>
