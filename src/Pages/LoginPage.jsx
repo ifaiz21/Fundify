@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
@@ -7,10 +7,29 @@ import SideLayout from "./Layout/SideLayout";
 
 const LoginPage = () => {
   const navigate = useNavigate();
+  const location = useLocation();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
+  const [message, setMessage] = useState("");
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const msg = params.get("message");
+    if (msg) setMessage(msg);
+  }, [location]);
+
+  const handleEmailChange = (e) => {
+    setEmail(e.target.value);
+    if (message) setMessage(""); // clear message when user types
+  };
+
+  const handlePasswordChange = (e) => {
+    setPassword(e.target.value);
+    if (message) setMessage(""); // clear message when user types
+  };
 
   const handleContinue = async (event) => {
     event.preventDefault();
@@ -53,7 +72,7 @@ const LoginPage = () => {
             <IoChevronBackOutline size={20} /> Back
           </button>
         </div>
-
+        
         <div className="flex h-full">
           <div className="w-full flex items-center justify-center">
             <div className="w-3/5 p-8 rounded-md">
@@ -61,7 +80,7 @@ const LoginPage = () => {
               <p className="text-md text-gray-500 mb-6">
                 If you are already a member, login with your email and password.
               </p>
-
+              {message && <div className="text-red-600 mb-4">{message}</div>}
               <form className="space-y-4" onSubmit={handleContinue}>
                 <div className="space-y-2 text-[#696f79]">
                   <label htmlFor="email" className="font-semibold">
@@ -71,7 +90,7 @@ const LoginPage = () => {
                     type="email"
                     placeholder="Email address"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={handleEmailChange}
                     className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none"
                     required
                   />
@@ -86,7 +105,7 @@ const LoginPage = () => {
                     type={showPassword ? "text" : "password"}
                     placeholder="Password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={handlePasswordChange}
                     className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none pr-12"
                     required
                   />
