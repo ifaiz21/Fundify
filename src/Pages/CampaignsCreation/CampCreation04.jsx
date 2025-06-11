@@ -48,7 +48,7 @@ const handleSubmit = (e) => {
   const handleBack = () => {
     // Navigate back to previous step
     console.log("Going back to previous step")
-    navigate("/campaign-creation-03");
+    navigate("/campaign-launch-date");
   }
  
   // const handleDone = () => {

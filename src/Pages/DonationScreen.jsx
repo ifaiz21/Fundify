@@ -90,7 +90,7 @@ const DonationScreen = () => {
                             : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                         } rounded-md focus:outline-none`}
                       >
-                        ${amount}
+                        PKR {amount}
                       </button>
                     ))}
                     <button

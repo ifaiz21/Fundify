@@ -73,7 +73,7 @@ const campaigns = [
 export default function CampaignListing() {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [currentPage, setCurrentPage] = useState(2);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const navigate = useNavigate();
 
@@ -158,7 +158,7 @@ export default function CampaignListing() {
               <p className="text-gray-600 mb-4">{campaign.description}</p>
               <button onClick={() => navigate("/donate")}
               className="w-full px-4 py-2 border-2 border-[#B2C9AD] text-[#4A5D45] rounded-full hover:bg-[#70836b] hover:text-white transition-colors">
-                Donate now
+                Explore Campaign
               </button>
             </div>
           </div>

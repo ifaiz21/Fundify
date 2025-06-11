@@ -27,6 +27,9 @@ import CampaignCreation04 from "./Pages/CampaignsCreation/CampCreation04";
 import CampaignCreation05 from "./Pages/CampaignsCreation/CampCreation05";
 import CampaignSubmission from "./Pages/CampaignsCreation/CampSubmission";
 import CampaignDeletion from "./Pages/CampaignsCreation/CampDeletion";
+import CampaignDate from "./Pages/CampaignsCreation/CampDate";
+
+
 import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
 import CodeVerification from "./Pages/CodeVerification";
@@ -73,6 +76,7 @@ function App() {
         <Route path="/campaign-creation-05" element={<CampaignCreation05 />} />
         <Route path="/campaign-submission" element={<CampaignSubmission />} />
         <Route path="/campaign-deletion" element={<CampaignDeletion />} />
+        <Route path="/campaign-launch-date" element={<CampaignDate />} />
 
         <Route path="/ProjectView" element={<ProjectView />} />
         <Route path="/campaign-update" element={<CampaignUpdate />} />

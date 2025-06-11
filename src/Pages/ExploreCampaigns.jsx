@@ -1,4 +1,5 @@
 import { useState } from "react";
+import {useNavigate} from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout"; 
 
@@ -16,6 +17,7 @@ const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
 function CampaignCard({ campaign }) {
   const progressPercentage = (campaign.raised / campaign.goal) * 100;
+  const navigate = useNavigate();
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm">
       <img src={campaign.image || "/placeholder.svg"} alt={campaign.title} className="w-full h-48 object-cover" />
@@ -41,7 +43,7 @@ function CampaignCard({ campaign }) {
             Explore
           </button>
           <button 
-            onClick={() => alert(`Donating to ${campaign.title}`)} 
+            onClick={() => navigate ("/donate")} 
             className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
             Donate
           </button>

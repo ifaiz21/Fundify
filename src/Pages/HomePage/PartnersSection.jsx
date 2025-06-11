@@ -68,7 +68,7 @@ function PartnersSection() {
           </div>
   
           {/* Chat Button */}
-          <div className="fixed bottom-8 right-8">
+          <div className="fixed bottom-8 right-8 z-50">
             <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
               <svg
                 xmlns="http://www.w3.org/2000/svg"

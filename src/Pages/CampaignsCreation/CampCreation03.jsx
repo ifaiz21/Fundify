@@ -39,7 +39,7 @@ const CampaignCreation03 = () => {
     // Process form submission
     console.log("Form submitted:", formData)
     // Navigate to next step
-    navigate("/campaign-creation-04");
+    navigate("/campaign-launch-date");
   }
 
   const handleBack = () => {
