@@ -1,11 +1,8 @@
 "use client"
-import React from "react";
-import { useRef } from "react";
-
-import { useState } from "react"
+import React, { useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import Header from "../Layout/HeaderLayout"
-import Footer from "../Layout/FooterLayout"
+import Header from "../Layout/HeaderLayout";
+import Footer from "../Layout/FooterLayout";
 
 const CampaignCreation03 = () => {
   const navigate = useNavigate();
@@ -13,40 +10,69 @@ const CampaignCreation03 = () => {
   const [formData, setFormData] = useState({
     campaignTitle: "",
     campaignDescription: "",
-    mediaFile: null,
-  })
-  const fileInputRef = useRef(null)
+    mediaFile: [],
+  });
+
+  const [previewURLs, setPreviewURLs] = useState([]);
+  const fileInputRef = useRef(null);
 
   const handleChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
       [name]: value,
-    }))
-  }
+    }));
+  };
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFormData((prev) => ({
-        ...prev,
-        mediaFile: e.target.files[0],
-      }))
-    }
-  }
+    const files = Array.from(e.target.files);
+    processFiles(files);
+  };
+
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  };
+
+  const processFiles = (files) => {
+    const timestamp = Date.now();
+    const filePreviews = files.map((file, i) => ({
+      id: `${timestamp}-${i}`,
+      file: file,
+      url: URL.createObjectURL(file),
+      type: file.type,
+      size: (file.size / 1024).toFixed(1) + " KB",
+      name: file.name,
+    }));
+
+    setFormData((prev) => ({
+      ...prev,
+      mediaFile: [...prev.mediaFile, ...files],
+    }));
+
+    setPreviewURLs((prev) => [...prev, ...filePreviews]);
+  };
+
+  const handleRemoveFile = (id) => {
+    setPreviewURLs((prev) => prev.filter((file) => file.id !== id));
+    setFormData((prev) => ({
+      ...prev,
+      mediaFile: prev.mediaFile.filter(
+        (_, i) => previewURLs[i]?.id !== id
+      ),
+    }));
+  };
 
   const handleSubmit = (e) => {
-    e.preventDefault()
-    // Process form submission
-    console.log("Form submitted:", formData)
-    // Navigate to next step
+    e.preventDefault();
+    console.log("Form submitted:", formData);
     navigate("/campaign-launch-date");
-  }
+  };
 
   const handleBack = () => {
-    // Navigate back to previous step
-    console.log("Going back to previous step")
     navigate("/campaign-creation-02");
-  }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -55,7 +81,7 @@ const CampaignCreation03 = () => {
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-            {/* Left Column - Logo */}
+            {/* Left Column */}
             <div className="flex flex-col items-center">
               <div className="w-64 h-64 mb-6">
                 <img
@@ -66,7 +92,7 @@ const CampaignCreation03 = () => {
               </div>
             </div>
 
-            {/* Right Column - Campaign Setup Form */}
+            {/* Right Column */}
             <div className="flex justify-center">
               <div className="bg-[#A9BEA2] rounded-md p-6 w-full max-w-md">
                 <div className="mb-6">
@@ -94,9 +120,11 @@ const CampaignCreation03 = () => {
                         name="campaignTitle"
                         value={formData.campaignTitle}
                         onChange={handleChange}
+                        maxLength={60}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       />
+                      <p className="text-xs text-gray-600 text-right">{formData.campaignTitle.length}/60</p>
                     </div>
 
                     <div>
@@ -109,9 +137,11 @@ const CampaignCreation03 = () => {
                         value={formData.campaignDescription}
                         onChange={handleChange}
                         rows="4"
+                        maxLength={165}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       ></textarea>
+                      <p className="text-xs text-gray-600 text-right">{formData.campaignDescription.length}/165</p>
                     </div>
 
                     <div>
@@ -121,24 +151,54 @@ const CampaignCreation03 = () => {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                         accept="image/*,video/*"
+                        multiple
                         className="hidden"
                       />
                       <div
                         onClick={() => fileInputRef.current.click()}
-                        className="w-full h-16 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer hover:border-[#4B5842] transition-colors"
+                        onDragOver={(e) => e.preventDefault()}
+                        onDrop={handleDrop}
+                        className="w-full min-h-16 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-[#4B5842] p-4 transition-colors"
                       >
-                        {formData.mediaFile ? (
-                          <span className="text-sm text-[#4B5842]">{formData.mediaFile.name}</span>
+                        {previewURLs.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
+                            {previewURLs.map((fileURL) => (
+                              <div key={fileURL.id} className="border rounded-md overflow-hidden relative">
+                                <div className="w-full h-24">
+                                  {fileURL.type.startsWith("image/") ? (
+                                    <img src={fileURL.url} alt="preview" className="object-cover w-full h-full" />
+                                  ) : (
+                                    <video src={fileURL.url} controls className="w-full h-full object-cover" />
+                                  )}
+                                </div>
+                                <div className="p-1 text-[11px] bg-white text-[#4B5842]">
+                                  <p className="truncate">{fileURL.name}</p>
+                                  <p>{fileURL.type}</p>
+                                  <p>{fileURL.size}</p>
+                                  <button
+                                    type="button"
+                                    onClick={() => handleRemoveFile(fileURL.id)}
+                                    className="mt-1 text-red-600 text-xs underline hover:text-red-800"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6 text-gray-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
+                          <div className="flex flex-col items-center justify-center text-white">
+                            <p>Click or drag files here</p>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-8 w-8 mt-2"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                          </div>
                         )}
                       </div>
                     </div>
@@ -168,27 +228,27 @@ const CampaignCreation03 = () => {
 
       {/* Chat Button */}
       <div className="fixed bottom-8 right-8">
-            <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </button>
+        <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
       </div>
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
 export default CampaignCreation03;
