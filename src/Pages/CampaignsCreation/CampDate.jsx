@@ -80,9 +80,7 @@ const TargetLaunchDatePage = () => {
               <div className="mb-8">
                 <h2 className="text-xl font-semibold mb-4">Campaign launch date (optional)</h2>
                 <p className="text-sm text-gray-600 mb-6">
-                  We'll provide you with recommendations on when to complete steps that may take a few days to process.
-                  You can edit this date up until the moment you launch your project, which must always be done
-                  manually.
+                 We’ll guide you on when to complete steps that might take a few days to process. You can update this date anytime before launching your project, which must always be done manually.
                 </p>
 
                 <form onSubmit={handleSubmit}>

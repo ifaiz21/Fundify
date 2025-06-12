@@ -102,7 +102,7 @@ export default function CampaignListing() {
       <div className="relative max-w-2xl mx-auto mb-8">
         <input
           type="text"
-          placeholder="Find donations..."
+          placeholder="Find campaigns..."
           className="w-full px-4 py-3 rounded-full border border-gray-200 focus:outline-none focus:ring-2 focus:ring-mint-green focus:border-transparent"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}

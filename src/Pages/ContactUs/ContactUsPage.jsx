@@ -96,7 +96,7 @@ const ContactUsPage = () => {
                 <div className="grid grid-cols-2 gap-4 mb-4">
                   <div>
                     <label htmlFor="name" className="block text-sm text-[#000000] mb-1">
-                      Full Name
+                      Full Name<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="text"
@@ -111,7 +111,7 @@ const ContactUsPage = () => {
 
                   <div>
                     <label htmlFor="email" className="block text-sm text-[#000000] mb-1">
-                      E-mail
+                      E-mail<span className="text-red-500">*</span>
                     </label>
                     <input
                       type="email"
@@ -127,7 +127,7 @@ const ContactUsPage = () => {
 
                 <div className="mb-4">
                   <label htmlFor="issue" className="block text-sm text-[#000000] mb-1">
-                    Select Your Issue
+                    Select Your Issue<span className="text-red-500">*</span>
                   </label>
                   <select
                     id="issue"
@@ -137,17 +137,20 @@ const ContactUsPage = () => {
                     required
                   >
                     <option value="">Choose an option</option>
-                    <option value="campaign">Campaign Support</option>
-                    <option value="payout">Payout Issue</option>
-                    <option value="technical">Technical Problem</option>
+                    <option value="backing a project">Backing a project</option>
+                    <option value="campaign">Campaign support</option>
+                    <option value="general question">General question</option>
+                    <option value="payout">Payout issue</option>
+                    <option value="reporting a bug">Reporting a bug</option>
+                    <option value="technical">Technical problem</option>
                     <option value="other">Other</option>
                   </select>
                 </div>
 
                 <div className="mb-4">
                   <label htmlFor="subject" className="block text-sm text-[#000000] mb-1">
-                    Subject (96 character limit)
-                  </label>
+                    Subject<span className="text-red-500">*</span>
+                  </label> 
                   <input
                     type="text"
                     id="subject"
@@ -158,11 +161,12 @@ const ContactUsPage = () => {
                     className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                     required
                   />
+                   <p className="text-xs text-gray-600 text-right">{formData.subject.length}/96</p>
                 </div>
 
                 <div className="mb-4">
                   <label htmlFor="message" className="block text-sm text-[#000000] mb-1">
-                    Message
+                    Message<span className="text-red-500">*</span>
                   </label>
                   <textarea
                     id="message"

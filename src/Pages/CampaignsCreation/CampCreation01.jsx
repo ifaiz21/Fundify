@@ -46,12 +46,6 @@ const CampaignCreation01 = () => {
                   className="w-full h-full"
                 />
               </div>
-              {/*
-              <h1 className="text-4xl font-bold mb-2">
-                FUND<span className="text-[#7C9070]">i</span>FY
-              </h1>
-              <p className="text-sm uppercase tracking-wider">INVEST LOCALLY, IMPACT GLOBALLY</p>
-              */}
             </div>
 
             {/* Right Column - Get Started Form */}
@@ -143,11 +137,25 @@ const CampaignCreation01 = () => {
                           <option value="" disabled>
                             Choose a category
                           </option>
+                          <option value="Art">Art</option>
                           <option value="Business">Business</option>
+                          <option value="Comics">Comics</option>
+                          <option value="Crafts">Crafts</option>
+                          <option value="Dance">Dance</option>
+                          <option value="Design">Design</option>
                           <option value="Education">Education</option>
+                          <option value="Fashion">Fashion</option>
+                          <option value="Film & Video">Film & Video</option>
+                          <option value="Food">Food</option>
+                          <option value="Games">Games</option>
+                          <option value="Journalism">Journalism</option>                          
                           <option value="Medical">Medical</option>
+                          <option value="Music">Music</option>
                           <option value="Nonprofit">Nonprofit</option>
+                          <option value="Photography">Photography</option>
+                          <option value="Publishing">Publishing</option>
                           <option value="Technology">Technology</option>
+                          <option value="Theater">Theater</option>
                           <option value="Other">Other</option>
                         </select>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
