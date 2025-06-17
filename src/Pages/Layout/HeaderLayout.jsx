@@ -1,18 +1,26 @@
+// src/Pages/Layout/HeaderLayout.jsx
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
+import { useUser } from '../../context/UserContext';
 
-const HeaderLayout = ({ hideCreate , hideContact , hideDonate , hideAboutUS, hideProfile }) => {
+const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hideProfile }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [message, setMessage] = useState("");
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState("");
+  const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+
+  const { userProfile, loadingUserContext } = useUser();
+
+  // ADDED: Default avatar logic
+  const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-  }, []);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -28,7 +36,6 @@ const HeaderLayout = ({ hideCreate , hideContact , hideDonate , hideAboutUS, hid
 
   return (
     <>
-      {/* Top message if not logged in */}
       {message && (
         <div className="bg-[#4A5D45] text-white text-center py-2">
           {message}
@@ -57,10 +64,10 @@ const HeaderLayout = ({ hideCreate , hideContact , hideDonate , hideAboutUS, hid
           <nav className="flex space-x-6 text-[#000000]">
             <Link to="/" className="hover:underline">Home</Link>
             {!hideDonate && (
-            <Link to="/donate" className="hover:underline">Donate</Link>
+              <Link to="/donate" className="hover:underline">Donate</Link>
             )}
-            {!hideAboutUS && (
-            <Link to="/about" className="hover:underline">About Us</Link>
+            {!hideAboutUs && (
+              <Link to="/about" className="hover:underline">About Us</Link>
             )}
           </nav>
         </div>
@@ -70,41 +77,41 @@ const HeaderLayout = ({ hideCreate , hideContact , hideDonate , hideAboutUS, hid
           {!hideCreate && (
             <Link to="/create-campaign" className="hover:underline">
               Create Campaign
-            </Link> 
+            </Link>
           )}
           {!hideContact && (
-          <Link to="/contact" className="hover:underline">Contact Us</Link>
+            <Link to="/contact" className="hover:underline">Contact Us</Link>
           )}
 
           {/* User Account Icon with Login Check */}
           {isLoggedIn ? (
             <div className="relative">
+              {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center"
+                className="w-10 h-10 rounded-full flex items-center justify-center" // Remove hardcoded bg-gray and border for the image to show
               >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-gray-700"
-            >
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            </svg>
-          </button>
-          {showDropdown && (
+                {loadingUserContext ? (
+                  <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                ) : (
+                  <img
+                    src={avatarSrc}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/Images/default-avatar.png";
+                    }}
+                  />
+                )}
+              </button>
+
+              {showDropdown && (
                 <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40 z-50">
                   {!hideProfile && (
-                  <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
-                    My Profile
-                  </a>
+                    <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
+                      My Profile
+                    </a>
                   )}
                   <button
                     onClick={() => setShowConfirmLogout(true)}

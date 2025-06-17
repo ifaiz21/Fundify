@@ -19,7 +19,7 @@ export default function GetStartedPage() {
       description:
         "Ayesha, inspired by her village’s lack of clean drinking water, started a fundraiser to install a water filtration plant. The campaign gained massive support, and she successfully raised Rs. 300,000. Now, hundreds of villagers enjoy access to safe water daily.",
       amount: "Ayesha raised Rs. 300,000 to provide clean water to her community.",
-      image: "/images/clean-water.jpeg", 
+      image: "/images/clean-water.jpg", 
     },
   ];
 

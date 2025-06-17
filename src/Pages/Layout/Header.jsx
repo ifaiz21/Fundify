@@ -1,18 +1,21 @@
+// src/Pages/Layout/Header.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "lucide-react";
 
 export default function Header({ hideHome }) {
+  //const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-  }, []);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -27,8 +30,7 @@ export default function Header({ hideHome }) {
   };
 
   return (
-    <>
-      {/* Logout success message */}
+   <>
       {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
@@ -45,24 +47,24 @@ export default function Header({ hideHome }) {
             className="w-12 h-12"
           />
 
-          {/* Navigation Links */}
-          <nav className="flex space-x-6 text-[#ffffff]">
-            {!hideHome && (
-              <a href="/" className="hover:underline">Home</a>
-            )}
-            <a href="/donate" className="hover:underline">Donate</a>
-            <a href="/about" className="hover:underline">About Us</a>
-          </nav>
+          {/* Desktop Navigation */}
+          
+            <nav className="flex space-x-6">
+              {!hideHome && (
+                <a href="/" className="text-white hover:text-gray-300">Home</a>
+              )}
+              <a href="/donate" className="text-white hover:text-gray-300">Donate</a>
+              <a href="/about" className="text-white hover:text-gray-300">About Us</a>
+            </nav>
         </div>
 
-        {/* Right Side - Additional Links */}
-        <div className="flex items-center space-x-6 text-[#ffffff]" >
-          <a href="/create-campaign" className="hover:underline">
-            Create Campaign
-          </a>
-          <a href="/contact" className="hover:underline">Contact Us</a>
+            <div className="flex space-x-6 items-center">
+              <a href="/create-campaign" className="text-white hover:text-gray-300">
+                Create Campaign
+              </a>
+              <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
 
-          {/* User Icon or Login */}
+              {/* User Icon or Login */}
           {isLoggedIn ? (
             <div className="relative">
               <button
@@ -87,24 +89,26 @@ export default function Header({ hideHome }) {
                 </svg>
               </button>
 
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40">
-                  <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
-                    My Profile
-                  </a>
-                  <button
-                    onClick={() => setShowConfirmLogout(true)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
-                  >
-                    Sign Out
-                  </button>
-                </div>
+                  {showDropdown && (
+                    <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40">
+                      <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
+                        My Profile
+                      </a>
+                      <button
+                        onClick={() => setShowConfirmLogout(true)}
+                        className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                      >
+                        Sign Out
+                      </button>
+                    </div>
+                  )}
+              </div>
+              ) : (
+                <a href="/login" className="text-white hover:text-gray-300">
+                  Login / Sign Up
+                </a>
               )}
-            </div>
-          ) : (
-            <a href="/login" className="hover:underline">Login / Sign Up</a>
-          )}
-        </div>
+         </div>
       </header>
 
       {/* Logout Confirmation Modal */}
@@ -121,7 +125,10 @@ export default function Header({ hideHome }) {
                 Cancel
               </button>
               <button
-                onClick={handleLogout}
+                onClick={() => {
+                  handleLogout();
+                  setShowConfirmLogout(false);
+                }}
                 className="bg-[#4A5D45] text-white px-4 py-2 rounded"
               >
                 Confirm
@@ -130,6 +137,6 @@ export default function Header({ hideHome }) {
           </div>
         </div>
       )}
-    </>
+   </>
   );
 }

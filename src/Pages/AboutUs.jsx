@@ -13,7 +13,7 @@ const AboutUsPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header hideAboutUS={true} />
+      <Header hideAboutUs={true} />
 
       <main className="flex-1">
         {/* Hero Banner */}
@@ -38,7 +38,7 @@ const AboutUsPage = () => {
         {/* About Us Content */}
         <div className="container mx-auto px-4 md:px-6 py-12">
           <div className="max-w-4xl mx-auto">
-            <p className="text-gray-600 mb-8">
+            <p className="text-gray-600 mb-8 text-justify">
               Fundify is a crowdfunding platform that connects entrepreneurs with investors. Our mission is to
               democratize fundraising and make capital accessible to everyone. We believe that great ideas should not be
               limited by access to traditional funding sources. Through our platform, we enable entrepreneurs to
@@ -50,18 +50,18 @@ const AboutUsPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-16">
               <div>
                 <h2 className="text-2xl font-bold text-[#4B5842] mb-4">Why We Started?</h2>
-                <p className="text-gray-600 mb-4">
-                  Fundify was born in 2024 from a simple idea: what if we could help entrepreneurs access funding
+                <p className="text-gray-600 mb-4 text-justify">
+                  Fundify was born in 2018 from a simple idea: what if we could help entrepreneurs access funding
                   without the traditional barriers? Our founder, Ava Patel, experienced firsthand the challenges of
                   raising capital for her startup and recognized the need for a more inclusive approach to fundraising.
                 </p>
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 mb-4 text-justify">
                   The journey began with a small team working out of a shared office space, fueled by a passion to
                   democratize access to capital. We built our platform with the entrepreneur in mind, focusing on
                   creating a user-friendly experience that would make fundraising accessible to everyone, regardless of
                   their background or connections.
                 </p>
-                <p className="text-gray-600">
+                <p className="text-gray-600 mb-4 text-justify">
                   Today, Fundify has grown into a global community of creators, backers, and innovators. We've helped
                   thousands of projects come to life, raising millions of dollars for entrepreneurs across various
                   industries. Our success is measured not just by the funds raised but by the dreams realized and the
