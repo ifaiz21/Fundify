@@ -98,16 +98,16 @@ function UserProfileSettings({ showToast }) {
                 accountNumber: data.accountNumber || '',
                 cvc: data.cvc || '',
                 expiryDate: data.expiryDate || '',
-                profilePictureUrl: data.profilePictureUrl || '', // Backend से URL load करें
+                profilePictureUrl: data.profilePictureUrl || '', 
               };
 
               setProfileData(fetchedProfile);
               setEditedProfile({ ...fetchedProfile });
               setAdditionalEmails(data.additionalEmails || []);
-              // Profile picture preview को initial load पर सेट करें
+              // Profile picture preview 
               setProfileImagePreview(data.profilePictureUrl ? `http://localhost:5000${data.profilePictureUrl}` : null); // Backend URL से preview
 
-              // Determine initial edit modes (अगर कोई भी ज़रूरी field खाली हो तो edit mode on करो)
+              // Determine initial edit mode
               if (!data.name || !data.contactNo) {
                 setIsProfileEditMode(true);
               } else {
@@ -554,7 +554,6 @@ function UserProfileSettings({ showToast }) {
   return (
     <div className="flex flex-col min-h-screen">
       <HeaderLayout  hideProfile={true}/>
-      <HeaderLayout hideProfile={true} />
 
       <main className="flex-grow container mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-6">Settings</h1>

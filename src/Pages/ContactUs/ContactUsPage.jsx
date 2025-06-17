@@ -270,11 +270,6 @@ const ContactUsPage = ({ showToast }) => {
         </div>
       )}
 
-      {/* Chat Support Button */}
-      <div className="fixed bottom-6 right-6">
-        <button className="bg-[#4B5842] text-white rounded-full p-3 shadow-lg">💬 Chat Support</button>
-      </div>
-
       <Footer />
     </div>
   )
