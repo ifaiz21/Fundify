@@ -11,30 +11,33 @@ const CampaignCreation03 = () => {
   const location = useLocation()
 
   const [campaignDataFromPreviousSteps, setCampaignDataFromPreviousSteps] = useState({});
-
-  useEffect(() => {
-    if (location.state && location.state.campaignData) {
-      setCampaignDataFromPreviousSteps(location.state.campaignData);
-      // Optional: pre-fill form data if user navigates back
-      setFormData(prev => ({
-        ...prev,
-        campaignTitle: location.state.campaignData.campaignTitle || '',
-        campaignDescription: location.state.campaignData.campaignDescription || '',
-        // mediaFile cannot be directly re-set from URL, but mediaPreviewUrl can
-        // If you want to show existing preview on back, load mediaPreviewUrl
-        // For actual file object, user would have to re-select
-      }));
-    }
-  }, [location.state]);
-
-
   const [formData, setFormData] = useState({
     campaignTitle: "",
     campaignDescription: "",
-    mediaFile: null,
-    mediaPreviewUrl: null, // Add new state to store Data URL for preview
-  })
-  const fileInputRef = useRef(null)
+    mediaFile: [], // This will store actual File objects
+  });
+  const [previewURLs, setPreviewURLs] = useState([]); // Stores objects: { id, url (Data URL), type, size, name }
+  const fileInputRef = useRef(null);
+
+  useEffect(() => {
+    if (location.state && location.state.campaignData) {
+      const incomingData = location.state.campaignData;
+      setCampaignDataFromPreviousSteps(incomingData);
+
+      setFormData(prev => ({
+        ...prev,
+        campaignTitle: incomingData.campaignTitle || '',
+        campaignDescription: incomingData.campaignDescription || '',
+      }));
+
+      // Restore previewURLs for display if they were passed (these should now be Data URLs)
+      if (incomingData.previewURLs && incomingData.previewURLs.length > 0) {
+        console.log("CampaignCreation03 - Restoring previewURLs (Data URLs) from previous step:", incomingData.previewURLs);
+        setPreviewURLs(incomingData.previewURLs);
+      }
+    }
+  }, [location.state]);
+
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -45,46 +48,98 @@ const CampaignCreation03 = () => {
   }
 
   const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      const file = e.target.files[0];
+    const files = Array.from(e.target.files);
+    processFiles(files);
+  };
 
-      // Create a FileReader to read the file as a Data URL
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData((prev) => ({
-          ...prev,
-          mediaFile: file,
-          mediaPreviewUrl: reader.result, // Store the Data URL
-        }));
-      };
-      reader.readAsDataURL(file); // Read the file as a Data URL
+  const handleDrop = (e) => {
+    e.preventDefault();
+    const files = Array.from(e.dataTransfer.files);
+    processFiles(files);
+  };
 
-    } else {
+  const processFiles = (files) => {
+    const newFilePreviewsPromises = files.map((file) => {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const fileUrl = reader.result; // This will be the Data URL (base64 string)
+          console.log("CampaignCreation03 - Processing file:", file.name, "Type:", file.type, "Generated Data URL:", fileUrl.substring(0, 100) + "..."); // Log truncated URL
+          resolve({
+            id: `${file.name}-${file.size}-${Date.now()}`, // Unique ID
+            file: file, // Keep reference to actual file object
+            url: fileUrl, // The Data URL (base64)
+            type: file.type,
+            size: (file.size / 1024).toFixed(1) + " KB",
+            name: file.name,
+          });
+        };
+        reader.readAsDataURL(file); // Read as Data URL (base64)
+      });
+    });
+
+    Promise.all(newFilePreviewsPromises).then(newPreviews => {
       setFormData((prev) => ({
         ...prev,
-        mediaFile: null,
-        mediaPreviewUrl: null, // Clear preview if no file selected
+        mediaFile: [...prev.mediaFile, ...files], // Add actual file objects
       }));
-    }
-  }
+      setPreviewURLs((prev) => [...prev, ...newPreviews]); // Add new previews (with Data URLs)
+    });
+  };
+
+  const handleRemoveFile = (idToRemove) => {
+    // No URL.revokeObjectURL needed for Data URLs
+    console.log("CampaignCreation03 - Removing file with ID:", idToRemove);
+
+    // Remove from previewURLs state
+    setPreviewURLs((prev) => prev.filter((filePreview) => filePreview.id !== idToRemove));
+
+    // Remove the corresponding actual File object from formData.mediaFile
+    setFormData((prev) => ({
+      ...prev,
+      mediaFile: prev.mediaFile.filter((file) => {
+        // Match by name and size (and maybe type) for robust removal of actual file object
+        const correspondingPreview = previewURLs.find(p => p.id === idToRemove);
+        return !(correspondingPreview && file.name === correspondingPreview.name && file.size === correspondingPreview.size && file.type === correspondingPreview.type);
+      }),
+    }));
+  };
 
   const handleSubmit = (e) => {
     e.preventDefault()
 
-    const { mediaFile, ...rest } = formData
+    // Prepare data to send to the next page
     const combinedDataForNextStep = {
       ...campaignDataFromPreviousSteps, // Data from CampCreation01 and 02
-      ...rest, // Includes campaignTitle, campaignDescription, and mediaPreviewUrl
-      mediaFileName: mediaFile ? mediaFile.name : null, // Pass filename for backend (if needed)
-    }
-    console.log("Combined data for 04:", combinedDataForNextStep)
+      campaignTitle: formData.campaignTitle,
+      campaignDescription: formData.campaignDescription,
+      mediaFileNames: formData.mediaFile.map(file => file.name), // For backend reference
+      // CRITICAL: Pass the entire previewURLs array containing id, url (Data URL), type, name, size
+      previewURLs: previewURLs, // This array will contain the Data URLs
+    };
+    console.log("CampaignCreation03 - Data sent to 04 (campaign-creation-04):", combinedDataForNextStep);
 
     navigate("/campaign-creation-04", { state: { campaignData: combinedDataForNextStep } })
   }
 
   const handleBack = () => {
+    // No URL.revokeObjectURL needed here for Data URLs
     navigate("/campaign-creation-02", { state: { campaignData: campaignDataFromPreviousSteps } })
   }
+
+  // No URL.revokeObjectURL cleanup needed for Data URLs on unmount, as they are self-contained strings.
+  useEffect(() => {
+    // This useEffect is now primarily for initial data loading or logging.
+    // If you were using blob URLs, this would be for cleanup.
+    return () => {
+        // If you were to switch back to blob URLs, this is where you'd revoke them:
+        // previewURLs.forEach(filePreview => {
+        //   if (filePreview.url && filePreview.url.startsWith("blob:")) {
+        //     URL.revokeObjectURL(filePreview.url);
+        //   }
+        // });
+    };
+  }, [previewURLs]);
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -128,9 +183,11 @@ const CampaignCreation03 = () => {
                         name="campaignTitle"
                         value={formData.campaignTitle}
                         onChange={handleChange}
+                        maxLength={60}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       />
+                      <p className="text-xs text-gray-600 text-right">{formData.campaignTitle.length}/60</p>
                     </div>
 
                     <div>
@@ -143,9 +200,11 @@ const CampaignCreation03 = () => {
                         value={formData.campaignDescription}
                         onChange={handleChange}
                         rows="4"
+                        maxLength={165}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                         required
                       ></textarea>
+                      <p className="text-xs text-gray-600 text-right">{formData.campaignDescription.length}/165</p>
                     </div>
 
                     <div>
@@ -155,32 +214,70 @@ const CampaignCreation03 = () => {
                         ref={fileInputRef}
                         onChange={handleFileChange}
                         accept="image/*,video/*"
+                        multiple // Allow multiple files
                         className="hidden"
                       />
                       <div
                         onClick={() => fileInputRef.current?.click()}
-                        className="w-full h-16 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer hover:border-[#4B5842] transition-colors"
+                        onDragOver={(e) => e.preventDefault()} // Allow drop
+                        onDrop={handleDrop} // Handle dropped files
+                        className="w-full min-h-16 border-2 border-dashed border-gray-300 rounded-md flex flex-col items-center justify-center cursor-pointer hover:border-[#4B5842] p-4 transition-colors"
                       >
-                        {formData.mediaFile ? (
-                          <span className="text-sm text-[#4B5842]">{formData.mediaFile.name}</span>
+                        {previewURLs.length > 0 ? (
+                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 w-full">
+                            {previewURLs.map((fileURL) => (
+                              <div
+                                key={fileURL.id}
+                                className="border rounded-md overflow-hidden relative"
+                              >
+                                <div className="w-full h-24">
+                                  {fileURL.type.startsWith("image/") ? (
+                                    <img
+                                      src={fileURL.url}
+                                      alt="preview"
+                                      className="object-cover w-full h-full"
+                                    />
+                                  ) : (
+                                    <video
+                                      src={fileURL.url}
+                                      controls
+                                      className="w-full h-full object-cover"
+                                    />
+                                  )}
+                                </div>
+                                <div className="p-1 text-[11px] bg-white text-[#4B5842]">
+                                  <p className="truncate">{fileURL.name}</p>
+                                  <p>{fileURL.type}</p>
+                                  <p>{fileURL.size}</p>
+                                  <button
+                                    type="button"
+                                    onClick={(e) => {
+                                      e.stopPropagation(); // Prevent re-triggering file input click
+                                      handleRemoveFile(fileURL.id);
+                                    }}
+                                    className="mt-1 text-red-600 text-xs underline hover:text-red-800"
+                                  >
+                                    Remove
+                                  </button>
+                                </div>
+                              </div>
+                            ))}
+                          </div>
                         ) : (
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            className="h-6 w-6 text-gray-400"
-                            fill="none"
-                            viewBox="0 0 24 24"
-                            stroke="currentColor"
-                          >
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
-                          </svg>
+                          <div className="flex flex-col items-center justify-center text-white">
+                            <p>Click or drag files here</p>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="h-8 w-8 mt-2"
+                              fill="none"
+                              viewBox="0 0 24 24"
+                              stroke="currentColor"
+                            >
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                          </div>
                         )}
                       </div>
-                      {/* Optional: Show a small preview image right below the input */}
-                      {formData.mediaPreviewUrl && (
-                        <div className="mt-2 text-center">
-                          <img src={formData.mediaPreviewUrl} alt="Media Preview" className="max-h-24 mx-auto rounded" />
-                        </div>
-                      )}
                     </div>
 
                     <div className="pt-4 flex space-x-4">

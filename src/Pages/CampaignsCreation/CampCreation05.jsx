@@ -23,19 +23,23 @@ const CampaignCreation05 = () => {
     canVerifyProject: false,
     campaignTitle: '',
     campaignDescription: '',
-    mediaFileName: '',
-    mediaPreviewUrl: null, // Add to state for preview URL
+    mediaFileNames: [], // Array of filenames (for backend/metadata)
+    mediaPreviewUrls: [], // Array of {id, url (Data URL), type, name, size} objects (for display)
     storyContent: '',
   });
 
+  // Effect to load data from previous pages
   useEffect(() => {
-    if (location.state) {
+    if (location.state && location.state.campaignData) {
+      const incomingData = location.state.campaignData;
       setFullCampaignData(prevData => ({
         ...prevData,
-        ...location.state,
-        mediaPreviewUrl: location.state.mediaPreviewUrl || prevData.mediaPreviewUrl, // Update mediaPreviewUrl
+        ...incomingData, // Spread all incoming data (includes campaignTitle, description, etc.)
+        mediaPreviewUrls: incomingData.previewURLs || [], // CRITICAL: Extract the array of preview objects
+        mediaFileNames: incomingData.mediaFileNames || [], // Extract array of file names
       }));
-      console.log("Data received in 05 for submission:", location.state);
+      console.log("CampaignCreation05 - Data received:", incomingData);
+      console.log("CampaignCreation05 - Processed mediaPreviewUrls for display:", incomingData.previewURLs || []);
     }
 
     if (location.state?.updateSuccess) {
@@ -46,7 +50,7 @@ const CampaignCreation05 = () => {
 
       return () => clearTimeout(timer)
     }
-  }, [location.state]);
+  }, [location.state]); // Depend on location.state
 
 
   const getAuthToken = () => {
@@ -130,12 +134,12 @@ const CampaignCreation05 = () => {
         isProjectVerifiedRequired: fullCampaignData.canVerifyProject,
         title: fullCampaignData.campaignTitle,
         description: fullCampaignData.campaignDescription,
-        mediaUrl: fullCampaignData.mediaFileName, // Send filename to backend, actual upload would be separate
+        mediaFileNames: fullCampaignData.mediaFileNames, // Send array of filenames to backend
         content: fullCampaignData.storyContent,
         status: 'Pending Review'
     };
 
-    console.log("Submitting campaign data:", campaignDataToSubmit);
+    console.log("CampaignCreation05 - Submitting campaign data:", campaignDataToSubmit);
 
     try {
       const response = await fetch('http://localhost:5000/api/campaigns', {
@@ -149,6 +153,7 @@ const CampaignCreation05 = () => {
 
       if (response.ok) {
         alert("Campaign submitted successfully for verification!");
+        // No URL.revokeObjectURL needed for Data URLs after submission
         navigate("/campaign-submission");
       } else {
         const errorData = await response.json();
@@ -168,12 +173,26 @@ const CampaignCreation05 = () => {
   };
 
   const handleBack = () => {
+    // When navigating back, make sure to pass the full current state of CampaignCreation05
+    // so that CampaignCreation04 (and then 03 if navigating further back) can reconstruct.
     navigate("/campaign-creation-04", { state: { campaignData: fullCampaignData } });
   };
 
   const handleCloseSuccessMessage = () => {
     setShowUpdateSuccess(false);
   };
+
+  // No URL.revokeObjectURL cleanup needed for Data URLs on unmount in this component.
+  useEffect(() => {
+    return () => {
+      // If you were using blob URLs, this is where you'd revoke them:
+      // fullCampaignData.mediaPreviewUrls.forEach(media => {
+      //   if (media.url && media.url.startsWith("blob:")) {
+      //     URL.revokeObjectURL(media.url);
+      //   }
+      // });
+    };
+  }, [fullCampaignData.mediaPreviewUrls]); // Depend on mediaPreviewUrls for effects related to it
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -193,32 +212,92 @@ const CampaignCreation05 = () => {
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
               {/* Left Column: Basic Info & Funding */}
               <div>
-                <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">Basic Information</h2>
+                <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">
+                  Basic Information
+                </h2>
                 <div className="space-y-3 text-gray-700 text-base">
-                  <p><strong>Your Name:</strong> {fullCampaignData.name}</p>
-                  <p><strong>Location:</strong> {fullCampaignData.location}</p>
-                  <p><strong>Category:</strong> {fullCampaignData.category}</p>
-                  <p><strong>Goal Amount:</strong> Rs. {fullCampaignData.goalAmount ? Number(fullCampaignData.goalAmount).toLocaleString() : '0'}</p>
+                  <p>
+                    <strong>Your Name:</strong> {fullCampaignData.name}
+                  </p>
+                  <p>
+                    <strong>Location:</strong> {fullCampaignData.location}
+                  </p>
+                  <p>
+                    <strong>Category:</strong> {fullCampaignData.category}
+                  </p>
+                  <p>
+                    <strong>Goal Amount:</strong> Rs.{" "}
+                    {fullCampaignData.goalAmount
+                      ? Number(fullCampaignData.goalAmount).toLocaleString()
+                      : "0"}
+                  </p>
                 </div>
 
-                <h2 className="text-2xl font-semibold text-[#4A5D45] mt-6 mb-4 border-b pb-2">Verification & Content</h2>
+                <h2 className="text-2xl font-semibold text-[#4A5D45] mt-6 mb-4 border-b pb-2">
+                  Verification & Content
+                </h2>
                 <div className="space-y-3 text-gray-700 text-base">
-                  <p><strong>Adult Content:</strong> {fullCampaignData.isAdult ? 'Yes' : 'No'}</p>
-                  <p><strong>ID Verified:</strong> {fullCampaignData.canVerifyID ? 'Yes' : 'No'}</p>
-                  <p><strong>Project Verified:</strong> {fullCampaignData.canVerifyProject ? 'Yes' : 'No'}</p>
+                  <p>
+                    <strong>Adult Content:</strong>{" "}
+                    {fullCampaignData.isAdult ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    <strong>ID Verified:</strong>{" "}
+                    {fullCampaignData.canVerifyID ? "Yes" : "No"}
+                  </p>
+                  <p>
+                    <strong>Project Verified:</strong>{" "}
+                    {fullCampaignData.canVerifyProject ? "Yes" : "No"}
+                  </p>
                 </div>
               </div>
 
               {/* Right Column: Media */}
               <div className="flex flex-col items-center justify-center">
-                <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2 w-full text-center">Campaign Media</h2>
-                {fullCampaignData.mediaPreviewUrl ? ( // Use mediaPreviewUrl here
-                  <img
-                    src={fullCampaignData.mediaPreviewUrl} // Display the Data URL
-                    alt="Campaign Media Preview"
-                    className="w-full h-auto rounded-lg object-cover shadow-lg"
-                    style={{ maxHeight: "350px", objectFit: "contain" }}
-                  />
+                <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2 w-full text-center">
+                  Campaign Media
+                </h2>
+                {fullCampaignData.mediaPreviewUrls &&
+                fullCampaignData.mediaPreviewUrls.length > 0 ? (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 w-full">
+                    {fullCampaignData.mediaPreviewUrls.map((media) => (
+                      <div
+                        key={media.id}
+                        className="rounded-lg overflow-hidden shadow-lg border border-gray-200"
+                      >
+                        {/* Render based on media type */}
+                        {media.type && media.type.startsWith("image/") ? (
+                          <img
+                            src={media.url} // This is now a Data URL
+                            alt={`Campaign Media Preview: ${media.name}`}
+                            className="w-full h-48 object-contain"
+                            onError={(e) => {
+                              // Fallback for broken images
+                              e.target.onerror = null; // Prevent infinite loop
+                              e.target.src = "/Images/placeholder-image.png"; // Provide a fallback image
+                              e.target.alt = "Image not available";
+                              e.target.className = "w-full h-48 object-contain p-4 bg-gray-100"; // Adjust styling for fallback
+                            }}
+                          />
+                        ) : media.type && media.type.startsWith("video/") ? (
+                          <video
+                            src={media.url} // This is now a Data URL
+                            controls
+                            className="w-full h-48 object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-48 bg-gray-100 flex flex-col items-center justify-center text-gray-500 p-2 text-center">
+                            <svg className="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 = 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <p className="text-sm">Unsupported Media Type</p>
+                            <p className="text-xs text-gray-400 mt-1 truncate w-full px-2">{media.name || 'Unknown File'}</p>
+                          </div>
+                        )}
+                        <p className="text-center text-sm p-2 bg-gray-50 truncate">
+                          {media.name}
+                        </p>
+                      </div>
+                    ))}
+                  </div>
                 ) : (
                   <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
                     No Media Selected
@@ -229,7 +308,9 @@ const CampaignCreation05 = () => {
 
             {/* Campaign Description */}
             <div className="mb-8 p-4 bg-gray-50 rounded-lg shadow-inner">
-              <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">Campaign Description</h2>
+              <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">
+                Campaign Description
+              </h2>
               <p className="text-gray-700 leading-relaxed">
                 {fullCampaignData.campaignDescription}
               </p>
@@ -237,9 +318,12 @@ const CampaignCreation05 = () => {
 
             {/* Campaign Story */}
             <div className="mb-8 p-4 bg-gray-50 rounded-lg shadow-inner">
-              <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">Campaign Story</h2>
-              <div className="prose max-w-none text-gray-700 leading-relaxed"
-                   dangerouslySetInnerHTML={{ __html: fullCampaignData.storyContent }}
+              <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">
+                Campaign Story
+              </h2>
+              <div
+                className="prose max-w-none text-gray-700 leading-relaxed"
+                dangerouslySetInnerHTML={{ __html: fullCampaignData.storyContent }}
               />
             </div>
 

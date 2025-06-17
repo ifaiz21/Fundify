@@ -20,7 +20,7 @@ const CampaignCreation04 = () => {
   useEffect(() => {
     if (location.state && location.state.campaignData) {
       setCampaignDataFromPreviousSteps(location.state.campaignData);
-      console.log("Data received in 04:", location.state.campaignData);
+      console.log("CampaignCreation04 - Data received from 03:", location.state.campaignData);
       if (location.state.campaignData.storyContent) {
         setStory(location.state.campaignData.storyContent);
       }
@@ -51,14 +51,13 @@ const CampaignCreation04 = () => {
     e.preventDefault();
     console.log("Story submitted from 04:", story);
 
-    // Ensure mediaPreviewUrl is passed along from CampCreation03
     const combinedDataForNextStep = {
-      ...campaignDataFromPreviousSteps,
+      ...campaignDataFromPreviousSteps, // This now correctly contains 'previewURLs' (Data URLs) from 03
       storyContent: story,
     };
-    console.log("Combined data for 05:", combinedDataForNextStep);
+    console.log("CampaignCreation04 - Data sent to 05:", combinedDataForNextStep);
 
-    navigate("/campaign-creation-05", { state: combinedDataForNextStep });
+    navigate("/campaign-creation-05", { state: { campaignData: combinedDataForNextStep } });
   };
 
   const handleBack = () => {
@@ -94,6 +93,7 @@ const CampaignCreation04 = () => {
                 {/* Formatting Toolbar */}
                 <div className="flex items-center border-b border-gray-200 px-2 py-1 space-x-1">
                   <button
+                    type="button"
                     onClick={() => handleFormatClick("bold")}
                     className={`p-1 rounded ${isBold ? "bg-gray-200" : "hover:bg-gray-100"}`}
                     title="Bold"
@@ -114,6 +114,7 @@ const CampaignCreation04 = () => {
                     </svg>
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleFormatClick("italic")}
                     className={`p-1 rounded ${isItalic ? "bg-gray-200" : "hover:bg-gray-100"}`}
                     title="Italic"
@@ -135,6 +136,7 @@ const CampaignCreation04 = () => {
                     </svg>
                   </button>
                   <button
+                    type="button"
                     onClick={() => handleFormatClick("underline")}
                     className={`p-1 rounded ${isUnderline ? "bg-gray-200" : "hover:bg-gray-100"}`}
                     title="Underline"
