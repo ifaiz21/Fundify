@@ -39,7 +39,10 @@ const CampaignCreation01 = () => {
             {/* Left Column - Logo */}
             <div className="flex flex-col items-center">
               <div className="w-64 h-64 mb-6">
-                <img src="/Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
+                <img 
+                src="/Images/fundify-white-bg-logo.png"
+                alt="Fundify Logo"
+                className="w-full h-full" />
               </div>
             </div>
 
