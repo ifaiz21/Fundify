@@ -1,19 +1,21 @@
+// src/Pages/Layout/Header.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-import { User } from "lucide-react"; // Optional: lucide-react icons
+import { useNavigate, useLocation } from "react-router-dom";
+import { User } from "lucide-react";
 
-export default function Header({ hideHome }) {
+export default function Header({ hideHome, showDashboard }) {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-  }, []);
+  }, [location.pathname]);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
@@ -29,7 +31,6 @@ export default function Header({ hideHome }) {
 
   return (
     <header className="absolute top-0 left-0 right-0 z-50">
-      {/* Logout success message */}
       {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
@@ -58,6 +59,11 @@ export default function Header({ hideHome }) {
             </div>
 
             <div className="flex space-x-8 items-center">
+              {isLoggedIn && showDashboard && ( // Dashboard button yahan dikhayenge
+                <a href="/admin-dashboard" className="text-white hover:text-gray-300">
+                  Dashboard
+                </a>
+              )}
               <a href="/create-campaign" className="text-white hover:text-gray-300">
                 Create Campaign
               </a>
@@ -74,6 +80,7 @@ export default function Header({ hideHome }) {
 
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40">
+                      {/* Dashboard link ko dropdown mein bhi shamil kiya */}
                       <a href="/admin-dashboard" className="block px-4 py-2 hover:bg-gray-100">
                         Dashboard
                       </a>
@@ -117,9 +124,15 @@ export default function Header({ hideHome }) {
               <a href="/about" className="text-white hover:text-gray-300">About Us</a>
               <a href="/create-campaign" className="text-white hover:text-gray-300">Create Campaign</a>
 
+              {isLoggedIn && showDashboard && ( // Mobile menu mein bhi Dashboard button
+                <a href="/admin-dashboard" className="text-white hover:text-gray-300">
+                  Dashboard
+                </a>
+              )}
+
               {isLoggedIn ? (
                 <>
-                  <a href="/admin-dashboard" className="text-white hover:text-gray-300">Dashboard</a>
+                  {/* Dashboard link ko mobile dropdown mein bhi shamil kiya (agar applicable ho, warna profile link ke baad) */}
                   <a href="/user-profile" className="text-white hover:text-gray-300">My Profile</a>
                   <button
                     onClick={() => setShowConfirmLogout(true)}

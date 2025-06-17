@@ -1,12 +1,12 @@
+// src/Pages/CampaignsCreation/CampCreation01.jsx
 "use client"
-import React from "react";
 import { useState } from "react"
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
 const CampaignCreation01 = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
 
   const [formData, setFormData] = useState({
     name: "",
@@ -24,10 +24,9 @@ const CampaignCreation01 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Process form submission
-    console.log("Form submitted:", formData)
-    // Navigate to next step or process data
-    navigate("/campaign-creation-02");
+    console.log("Data from CampCreation01:", formData)
+    // Pass formData to the next step
+    navigate("/campaign-creation-02", { state: { campaignData: formData } })
   }
 
   return (
@@ -40,18 +39,8 @@ const CampaignCreation01 = () => {
             {/* Left Column - Logo */}
             <div className="flex flex-col items-center">
               <div className="w-64 h-64 mb-6">
-                <img
-                  src="/Images/fundify-white-bg-logo.png"
-                  alt="Fundify Logo"
-                  className="w-full h-full"
-                />
+                <img src="/Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
               </div>
-              {/*
-              <h1 className="text-4xl font-bold mb-2">
-                FUND<span className="text-[#7C9070]">i</span>FY
-              </h1>
-              <p className="text-sm uppercase tracking-wider">INVEST LOCALLY, IMPACT GLOBALLY</p>
-              */}
             </div>
 
             {/* Right Column - Get Started Form */}
@@ -143,11 +132,25 @@ const CampaignCreation01 = () => {
                           <option value="" disabled>
                             Choose a category
                           </option>
+                          <option value="Art">Art</option>
                           <option value="Business">Business</option>
+                          <option value="Comics">Comics</option>
+                          <option value="Crafts">Crafts</option>
+                          <option value="Dance">Dance</option>
+                          <option value="Design">Design</option>
                           <option value="Education">Education</option>
+                          <option value="Fashion">Fashion</option>
+                          <option value="Film & Video">Film & Video</option>
+                          <option value="Food">Food</option>
+                          <option value="Games">Games</option>
+                          <option value="Journalism">Journalism</option>                          
                           <option value="Medical">Medical</option>
+                          <option value="Music">Music</option>
                           <option value="Nonprofit">Nonprofit</option>
+                          <option value="Photography">Photography</option>
+                          <option value="Publishing">Publishing</option>
                           <option value="Technology">Technology</option>
+                          <option value="Theater">Theater</option>
                           <option value="Other">Other</option>
                         </select>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
@@ -185,22 +188,22 @@ const CampaignCreation01 = () => {
 
       {/* Chat Button */}
       <div className="fixed bottom-8 right-8">
-            <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </button>
+        <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
       </div>
 
       <Footer />
@@ -208,4 +211,4 @@ const CampaignCreation01 = () => {
   )
 }
 
-export default CampaignCreation01;
+export default CampaignCreation01

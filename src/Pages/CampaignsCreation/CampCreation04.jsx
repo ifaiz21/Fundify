@@ -1,61 +1,70 @@
+// src/Pages/CampaignsCreation/CampCreation04.jsx
 "use client"
-
-import React  from "react";
-import { useState } from "react"
-import { useNavigate } from "react-router-dom";
-import Header from "../Layout/HeaderLayout"
-import Footer from "../Layout/FooterLayout"
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import Header from "../Layout/HeaderLayout";
+import Footer from "../Layout/FooterLayout";
 
 const CampaignCreation04 = () => {
-    const navigate = useNavigate();
-  const [story, setStory] = useState("")
-  const [isBold, setIsBold] = useState(false)
-  const [isItalic, setIsItalic] = useState(false)
-  const [isUnderline, setIsUnderline] = useState(false)
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [story, setStory] = useState("");
+  const [isBold, setIsBold] = useState(false);
+  const [isItalic, setIsItalic] = useState(false);
+  const [isUnderline, setIsUnderline] = useState(false);
   const [textAlign, setTextAlign] = useState("left");
 
+  const [campaignDataFromPreviousSteps, setCampaignDataFromPreviousSteps] = useState({});
+
+  useEffect(() => {
+    if (location.state && location.state.campaignData) {
+      setCampaignDataFromPreviousSteps(location.state.campaignData);
+      console.log("Data received in 04:", location.state.campaignData);
+      if (location.state.campaignData.storyContent) {
+        setStory(location.state.campaignData.storyContent);
+      }
+    }
+  }, [location.state]);
 
   const handleStoryChange = (e) => {
-    setStory(e.target.value)
-  }
+    setStory(e.target.value);
+  };
 
   const handleFormatClick = (format) => {
     switch (format) {
       case "bold":
-        setIsBold(!isBold)
-        break
+        setIsBold(!isBold);
+        break;
       case "italic":
-        setIsItalic(!isItalic)
-        break
+        setIsItalic(!isItalic);
+        break;
       case "underline":
-        setIsUnderline(!isUnderline)
-        break
+        setIsUnderline(!isUnderline);
+        break;
       default:
-        break
+        break;
     }
-  }
+  };
 
-const handleSubmit = (e) => {
-  e.preventDefault();
-  console.log("Story submitted:", story);
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    console.log("Story submitted from 04:", story);
 
-  navigate("/campaign-creation-05", {
-    state: { story },
-  });
+    // Ensure mediaPreviewUrl is passed along from CampCreation03
+    const combinedDataForNextStep = {
+      ...campaignDataFromPreviousSteps,
+      storyContent: story,
+    };
+    console.log("Combined data for 05:", combinedDataForNextStep);
 
-  }
+    navigate("/campaign-creation-05", { state: combinedDataForNextStep });
+  };
 
   const handleBack = () => {
-    // Navigate back to previous step
-    console.log("Going back to previous step")
-    navigate("/campaign-creation-03");
-  }
+    navigate("/campaign-creation-03", { state: { campaignData: campaignDataFromPreviousSteps } });
+  };
  
-  // const handleDone = () => {
-    // Mark story as complete
-   // console.log("Story marked as complete")
-  //}
-  
   return (
     <div className="flex flex-col min-h-screen">
       <Header hideCreate={true} /> 
@@ -80,13 +89,6 @@ const handleSubmit = (e) => {
                 {/* Editor Header */}
                 <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
                   <h2 className="font-medium">Tell Your Story</h2>
-                  {/*
-                  <button
-                    onClick={handleDone}
-                    className="text-sm text-[#4B5842] hover:text-[#3A4433] transition-colors"
-                  >
-                    Done
-                  </button> */}
                 </div>
 
                 {/* Formatting Toolbar */}
@@ -213,47 +215,7 @@ const handleSubmit = (e) => {
                       <line x1="21" y1="18" x2="7" y2="18"></line>
                     </svg>
                   </button>
-                  <div className="h-4 w-px bg-gray-300 mx-1"></div> {/*}
-                  <button className="p-1 rounded hover:bg-gray-100" title="Bullet List">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="8" y1="6" x2="21" y2="6"></line>
-                      <line x1="8" y1="12" x2="21" y2="12"></line>
-                      <line x1="8" y1="18" x2="21" y2="18"></line>
-                      <line x1="3" y1="6" x2="3.01" y2="6"></line>
-                      <line x1="3" y1="12" x2="3.01" y2="12"></line>
-                      <line x1="3" y1="18" x2="3.01" y2="18"></line>
-                    </svg>
-                  </button>
-                  <button className="p-1 rounded hover:bg-gray-100" title="Numbered List">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      width="16"
-                      height="16"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                    >
-                      <line x1="10" y1="6" x2="21" y2="6"></line>
-                      <line x1="10" y1="12" x2="21" y2="12"></line>
-                      <line x1="10" y1="18" x2="21" y2="18"></line>
-                      <path d="M4 6h1v4"></path>
-                      <path d="M4 10h2"></path>
-                      <path d="M6 18H4c0-1 2-2 2-3s-1-1.5-2-1"></path>
-                    </svg>
-                  </button> */}
+                  <div className="h-4 w-px bg-gray-300 mx-1"></div>
                 </div>
 
                 {/* Text Area */}
@@ -286,7 +248,7 @@ const handleSubmit = (e) => {
                       type="submit"
                       className="flex-1 py-2 text-center bg-[#4B5842] text-white hover:bg-[#3A4433] transition-colors"
                     >
-                      Next
+                      Review
                     </button>
                   </div>
                 </form>
@@ -318,7 +280,7 @@ const handleSubmit = (e) => {
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
 export default CampaignCreation04;

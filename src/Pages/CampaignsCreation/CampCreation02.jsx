@@ -1,13 +1,25 @@
+// src/Pages/CampaignsCreation/CampCreation02.jsx
 "use client"
-import React from "react";
-
-import { useState } from "react"
-import { useNavigate } from "react-router-dom";
+import { useState, useEffect } from "react" // Added useEffect for previous data
+import { useNavigate, useLocation } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
 const CampaignCreation02 = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  // State to hold all campaign data from previous steps
+  const [campaignDataFromPreviousSteps, setCampaignDataFromPreviousSteps] = useState({});
+
+  useEffect(() => {
+    // Receive data passed from CampCreation01
+    if (location.state && location.state.campaignData) {
+      setCampaignDataFromPreviousSteps(location.state.campaignData);
+      console.log("Data received in 02:", location.state.campaignData);
+    }
+  }, [location.state]);
+
 
   const [formData, setFormData] = useState({
     goalAmount: "",
@@ -26,16 +38,22 @@ const CampaignCreation02 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Process form submission
-    console.log("Form submitted:", formData)
-    // Navigate to next step
-    navigate("/campaign-creation-03");
+
+    // Combine all data from previous steps, including this step's formData
+    const combinedDataForNextStep = {
+      ...campaignDataFromPreviousSteps, // Data from CampCreation01
+      ...formData, // Data from this step
+    }
+
+    console.log("Combined data for 03:", combinedDataForNextStep)
+
+    // Pass the combined data to CampCreation03
+    navigate("/campaign-creation-03", { state: { campaignData: combinedDataForNextStep } })
   }
 
   const handleBack = () => {
-    // Navigate back to previous step
-    console.log("Going back to previous step")
-    navigate("/create-campaign");
+    // Pass previous data back to CampCreation01
+    navigate("/campaign-creation-01", { state: { campaignData: campaignDataFromPreviousSteps } })
   }
 
   return (
@@ -48,18 +66,8 @@ const CampaignCreation02 = () => {
             {/* Left Column - Logo */}
             <div className="flex flex-col items-center">
               <div className="w-64 h-64 mb-6">
-                <img
-                  src="/Images/fundify-white-bg-logo.png"
-                  alt="Fundify Logo"
-                  className="w-full h-full"
-                />
+                <img src="/Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
               </div>
-              {/*
-              <h1 className="text-4xl font-bold mb-2">
-                FUND<span className="text-[#7C9070]">i</span>FY
-              </h1>
-              <p className="text-sm uppercase tracking-wider">INVEST LOCALLY, IMPACT GLOBALLY</p>
-              */}
             </div>
 
             {/* Right Column - Goal Setting Form */}
@@ -170,22 +178,22 @@ const CampaignCreation02 = () => {
 
       {/* Chat Button */}
       <div className="fixed bottom-8 right-8">
-            <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </button>
+        <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
       </div>
 
       <Footer />
@@ -193,4 +201,4 @@ const CampaignCreation02 = () => {
   )
 }
 
-export default CampaignCreation02;
+export default CampaignCreation02

@@ -1,11 +1,13 @@
+// src/Pages/ContactUs/ContactUsPage.jsx
 "use client"
 
 import { useState } from "react"
-import Header from "../Layout/HeaderLayout"
+import Header from "../Layout/HeaderLayout" // This will now receive profile pic from context
 import Footer from "../Layout/FooterLayout"
 import { useNavigate } from "react-router-dom"
 
-const ContactUsPage = () => {
+// MODIFIED: Accept showToast as a prop
+const ContactUsPage = ({ showToast }) => {
   const navigate = useNavigate()
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false)
   const [formData, setFormData] = useState({
@@ -26,24 +28,51 @@ const ContactUsPage = () => {
 
   const handleSubmitRequest = (event) => {
     event.preventDefault()
+    // Validation here using showToast instead of alert
+    if (!formData.name || !formData.email || !formData.issue || !formData.subject || !formData.message) {
+        // MODIFIED: Use showToast for client-side validation
+        showToast("Please fill all required fields.", "error");
+        return;
+    }
     setShowSubmitConfirmation(true)
   }
 
-  const handleConfirmSubmit = () => {
-    console.log("Support request submitted")
+  const handleConfirmSubmit = async () => {
     setShowSubmitConfirmation(false)
+    console.log("Submitting support request to backend:", formData)
 
-    // Clear the form
-    setFormData({
-      name: "",
-      email: "",
-      issue: "",
-      subject: "",
-      message: "",
-    })
+    try {
+      const response = await fetch('http://localhost:5000/api/contactus', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(formData),
+      });
 
-    // Navigate to success page
-    navigate("/Submitted")
+      if (response.ok) {
+        // MODIFIED: Use showToast for success message
+        showToast("Your support request has been submitted successfully!", "success");
+        // Clear the form after successful submission
+        setFormData({
+          name: "",
+          email: "",
+          issue: "",
+          subject: "",
+          message: "",
+        });
+        // navigate("/Submitted"); // Optional: Navigate to success page. Commented out if toast is main feedback
+      } else {
+        const errorData = await response.json();
+        // MODIFIED: Use showToast for backend error message
+        showToast(`Failed to submit request: ${errorData.message || "Unknown error"}`, "error");
+        console.error("Submission failed:", errorData);
+      }
+    } catch (error) {
+      // MODIFIED: Use showToast for network/other errors
+      showToast("An error occurred during submission. Please try again.", "error");
+      console.error("Submission error:", error);
+    }
   }
 
   const handleCancelSubmit = () => {
@@ -52,7 +81,7 @@ const ContactUsPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <Header /> {/* This Header is not HeaderLayout, confirm your App.jsx uses HeaderLayout for this route */}
 
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
@@ -247,4 +276,4 @@ const ContactUsPage = () => {
   )
 }
 
-export default ContactUsPage
+export default ContactUsPage;

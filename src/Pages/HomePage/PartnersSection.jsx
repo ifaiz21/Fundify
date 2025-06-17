@@ -59,7 +59,7 @@ function PartnersSection() {
               </div>
               <div className="md:w-1/2 relative">
                 <img
-                  src="/images/contact-person.jpg"
+                  src="/images/contact-person.png"
                   alt="Person using Fundify app"
                   className="w-full h-full object-cover object-center"
                 />

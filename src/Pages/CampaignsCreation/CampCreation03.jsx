@@ -1,19 +1,38 @@
+// src/Pages/CampaignsCreation/CampCreation03.jsx
 "use client"
-import React from "react";
-import { useRef } from "react";
-
-import { useState } from "react"
-import { useNavigate } from "react-router-dom";
+import { useRef } from "react"
+import { useState, useEffect } from "react"
+import { useNavigate, useLocation } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
 const CampaignCreation03 = () => {
-  const navigate = useNavigate();
+  const navigate = useNavigate()
+  const location = useLocation()
+
+  const [campaignDataFromPreviousSteps, setCampaignDataFromPreviousSteps] = useState({});
+
+  useEffect(() => {
+    if (location.state && location.state.campaignData) {
+      setCampaignDataFromPreviousSteps(location.state.campaignData);
+      // Optional: pre-fill form data if user navigates back
+      setFormData(prev => ({
+        ...prev,
+        campaignTitle: location.state.campaignData.campaignTitle || '',
+        campaignDescription: location.state.campaignData.campaignDescription || '',
+        // mediaFile cannot be directly re-set from URL, but mediaPreviewUrl can
+        // If you want to show existing preview on back, load mediaPreviewUrl
+        // For actual file object, user would have to re-select
+      }));
+    }
+  }, [location.state]);
+
 
   const [formData, setFormData] = useState({
     campaignTitle: "",
     campaignDescription: "",
     mediaFile: null,
+    mediaPreviewUrl: null, // Add new state to store Data URL for preview
   })
   const fileInputRef = useRef(null)
 
@@ -27,25 +46,44 @@ const CampaignCreation03 = () => {
 
   const handleFileChange = (e) => {
     if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+
+      // Create a FileReader to read the file as a Data URL
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setFormData((prev) => ({
+          ...prev,
+          mediaFile: file,
+          mediaPreviewUrl: reader.result, // Store the Data URL
+        }));
+      };
+      reader.readAsDataURL(file); // Read the file as a Data URL
+
+    } else {
       setFormData((prev) => ({
         ...prev,
-        mediaFile: e.target.files[0],
-      }))
+        mediaFile: null,
+        mediaPreviewUrl: null, // Clear preview if no file selected
+      }));
     }
   }
 
   const handleSubmit = (e) => {
     e.preventDefault()
-    // Process form submission
-    console.log("Form submitted:", formData)
-    // Navigate to next step
-    navigate("/campaign-creation-04");
+
+    const { mediaFile, ...rest } = formData
+    const combinedDataForNextStep = {
+      ...campaignDataFromPreviousSteps, // Data from CampCreation01 and 02
+      ...rest, // Includes campaignTitle, campaignDescription, and mediaPreviewUrl
+      mediaFileName: mediaFile ? mediaFile.name : null, // Pass filename for backend (if needed)
+    }
+    console.log("Combined data for 04:", combinedDataForNextStep)
+
+    navigate("/campaign-creation-04", { state: { campaignData: combinedDataForNextStep } })
   }
 
   const handleBack = () => {
-    // Navigate back to previous step
-    console.log("Going back to previous step")
-    navigate("/campaign-creation-02");
+    navigate("/campaign-creation-02", { state: { campaignData: campaignDataFromPreviousSteps } })
   }
 
   return (
@@ -58,11 +96,7 @@ const CampaignCreation03 = () => {
             {/* Left Column - Logo */}
             <div className="flex flex-col items-center">
               <div className="w-64 h-64 mb-6">
-                <img
-                  src="/Images/fundify-white-bg-logo.png"
-                  alt="Fundify Logo"
-                  className="w-full h-full"
-                />
+                <img src="/Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
               </div>
             </div>
 
@@ -124,7 +158,7 @@ const CampaignCreation03 = () => {
                         className="hidden"
                       />
                       <div
-                        onClick={() => fileInputRef.current.click()}
+                        onClick={() => fileInputRef.current?.click()}
                         className="w-full h-16 border-2 border-dashed border-gray-300 rounded-md flex items-center justify-center cursor-pointer hover:border-[#4B5842] transition-colors"
                       >
                         {formData.mediaFile ? (
@@ -141,6 +175,12 @@ const CampaignCreation03 = () => {
                           </svg>
                         )}
                       </div>
+                      {/* Optional: Show a small preview image right below the input */}
+                      {formData.mediaPreviewUrl && (
+                        <div className="mt-2 text-center">
+                          <img src={formData.mediaPreviewUrl} alt="Media Preview" className="max-h-24 mx-auto rounded" />
+                        </div>
+                      )}
                     </div>
 
                     <div className="pt-4 flex space-x-4">
@@ -168,22 +208,22 @@ const CampaignCreation03 = () => {
 
       {/* Chat Button */}
       <div className="fixed bottom-8 right-8">
-            <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-8 w-8"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
-                />
-              </svg>
-            </button>
+        <button className="bg-[#4A5D45] text-white rounded-full p-4 shadow-lg">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            className="h-8 w-8"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"
+            />
+          </svg>
+        </button>
       </div>
 
       <Footer />
@@ -191,4 +231,4 @@ const CampaignCreation03 = () => {
   )
 }
 
-export default CampaignCreation03;
+export default CampaignCreation03

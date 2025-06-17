@@ -1,99 +1,179 @@
+// src/Pages/CampaignsCreation/CampCreation05.jsx
 "use client"
-import { useLocation } from "react-router-dom"
-import { useState, useEffect } from "react"
-import { useNavigate } from "react-router-dom"
+import React, { useState, useEffect } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
 const CampaignCreation05 = () => {
   const location = useLocation()
-  const story = location.state?.story || ""
-  const formattedStory = location.state?.formattedStory || ""
   const navigate = useNavigate()
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false)
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false)
   const [showUpdateSuccess, setShowUpdateSuccess] = useState(false)
+  const [isSubmitting, setIsSubmitting] = useState(false)
 
-  const defaultCampaign = {
-    title: "Your Story",
-    content: formattedStory || story || "No story provided",
-    image: "/Images/cycle.png",
-  }
+  const [fullCampaignData, setFullCampaignData] = useState({
+    name: '',
+    location: '',
+    category: '',
+    goalAmount: 0,
+    isAdult: false,
+    canVerifyID: false,
+    canVerifyProject: false,
+    campaignTitle: '',
+    campaignDescription: '',
+    mediaFileName: '',
+    mediaPreviewUrl: null, // Add to state for preview URL
+    storyContent: '',
+  });
 
-  // Use location.state if available, and merge with story data
-  const [campaign, setCampaign] = useState(() => {
-    if (location.state?.campaign) {
-      return {
-        ...location.state.campaign,
-        content: formattedStory || story || location.state.campaign.content,
-      }
-    }
-    return defaultCampaign
-  })
-
-  // Check if coming back from update with success
   useEffect(() => {
+    if (location.state) {
+      setFullCampaignData(prevData => ({
+        ...prevData,
+        ...location.state,
+        mediaPreviewUrl: location.state.mediaPreviewUrl || prevData.mediaPreviewUrl, // Update mediaPreviewUrl
+      }));
+      console.log("Data received in 05 for submission:", location.state);
+    }
+
     if (location.state?.updateSuccess) {
       setShowUpdateSuccess(true)
-      // Auto-hide the success message after 5 seconds
       const timer = setTimeout(() => {
         setShowUpdateSuccess(false)
       }, 5000)
 
       return () => clearTimeout(timer)
     }
-  }, [location.state])
+  }, [location.state]);
 
-  // Update campaign content when story changes
-  useEffect(() => {
-    if (formattedStory || story) {
-      setCampaign((prev) => ({
-        ...prev,
-        content: formattedStory || story,
-      }))
-    }
-  }, [story, formattedStory])
+
+  const getAuthToken = () => {
+    return localStorage.getItem('token');
+  };
 
   const handleUpdate = () => {
-    navigate("/campaign-update", { state: { campaign } })
-  }
+    navigate("/campaign-update", { state: { campaign: fullCampaignData } });
+  };
 
   const handleDelete = () => {
-    setShowDeleteConfirmation(true)
-  }
+    setShowDeleteConfirmation(true);
+  };
 
-  const handleConfirmDelete = () => {
-    console.log("Delete campaign confirmed")
-    setShowDeleteConfirmation(false)
-    navigate("/campaign-deletion")
-  }
+  const handleConfirmDelete = async () => {
+    setShowDeleteConfirmation(false);
+    const token = getAuthToken();
+
+    if (!token) {
+      alert("No authentication token found. Please log in.");
+      navigate("/login");
+      return;
+    }
+    
+    if (!fullCampaignData._id) {
+        alert("Campaign ID not found for deletion.");
+        return;
+    }
+
+    try {
+      const response = await fetch(`http://localhost:5000/api/campaigns/${fullCampaignData._id}`, {
+        method: 'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+      });
+
+      if (response.ok) {
+        alert("Campaign deleted successfully!");
+        navigate("/campaign-deletion");
+      } else {
+        const errorData = await response.json();
+        alert(`Failed to delete campaign: ${errorData.message}`);
+        console.error("Delete failed:", errorData);
+      }
+    } catch (error) {
+      alert("An error occurred during deletion.");
+      console.error("Delete error:", error);
+    }
+  };
 
   const handleCancelDelete = () => {
-    setShowDeleteConfirmation(false)
-  }
+    setShowDeleteConfirmation(false);
+  };
 
   const handleSubmit = () => {
-    setShowSubmitConfirmation(true)
-  }
+    setShowSubmitConfirmation(true);
+  };
 
-  const handleConfirmSubmit = () => {
-    console.log("Submit campaign confirmed")
-    setShowSubmitConfirmation(false)
-    navigate("/campaign-submission")
-  }
+  const handleConfirmSubmit = async () => {
+    setShowSubmitConfirmation(false);
+    setIsSubmitting(true);
+
+    const token = getAuthToken();
+
+    if (!token) {
+      alert("No authentication token found. Please log in.");
+      navigate("/login");
+      setIsSubmitting(false);
+      return;
+    }
+
+    const campaignDataToSubmit = {
+        name: fullCampaignData.name,
+        location: fullCampaignData.location,
+        category: fullCampaignData.category,
+        goalAmount: Number(fullCampaignData.goalAmount),
+        isAdultContent: fullCampaignData.isAdult,
+        isIDVerifiedRequired: fullCampaignData.canVerifyID,
+        isProjectVerifiedRequired: fullCampaignData.canVerifyProject,
+        title: fullCampaignData.campaignTitle,
+        description: fullCampaignData.campaignDescription,
+        mediaUrl: fullCampaignData.mediaFileName, // Send filename to backend, actual upload would be separate
+        content: fullCampaignData.storyContent,
+        status: 'Pending Review'
+    };
+
+    console.log("Submitting campaign data:", campaignDataToSubmit);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(campaignDataToSubmit),
+      });
+
+      if (response.ok) {
+        alert("Campaign submitted successfully for verification!");
+        navigate("/campaign-submission");
+      } else {
+        const errorData = await response.json();
+        alert(`Campaign submission failed: ${errorData.message}`);
+        console.error("Submission failed:", errorData);
+      }
+    } catch (error) {
+      alert("An error occurred during submission.");
+      console.error("Submission error:", error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
 
   const handleCancelSubmit = () => {
-    setShowSubmitConfirmation(false)
-  }
+    setShowSubmitConfirmation(false);
+  };
 
   const handleBack = () => {
-    console.log("Go back")
-    navigate("/campaign-creation-04")
-  }
+    navigate("/campaign-creation-04", { state: { campaignData: fullCampaignData } });
+  };
 
   const handleCloseSuccessMessage = () => {
-    setShowUpdateSuccess(false)
-  }
+    setShowUpdateSuccess(false);
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -101,41 +181,70 @@ const CampaignCreation05 = () => {
 
       <main className="flex-1 py-8">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="max-w-6xl mx-auto">
+          <div className="max-w-6xl mx-auto bg-white p-8 rounded-lg shadow-md">
             {/* Campaign Preview Label */}
-            <div className="mb-6">
-              <span className="inline-block bg-[#A9BEA2] text-[#4B5842] px-4 py-1 rounded-full text-sm font-medium">
+            <div className="mb-6 text-center">
+              <span className="inline-block bg-[#A9BEA2] text-[#4B5842] px-4 py-1 rounded-full text-lg font-semibold">
                 Campaign Preview
               </span>
+              <h1 className="text-3xl font-bold text-gray-800 mt-4">{fullCampaignData.campaignTitle}</h1>
             </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
-              {/* Story Content - 2/3 width on desktop */}
-              <div className="md:col-span-2">
-                <h1 className="text-2xl font-bold mb-4">{campaign.title}</h1>
-                <div className="prose max-w-none">
-                  {/* Render HTML content safely */}
-                  <div
-                    className="text-gray-700 leading-relaxed"
-                    dangerouslySetInnerHTML={{ __html: campaign.content }}
-                  />
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+              {/* Left Column: Basic Info & Funding */}
+              <div>
+                <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">Basic Information</h2>
+                <div className="space-y-3 text-gray-700 text-base">
+                  <p><strong>Your Name:</strong> {fullCampaignData.name}</p>
+                  <p><strong>Location:</strong> {fullCampaignData.location}</p>
+                  <p><strong>Category:</strong> {fullCampaignData.category}</p>
+                  <p><strong>Goal Amount:</strong> Rs. {fullCampaignData.goalAmount ? Number(fullCampaignData.goalAmount).toLocaleString() : '0'}</p>
+                </div>
+
+                <h2 className="text-2xl font-semibold text-[#4A5D45] mt-6 mb-4 border-b pb-2">Verification & Content</h2>
+                <div className="space-y-3 text-gray-700 text-base">
+                  <p><strong>Adult Content:</strong> {fullCampaignData.isAdult ? 'Yes' : 'No'}</p>
+                  <p><strong>ID Verified:</strong> {fullCampaignData.canVerifyID ? 'Yes' : 'No'}</p>
+                  <p><strong>Project Verified:</strong> {fullCampaignData.canVerifyProject ? 'Yes' : 'No'}</p>
                 </div>
               </div>
 
-              {/* Campaign Image - 1/3 width on desktop */}
-              <div>
-                <img
-                  src={campaign.image || "/placeholder.svg"}
-                  alt="Campaign"
-                  className="w-full h-auto rounded-md object-cover"
-                  style={{ maxHeight: "250px" }}
-                />
+              {/* Right Column: Media */}
+              <div className="flex flex-col items-center justify-center">
+                <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2 w-full text-center">Campaign Media</h2>
+                {fullCampaignData.mediaPreviewUrl ? ( // Use mediaPreviewUrl here
+                  <img
+                    src={fullCampaignData.mediaPreviewUrl} // Display the Data URL
+                    alt="Campaign Media Preview"
+                    className="w-full h-auto rounded-lg object-cover shadow-lg"
+                    style={{ maxHeight: "350px", objectFit: "contain" }}
+                  />
+                ) : (
+                  <div className="w-full h-48 bg-gray-100 rounded-lg flex items-center justify-center text-gray-500 border border-dashed border-gray-300">
+                    No Media Selected
+                  </div>
+                )}
               </div>
             </div>
 
+            {/* Campaign Description */}
+            <div className="mb-8 p-4 bg-gray-50 rounded-lg shadow-inner">
+              <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">Campaign Description</h2>
+              <p className="text-gray-700 leading-relaxed">
+                {fullCampaignData.campaignDescription}
+              </p>
+            </div>
+
+            {/* Campaign Story */}
+            <div className="mb-8 p-4 bg-gray-50 rounded-lg shadow-inner">
+              <h2 className="text-2xl font-semibold text-[#4A5D45] mb-4 border-b pb-2">Campaign Story</h2>
+              <div className="prose max-w-none text-gray-700 leading-relaxed"
+                   dangerouslySetInnerHTML={{ __html: fullCampaignData.storyContent }}
+              />
+            </div>
+
             {/* Action Buttons */}
-            <div className="flex flex-wrap justify-between">
+            <div className="flex flex-wrap justify-between pt-6 border-t border-gray-200">
               {/* Left side buttons */}
               <div className="flex flex-wrap gap-3 mb-4 md:mb-0">
                 <button
@@ -163,8 +272,9 @@ const CampaignCreation05 = () => {
                 <button
                   onClick={handleSubmit}
                   className="px-6 py-2 bg-[#4B5842] text-white rounded-md hover:bg-[#3A4433] transition-colors"
+                  disabled={isSubmitting}
                 >
-                  Submit
+                  {isSubmitting ? "Submitting..." : "Submit"}
                 </button>
               </div>
             </div>
@@ -172,7 +282,7 @@ const CampaignCreation05 = () => {
         </div>
       </main>
 
-      {/* Delete Confirmation Modal */}
+      {/* Confirmation Modals (omitted for brevity, assume they are the same as before) */}
       {showDeleteConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -219,7 +329,6 @@ const CampaignCreation05 = () => {
         </div>
       )}
 
-      {/* Submit Confirmation Modal */}
       {showSubmitConfirmation && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
@@ -267,7 +376,6 @@ const CampaignCreation05 = () => {
         </div>
       )}
 
-      {/* Success Message */}
       {showUpdateSuccess && (
         <div className="fixed top-20 left-1/2 transform -translate-x-1/2 z-50">
           <div className="bg-[#4B5842] text-white px-6 py-4 rounded-lg shadow-lg flex items-center space-x-3 max-w-md">
@@ -325,7 +433,7 @@ const CampaignCreation05 = () => {
 
       <Footer />
     </div>
-  )
-}
+  );
+};
 
-export default CampaignCreation05
+export default CampaignCreation05;

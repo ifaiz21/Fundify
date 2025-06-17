@@ -1,28 +1,42 @@
+// src/Pages/Layout/HeaderLayout.jsx
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // useLocation ko bhi import karein
+import { useUser } from '../../context/UserContext'; // ADDED: Import useUser hook
 
-const HeaderLayout = ({ hideCreate }) => {
+// showDashboard prop add kiya
+const HeaderLayout = ({ hideCreate, showDashboard }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
+  const location = useLocation(); // Current path hasil karne ke liye
+
+  // ADDED: Get userProfile and loading state from context
+  const { userProfile, loadingUserContext } = useUser(); 
+
+  // ADDED: Default avatar logic
+  const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
   useEffect(() => {
     const token = localStorage.getItem("token");
     setIsLoggedIn(!!token);
-  }, []);
-
-  const handleUserIconClick = () => {
-    if (isLoggedIn) {
-      navigate("/user-profile");
-    } else {
-      setMessage("Please login first!");
-      setTimeout(() => setMessage(""), 3000);
-    }
-  };
-
+  }, [location.pathname]); // path change hone par login status update karein
+<Link to="/profile-settings" className="flex items-center">
+    {loadingUserContext ? (
+        <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+    ) : (
+        <img
+            src={avatarSrc}
+            alt="Profile"
+            className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+            onError={(e) => {
+                e.target.onerror = null;
+                e.target.src = "/Images/default-avatar.png";
+            }}
+        />
+    )}
+</Link>
   return (
     <>
-      {/* Top message if not logged in */}
       {message && (
         <div className="bg-[#4A5D45] text-white text-center py-2">
           {message}
@@ -56,29 +70,32 @@ const HeaderLayout = ({ hideCreate }) => {
               Create Campaign
             </Link>
           )}
+          {isLoggedIn && showDashboard && ( // Dashboard button yahan dikhayenge
+            <Link to="/admin-dashboard" className="hover:underline">
+              Dashboard
+            </Link>
+          )}
           <Link to="/contact" className="hover:underline">Contact Us</Link>
 
-          {/* User Account Icon with Login Check */}
-          <button
-            onClick={handleUserIconClick}
-            className="w-10 h-10 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center"
+          {/* User Account Icon with Login Check - MODIFIED TO USE PROFILE PICTURE */}
+          <Link
+            to="/profile-settings" // Changed to Link to match new header design logic
+            className="flex items-center" // Kept existing classes for styling
           >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              width="32"
-              height="32"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              strokeWidth="2"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              className="text-gray-700"
-            >
-              <circle cx="12" cy="8" r="4"></circle>
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            </svg>
-          </button>
+            {loadingUserContext ? ( // ADDED: Loading skeleton while context loads
+              <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div> 
+            ) : ( // ADDED: Dynamic image or default avatar
+              <img
+                src={avatarSrc}
+                alt="Profile"
+                className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+                onError={(e) => { // Fallback if image fails to load
+                  e.target.onerror = null;
+                  e.target.src = "/Images/default-avatar.png";
+                }}
+              />
+            )}
+          </Link>
         </div>
       </header>
     </>
