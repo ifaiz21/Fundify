@@ -13,7 +13,7 @@ const AboutUsPage = () => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header />
+      <Header hideAboutUs={true} />
 
       <main className="flex-1">
         {/* Hero Banner */}

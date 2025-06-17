@@ -3,8 +3,8 @@ import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { User } from "lucide-react";
 
-export default function Header({ hideHome, showDashboard }) {
-  const [isMenuOpen, setIsMenuOpen] = useState(false);
+export default function Header({ hideHome }) {
+  //const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
@@ -30,60 +30,67 @@ export default function Header({ hideHome, showDashboard }) {
   };
 
   return (
-    <header className="absolute top-0 left-0 right-0 z-50">
+   <>
       {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
         </div>
       )}
 
-      <nav className="container mx-auto px-6 py-4">
-        <div className="flex items-center justify-between">
+      <header className="flex items-center justify-between px-6 py-4 bg-transparent z-50 relative">
+        {/* Left Side - Logo & Navigation */}
+        <div className="flex items-center space-x-6">
           {/* Logo */}
-          <a href="/" className="flex items-center">
-            <img
-              src="/Images/logo.png"
-              alt="Fundify Logo"
-              className="h-14 w-14"
-            />
-          </a>
+          <img
+            src="/Images/logo.png"
+            alt="Fundify Logo"
+            className="w-12 h-12"
+          />
 
           {/* Desktop Navigation */}
-          <div className="hidden lg:flex items-center justify-between flex-1 max-w-4xl mx-auto px-8">
-            <div className="flex space-x-8">
+          
+            <nav className="flex space-x-6">
               {!hideHome && (
                 <a href="/" className="text-white hover:text-gray-300">Home</a>
               )}
               <a href="/donate" className="text-white hover:text-gray-300">Donate</a>
               <a href="/about" className="text-white hover:text-gray-300">About Us</a>
-            </div>
+            </nav>
+        </div>
 
-            <div className="flex space-x-8 items-center">
-              {isLoggedIn && showDashboard && ( // Dashboard button yahan dikhayenge
-                <a href="/admin-dashboard" className="text-white hover:text-gray-300">
-                  Dashboard
-                </a>
-              )}
+            <div className="flex space-x-6 items-center">
               <a href="/create-campaign" className="text-white hover:text-gray-300">
                 Create Campaign
               </a>
+              <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
 
-              {isLoggedIn ? (
-                <div className="relative">
-                  <button
-                    onClick={() => setShowDropdown(!showDropdown)}
-                    className="flex items-center text-white hover:text-gray-300"
-                  >
-                    <User className="w-5 h-5 mr-1" />
-                    Profile
-                  </button>
+              {/* User Icon or Login */}
+          {isLoggedIn ? (
+            <div className="relative">
+              <button
+                onClick={() => setShowDropdown(!showDropdown)}
+                className="w-10 h-10 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center"
+              >
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  width="32"
+                  height="32"
+                  viewBox="0 0 24 24"
+                  fill="none"
+                  stroke="currentColor"
+                  strokeWidth="2"
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  className="text-gray-700"
+                >
+                  <circle cx="12" cy="8" r="4"></circle>
+                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                  <User />
+                </svg>
+              </button>
 
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40">
-                      {/* Dashboard link ko dropdown mein bhi shamil kiya */}
-                      <a href="/admin-dashboard" className="block px-4 py-2 hover:bg-gray-100">
-                        Dashboard
-                      </a>
                       <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
                         My Profile
                       </a>
@@ -95,61 +102,14 @@ export default function Header({ hideHome, showDashboard }) {
                       </button>
                     </div>
                   )}
-                </div>
+              </div>
               ) : (
                 <a href="/login" className="text-white hover:text-gray-300">
                   Login / Sign Up
                 </a>
               )}
-
-              <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
-            </div>
-          </div>
-
-          {/* Mobile Menu Toggle */}
-          <button
-            className="lg:hidden text-white"
-            onClick={() => setIsMenuOpen(!isMenuOpen)}
-          >
-            ☰
-          </button>
-        </div>
-
-        {/* Mobile Navigation */}
-        {isMenuOpen && (
-          <div className="lg:hidden mt-4 bg-black/90 rounded-lg p-4">
-            <div className="flex flex-col space-y-4">
-              <a href="/" className="text-white hover:text-gray-300">Home</a>
-              <a href="/donate" className="text-white hover:text-gray-300">Donate</a>
-              <a href="/about" className="text-white hover:text-gray-300">About Us</a>
-              <a href="/create-campaign" className="text-white hover:text-gray-300">Create Campaign</a>
-
-              {isLoggedIn && showDashboard && ( // Mobile menu mein bhi Dashboard button
-                <a href="/admin-dashboard" className="text-white hover:text-gray-300">
-                  Dashboard
-                </a>
-              )}
-
-              {isLoggedIn ? (
-                <>
-                  {/* Dashboard link ko mobile dropdown mein bhi shamil kiya (agar applicable ho, warna profile link ke baad) */}
-                  <a href="/user-profile" className="text-white hover:text-gray-300">My Profile</a>
-                  <button
-                    onClick={() => setShowConfirmLogout(true)}
-                    className="text-left text-white hover:text-gray-300"
-                  >
-                    Sign Out
-                  </button>
-                </>
-              ) : (
-                <a href="/login" className="text-white hover:text-gray-300">Login / Sign Up</a>
-              )}
-
-              <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
-            </div>
-          </div>
-        )}
-      </nav>
+         </div>
+      </header>
 
       {/* Logout Confirmation Modal */}
       {showConfirmLogout && (
@@ -169,7 +129,7 @@ export default function Header({ hideHome, showDashboard }) {
                   handleLogout();
                   setShowConfirmLogout(false);
                 }}
-                className="bg-[#4A5D45] bg-[#4A5D45] text-white px-4 py-2 rounded"
+                className="bg-[#4A5D45] text-white px-4 py-2 rounded"
               >
                 Confirm
               </button>
@@ -177,6 +137,6 @@ export default function Header({ hideHome, showDashboard }) {
           </div>
         </div>
       )}
-    </header>
+   </>
   );
 }

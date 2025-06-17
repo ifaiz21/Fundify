@@ -553,7 +553,7 @@ function UserProfileSettings({ showToast }) {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <HeaderLayout />
+      <HeaderLayout  hideProfile={true}/>
 
       <main className="flex-grow container mx-auto px-4 py-6">
         <h1 className="text-2xl font-bold mb-6">Settings</h1>
