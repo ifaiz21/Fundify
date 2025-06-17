@@ -7,7 +7,7 @@ const campaignSchema = new mongoose.Schema({
     ref: 'User', // Reference to the User model
     required: true,
   },
-    campaignId: { // Naya field
+  campaignId: { // Naya field
     type: String,
     required: true,
     unique: true, // Yeh zaroori hai duplicate errors se bachne ke liye
@@ -20,7 +20,6 @@ const campaignSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  
   category: {
     type: String,
     required: true,
@@ -49,10 +48,12 @@ const campaignSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  mediaUrl: { // Assuming a URL for uploaded media
-    type: String,
-    default: '',
+  // --- CRITICAL UPDATE: Changed to mediaUrls (array of strings) ---
+  mediaUrls: {
+    type: [String], // Now expects an array of strings
+    default: [],    // Default to an empty array for consistency
   },
+  // --- END CRITICAL UPDATE ---
   status: { // e.g., 'Draft', 'Pending Review', 'Active', 'Funded', 'Rejected', 'Deleted'
     type: String,
     default: 'Draft',

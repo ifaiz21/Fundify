@@ -23,23 +23,23 @@ const CampaignCreation05 = () => {
     canVerifyProject: false,
     campaignTitle: '',
     campaignDescription: '',
-    mediaFileNames: [], // Array of filenames (for backend/metadata)
-    mediaPreviewUrls: [], // Array of {id, url (Data URL), type, name, size} objects (for display)
+    // Update state to expect an array for media file names and preview URLs
+    mediaFileNames: [], 
+    mediaPreviewUrls: [], 
     storyContent: '',
   });
 
-  // Effect to load data from previous pages
   useEffect(() => {
     if (location.state && location.state.campaignData) {
       const incomingData = location.state.campaignData;
       setFullCampaignData(prevData => ({
         ...prevData,
-        ...incomingData, // Spread all incoming data (includes campaignTitle, description, etc.)
-        mediaPreviewUrls: incomingData.previewURLs || [], // CRITICAL: Extract the array of preview objects
-        mediaFileNames: incomingData.mediaFileNames || [], // Extract array of file names
+        ...incomingData,
+        // Ensure these are correctly pulled from the incoming data's `previewURLs` and `mediaFileNames`
+        mediaPreviewUrls: incomingData.previewURLs || [],
+        mediaFileNames: incomingData.mediaFileNames || [],
       }));
-      console.log("CampaignCreation05 - Data received:", incomingData);
-      console.log("CampaignCreation05 - Processed mediaPreviewUrls for display:", incomingData.previewURLs || []);
+      console.log("CampaignCreation05 - Data received for submission:", incomingData);
     }
 
     if (location.state?.updateSuccess) {
@@ -50,7 +50,7 @@ const CampaignCreation05 = () => {
 
       return () => clearTimeout(timer)
     }
-  }, [location.state]); // Depend on location.state
+  }, [location.state]);
 
 
   const getAuthToken = () => {
@@ -134,7 +134,9 @@ const CampaignCreation05 = () => {
         isProjectVerifiedRequired: fullCampaignData.canVerifyProject,
         title: fullCampaignData.campaignTitle,
         description: fullCampaignData.campaignDescription,
-        mediaFileNames: fullCampaignData.mediaFileNames, // Send array of filenames to backend
+        // --- CRITICAL UPDATE: Send mediaFileNames under the 'mediaUrls' key ---
+        mediaUrls: fullCampaignData.mediaFileNames, // This array now matches the backend schema field name and type
+        // --- END CRITICAL UPDATE ---
         content: fullCampaignData.storyContent,
         status: 'Pending Review'
     };
@@ -153,7 +155,6 @@ const CampaignCreation05 = () => {
 
       if (response.ok) {
         alert("Campaign submitted successfully for verification!");
-        // No URL.revokeObjectURL needed for Data URLs after submission
         navigate("/campaign-submission");
       } else {
         const errorData = await response.json();
@@ -173,8 +174,6 @@ const CampaignCreation05 = () => {
   };
 
   const handleBack = () => {
-    // When navigating back, make sure to pass the full current state of CampaignCreation05
-    // so that CampaignCreation04 (and then 03 if navigating further back) can reconstruct.
     navigate("/campaign-creation-04", { state: { campaignData: fullCampaignData } });
   };
 
@@ -193,6 +192,7 @@ const CampaignCreation05 = () => {
       // });
     };
   }, [fullCampaignData.mediaPreviewUrls]); // Depend on mediaPreviewUrls for effects related to it
+
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -287,7 +287,7 @@ const CampaignCreation05 = () => {
                           />
                         ) : (
                           <div className="w-full h-48 bg-gray-100 flex flex-col items-center justify-center text-gray-500 p-2 text-center">
-                            <svg className="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 = 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                            <svg className="w-12 h-12 text-gray-400 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                             <p className="text-sm">Unsupported Media Type</p>
                             <p className="text-xs text-gray-400 mt-1 truncate w-full px-2">{media.name || 'Unknown File'}</p>
                           </div>
