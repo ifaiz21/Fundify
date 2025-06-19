@@ -28,6 +28,7 @@ const CampaignCreation03 = () => {
         ...prev,
         campaignTitle: incomingData.campaignTitle || '',
         campaignDescription: incomingData.campaignDescription || '',
+        mediaFile: incomingData.actualMediaFiles || [], // Restore actual File objects if passed
       }));
 
       // Restore previewURLs for display if they were passed (these should now be Data URLs)
@@ -113,9 +114,9 @@ const CampaignCreation03 = () => {
       ...campaignDataFromPreviousSteps, // Data from CampCreation01 and 02
       campaignTitle: formData.campaignTitle,
       campaignDescription: formData.campaignDescription,
-      mediaFileNames: formData.mediaFile.map(file => file.name), // For backend reference
-      // CRITICAL: Pass the entire previewURLs array containing id, url (Data URL), type, name, size
-      previewURLs: previewURLs, // This array will contain the Data URLs
+      mediaFileNames: formData.mediaFile.map(file => file.name), // For backend reference (still useful for debugging/logging)
+      previewURLs: previewURLs, // This array will contain the Data URLs (for frontend preview in next steps)
+      actualMediaFiles: formData.mediaFile, // CRITICAL: Pass the actual File objects
     };
     console.log("CampaignCreation03 - Data sent to 04 (campaign-creation-04):", combinedDataForNextStep);
 
@@ -308,4 +309,4 @@ const CampaignCreation03 = () => {
   );
 };
 
-export default CampaignCreation03
+export default CampaignCreation03;

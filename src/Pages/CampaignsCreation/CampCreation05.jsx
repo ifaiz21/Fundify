@@ -23,9 +23,9 @@ const CampaignCreation05 = () => {
     canVerifyProject: false,
     campaignTitle: '',
     campaignDescription: '',
-    // Update state to expect an array for media file names and preview URLs
     mediaFileNames: [], 
-    mediaPreviewUrls: [], 
+    mediaPreviewUrls: [],
+    actualMediaFiles: [], // Added to store actual File objects
     storyContent: '',
   });
 
@@ -35,9 +35,9 @@ const CampaignCreation05 = () => {
       setFullCampaignData(prevData => ({
         ...prevData,
         ...incomingData,
-        // Ensure these are correctly pulled from the incoming data's `previewURLs` and `mediaFileNames`
         mediaPreviewUrls: incomingData.previewURLs || [],
         mediaFileNames: incomingData.mediaFileNames || [],
+        actualMediaFiles: incomingData.actualMediaFiles || [], // Capture actual File objects
       }));
       console.log("CampaignCreation05 - Data received for submission:", incomingData);
     }
@@ -124,33 +124,36 @@ const CampaignCreation05 = () => {
       return;
     }
 
-    const campaignDataToSubmit = {
-        name: fullCampaignData.name,
-        location: fullCampaignData.location,
-        category: fullCampaignData.category,
-        goalAmount: Number(fullCampaignData.goalAmount),
-        isAdultContent: fullCampaignData.isAdult,
-        isIDVerifiedRequired: fullCampaignData.canVerifyID,
-        isProjectVerifiedRequired: fullCampaignData.canVerifyProject,
-        title: fullCampaignData.campaignTitle,
-        description: fullCampaignData.campaignDescription,
-        // --- CRITICAL UPDATE: Send mediaFileNames under the 'mediaUrls' key ---
-        mediaUrls: fullCampaignData.mediaFileNames, // This array now matches the backend schema field name and type
-        // --- END CRITICAL UPDATE ---
-        content: fullCampaignData.storyContent,
-        status: 'Pending Review'
-    };
+    const formDataToSend = new FormData();
 
-    console.log("CampaignCreation05 - Submitting campaign data:", campaignDataToSubmit);
+    // Append non-file data
+    formDataToSend.append('name', fullCampaignData.name);
+    formDataToSend.append('location', fullCampaignData.location);
+    formDataToSend.append('category', fullCampaignData.category);
+    formDataToSend.append('goalAmount', Number(fullCampaignData.goalAmount));
+    formDataToSend.append('isAdultContent', fullCampaignData.isAdult);
+    formDataToSend.append('isIDVerifiedRequired', fullCampaignData.canVerifyID);
+    formDataToSend.append('isProjectVerifiedRequired', fullCampaignData.canVerifyProject);
+    formDataToSend.append('title', fullCampaignData.campaignTitle);
+    formDataToSend.append('description', fullCampaignData.campaignDescription);
+    formDataToSend.append('content', fullCampaignData.storyContent);
+    formDataToSend.append('status', 'Pending Review');
+
+    // Append actual media files - CRITICAL FIX: Changed 'media' to 'mediaFile'
+    fullCampaignData.actualMediaFiles.forEach((file, index) => {
+        formDataToSend.append(`mediaFile`, file); // 'mediaFile' matches the backend Multer configuration
+    });
+
+    console.log("CampaignCreation05 - Submitting campaign data (FormData):", formDataToSend);
 
     try {
       const response = await fetch('http://localhost:5000/api/campaigns', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
+            // Do NOT set Content-Type header when sending FormData; browser sets it automatically
         },
-        body: JSON.stringify(campaignDataToSubmit),
+        body: formDataToSend, // Send FormData object directly
       });
 
       if (response.ok) {

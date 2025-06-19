@@ -1,3 +1,4 @@
+// src/Pages/ExploreCampaigns.jsx
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
@@ -14,7 +15,7 @@ function CampaignCard({ campaign }) {
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm">
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col"> {/* Added flex flex-col */}
       {/* Assuming mediaUrls[0] is the primary image, or use a placeholder */}
       <img
         src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `http://localhost:5000${campaign.mediaUrls[0]}` : "/placeholder.svg"}
@@ -22,13 +23,16 @@ function CampaignCard({ campaign }) {
         className="w-full h-48 object-cover"
         onError={(e) => { e.target.onerror = null; e.target.src="/placeholder.svg" }} // Fallback for broken images
       />
-      <div className="p-4">
+      <div className="p-4 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-lg font-bold">{campaign.title}</h3>
           <span className="text-sm text-gray-600">{campaign.location}</span>
         </div>
-        <p className="text-sm text-gray-600 mb-4">{campaign.description}</p>
-        <div className="flex justify-between text-sm mb-2">
+        {/* Fixed height for description to ensure visual consistency */}
+        <p className="text-sm text-gray-600 mb-4 h-20 overflow-hidden"> {/* Added h-20 and overflow-hidden */}
+          {campaign.description}
+        </p>
+        <div className="flex justify-between text-sm mb-2 mt-auto"> {/* Added mt-auto to push progress/buttons to bottom */}
           <span className="font-medium text-gray-700">{formatCurrency(safeRaised)}</span>
           <span className="font-medium text-[#65835e]">{formatCurrency(safeGoal)}</span>
         </div>

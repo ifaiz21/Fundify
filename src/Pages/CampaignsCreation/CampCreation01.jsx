@@ -1,18 +1,32 @@
 // src/Pages/CampaignsCreation/CampCreation01.jsx
 "use client"
-import { useState } from "react"
-import { useNavigate } from "react-router-dom"
+import { useState, useEffect } from "react" // Added useEffect
+import { useNavigate, useLocation } from "react-router-dom" // Added useLocation
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
 const CampaignCreation01 = () => {
   const navigate = useNavigate()
+  const location = useLocation() // Initialize useLocation
 
   const [formData, setFormData] = useState({
     name: "",
     location: "",
     category: "",
   })
+
+  // Add useEffect to restore data if navigating back
+  useEffect(() => {
+    if (location.state && location.state.campaignData) {
+      const incomingData = location.state.campaignData;
+      setFormData({
+        name: incomingData.name || "",
+        location: incomingData.location || "",
+        category: incomingData.category || "",
+      });
+      console.log("Data restored in CampCreation01:", incomingData);
+    }
+  }, [location.state]); // Re-run when location state changes
 
   const handleChange = (e) => {
     const { name, value } = e.target
@@ -146,7 +160,7 @@ const CampaignCreation01 = () => {
                           <option value="Film & Video">Film & Video</option>
                           <option value="Food">Food</option>
                           <option value="Games">Games</option>
-                          <option value="Journalism">Journalism</option>                          
+                          <option value="Journalism">Journalism</option>          
                           <option value="Medical">Medical</option>
                           <option value="Music">Music</option>
                           <option value="Nonprofit">Nonprofit</option>

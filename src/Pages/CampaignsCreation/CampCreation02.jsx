@@ -1,6 +1,6 @@
 // src/Pages/CampaignsCreation/CampCreation02.jsx
 "use client"
-import { useState, useEffect } from "react" // Added useEffect for previous data
+import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
@@ -12,21 +12,31 @@ const CampaignCreation02 = () => {
   // State to hold all campaign data from previous steps
   const [campaignDataFromPreviousSteps, setCampaignDataFromPreviousSteps] = useState({});
 
-  useEffect(() => {
-    // Receive data passed from CampCreation01
-    if (location.state && location.state.campaignData) {
-      setCampaignDataFromPreviousSteps(location.state.campaignData);
-      console.log("Data received in 02:", location.state.campaignData);
-    }
-  }, [location.state]);
-
-
   const [formData, setFormData] = useState({
     goalAmount: "",
     isAdult: false,
     canVerifyID: false,
     canVerifyProject: false,
   })
+
+  useEffect(() => {
+    // Receive data passed from CampCreation01 or CampCreation03 (when going back)
+    if (location.state && location.state.campaignData) {
+      const incomingData = location.state.campaignData;
+      setCampaignDataFromPreviousSteps(incomingData);
+      console.log("Data received in 02:", incomingData);
+
+      // Restore form data specific to CampCreation02
+      setFormData(prev => ({
+        ...prev,
+        goalAmount: incomingData.goalAmount || "",
+        isAdult: incomingData.isAdult !== undefined ? incomingData.isAdult : false,
+        canVerifyID: incomingData.canVerifyID !== undefined ? incomingData.canVerifyID : false,
+        canVerifyProject: incomingData.canVerifyProject !== undefined ? incomingData.canVerifyProject : false,
+      }));
+    }
+  }, [location.state]);
+
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
@@ -53,7 +63,8 @@ const CampaignCreation02 = () => {
 
   const handleBack = () => {
     // Pass previous data back to CampCreation01
-    navigate("/campaign-creation-01", { state: { campaignData: campaignDataFromPreviousSteps } })
+    // It's crucial to pass all data received in this step back, as CampCreation01's useEffect will handle restoring it.
+    navigate("/create-campaign", { state: { campaignData: campaignDataFromPreviousSteps } })
   }
 
   return (

@@ -23,7 +23,7 @@ const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString(
 // --- Google OAuth2Client Initialization ---
 // IMPORTANT: Replace with your Google OAuth Client ID from Google Cloud Console
 // This should preferably come from an environment variable for production.
-const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || '656729496942-0l6989sg16pklhjupapg0pacm85jp35k.apps.googleusercontent.com'; // <<< IMPORTANT: SET THIS IN .env!
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID_FROM_CONSOLE'; // <<< IMPORTANT: SET THIS IN .env!
 const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
 // Define your JWT secret (use a strong, random string from environment variables)
