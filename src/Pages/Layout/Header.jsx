@@ -1,7 +1,9 @@
 // src/Pages/Layout/Header.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { User } from "lucide-react";
+//import { User } from "lucide-react";
+import { useUser } from '../../context/UserContext';
+
 
 export default function Header({ hideHome }) {
   //const [isMenuOpen, setIsMenuOpen] = useState(false);
@@ -11,6 +13,12 @@ export default function Header({ hideHome }) {
   const [logoutMessage, setLogoutMessage] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
+
+const { userProfile, loadingUserContext } = useUser();
+
+  // ADDED: Default avatar logic
+  const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
+
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -64,29 +72,27 @@ export default function Header({ hideHome }) {
               </a>
               <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
 
-              {/* User Icon or Login */}
+              {/* User Account Icon with Login Check */}
           {isLoggedIn ? (
             <div className="relative">
+              {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full border-2 border-gray-300 bg-gray-300 flex items-center justify-center"
+                className="w-10 h-10 rounded-full flex items-center justify-center" // Remove hardcoded bg-gray and border for the image to show
               >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="32"
-                  height="32"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-gray-700"
-                >
-                  <circle cx="12" cy="8" r="4"></circle>
-                  <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                  <User />
-                </svg>
+                {loadingUserContext ? (
+                  <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                ) : (
+                  <img
+                    src={avatarSrc}
+                    alt="Profile"
+                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src = "/Images/default-avatar.png";
+                    }}
+                  />
+                )}
               </button>
 
                   {showDropdown && (

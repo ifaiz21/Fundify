@@ -131,7 +131,7 @@ function App() {
           message={toast.message}
           type={toast.type}
           onClose={hideToast}
-          duration={3000} // Set a default duration or pass from showToast if needed
+          duration={3000}
         />
       )}
     </UserProvider>

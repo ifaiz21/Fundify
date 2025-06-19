@@ -566,6 +566,7 @@ function UserProfileSettings({ showToast }) {
               src={profileImagePreview || "/Images/default-avatar.png"}
               alt="Profile"
               className="w-full h-full object-cover"
+              referrerPolicy="no-referrer"
               onError={(e) => {
                 e.target.onerror = null;
                 e.target.src = "/Images/default-avatar.png";

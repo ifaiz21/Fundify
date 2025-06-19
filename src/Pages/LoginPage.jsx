@@ -4,6 +4,7 @@ import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 import SideLayout from "./Layout/SideLayout";
+import GoogleSignInButton from '../components/GoogleSignUp';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -72,7 +73,7 @@ const LoginPage = () => {
             <IoChevronBackOutline size={20} /> Back
           </button>
         </div>
-        
+
         <div className="flex h-full">
           <div className="w-full flex items-center justify-center">
             <div className="w-3/5 p-8 rounded-md">
@@ -80,7 +81,7 @@ const LoginPage = () => {
               <p className="text-md text-gray-500 mb-6">
                 If you are already a member, login with your email and password.
               </p>
-              {message && <div className="text-red-600 mb-4">{message}</div>}
+              {message && <div className="text-green-600 mb-4">{message}</div>} {/* Changed message color for success */}
               <form className="space-y-4" onSubmit={handleContinue}>
                 <div className="space-y-2 text-[#696f79]">
                   <label htmlFor="email" className="font-semibold">
@@ -88,10 +89,11 @@ const LoginPage = () => {
                   </label>
                   <input
                     type="email"
+                    id="email" // Added id for better a11y with label
                     placeholder="Email address"
                     value={email}
                     onChange={handleEmailChange}
-                    className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none"
+                    className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" // Added focus styles
                     required
                   />
                 </div>
@@ -101,21 +103,22 @@ const LoginPage = () => {
                     Password
                   </label>
                   <div className="relative">
-                  <input
-                    type={showPassword ? "text" : "password"}
-                    placeholder="Password"
-                    value={password}
-                    onChange={handlePasswordChange}
-                    className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none pr-12"
-                    required
-                  />
-                  <span
+                    <input
+                      type={showPassword ? "text" : "password"}
+                      id="password" // Added id
+                      placeholder="Password"
+                      value={password}
+                      onChange={handlePasswordChange}
+                      className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none pr-12 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" // Added focus styles
+                      required
+                    />
+                    <span
                       className="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-600"
                       onClick={() => setShowPassword(!showPassword)}
                     >
                       {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
                     </span>
-                    </div>
+                  </div>
                 </div>
 
                 <div className="flex justify-between items-center mb-4">
@@ -131,11 +134,11 @@ const LoginPage = () => {
                   </a>
                 </div>
 
-                {error && <p className="text-red-600 text-sm">{error}</p>}
+                {error && <p className="text-red-600 text-sm mt-2">{error}</p>} {/* Adjusted margin */}
 
                 <button
                   type="submit"
-                  className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] font-semibold text-md"
+                  className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] font-semibold text-md transition-colors duration-200" // Added transition
                 >
                   Continue
                 </button>
@@ -151,14 +154,11 @@ const LoginPage = () => {
                 </a>
               </p>
 
-              <div className="flex justify-center mt-4">
-                <button className="mx-2">
-                  <img
-                    src="/Images/google-icon.png"
-                    alt="Google"
-                    className="w-10 h-10"
-                  />
-                </button>
+              {/* --- Google Sign-Up Integration Point --- */}
+              <div className="flex flex-col items-center mt-6 space-y-4">
+                <div className="w-full flex justify-center">
+                  <GoogleSignInButton />
+                </div>
                 <button className="mx-2">
                   <img
                     src="/Images/facebook-icon.png"
@@ -167,6 +167,8 @@ const LoginPage = () => {
                   />
                 </button>
               </div>
+              {/* --- End Google Sign-Up Integration --- */}
+
             </div>
           </div>
         </div>

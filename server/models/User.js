@@ -9,6 +9,11 @@ const userSchema = new mongoose.Schema({
   verified: { type: Boolean, default: false },
   verificationCode: { type: String },
 
+  // --- New fields for Google Sign-in ---
+  googleId: { type: String, unique: true, sparse: true }, // Google's unique user ID
+  registrationMethod: { type: String, enum: ['email', 'google', 'facebook'], default: 'email' }, // How user registered
+
+
   contactNo: { type: String, default: '' },
   additionalEmails: [{ type: String }],
   createdCampaigns: { type: Number, default: 0 },
@@ -20,6 +25,10 @@ const userSchema = new mongoose.Schema({
   expiryDate: { type: String, default: '' },
 
   profilePictureUrl: { type: String, default: '' }, // Naya field: Profile Picture ka URL/path
+
+  // Added lastLogin and createdAt for better user tracking
+  createdAt: { type: Date, default: Date.now },
+  lastLogin: { type: Date, default: Date.now },
 });
 
 module.exports = mongoose.model('User', userSchema);

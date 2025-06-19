@@ -4,6 +4,9 @@ const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
 const nodemailer = require('nodemailer');
+const { OAuth2Client } = require('google-auth-library');
+require('dotenv').config();
+
 
 // Email transporter setup
 const transporter = nodemailer.createTransport({
@@ -16,6 +19,17 @@ const transporter = nodemailer.createTransport({
 
 // Helper to generate 6-digit verification code
 const generateCode = () => Math.floor(100000 + Math.random() * 900000).toString();
+
+// --- Google OAuth2Client Initialization ---
+// IMPORTANT: Replace with your Google OAuth Client ID from Google Cloud Console
+// This should preferably come from an environment variable for production.
+const GOOGLE_CLIENT_ID = process.env.GOOGLE_CLIENT_ID || 'YOUR_GOOGLE_CLIENT_ID_FROM_CONSOLE'; // <<< IMPORTANT: SET THIS IN .env!
+const client = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
+
+// Define your JWT secret (use a strong, random string from environment variables)
+// This is used for your *application's* JWTs, not Google's.
+const APP_JWT_SECRET = process.env.JWT_SECRET || 'your_super_secret_app_jwt_key_for_production'; // <<< IMPORTANT: CHANGE THIS IN PRODUCTION!
+
 
 router.get('/test-email', async (req, res) => {
   try {
@@ -175,7 +189,7 @@ router.post('/login', async (req, res) => {
 
     const token = jwt.sign(
       { id: user._id, role: user.role },
-      process.env.JWT_SECRET,
+      APP_JWT_SECRET,  // Use APP_JWT_SECRET
       { expiresIn: '1d' }
     );
 
@@ -186,7 +200,8 @@ router.post('/login', async (req, res) => {
         id: user._id,
         name: user.name,
         email: user.email,
-        role: user.role
+        role: user.role,
+        profilePictureUrl: user.photoURL || null // Include photoURL for frontend context
       }
     });
   } catch (err) {
@@ -194,6 +209,118 @@ router.post('/login', async (req, res) => {
     res.status(500).json({ message: 'Login failed', error: err.message });
   }
 });
+
+// Google Sign-In/Sign-up Endpoint (NEW)
+router.post('/google-login', async (req, res) => {
+  const googleIdToken = req.headers.authorization ? req.headers.authorization.split(' ')[1] : null;
+
+  if (!googleIdToken) {
+    return res.status(401).json({ message: 'No Google ID token provided.' });
+  }
+
+  try {
+    // 1. Verify the Google ID Token with Google's API
+    console.log("Verifying Google ID token using CLIENT_ID:", GOOGLE_CLIENT_ID);
+    const ticket = await client.verifyIdToken({
+      idToken: googleIdToken,
+      audience: GOOGLE_CLIENT_ID, // Ensure the token is for your client ID
+    });
+
+    const payload = ticket.getPayload(); // Contains decoded user information
+    const googleId = payload['sub']; // Google's unique user ID
+    const email = payload['email'];
+    const displayName = payload['name'];
+    const photoURL = payload['picture'];
+    const emailVerifiedByGoogle = payload['email_verified']; // Google's email verification status
+
+    console.log('Google ID Token verified:', payload);
+
+    // 2. Check if user exists in MongoDB based on Google ID
+    let user = await User.findOne({ googleId: googleId });
+
+    if (!user) {
+        // If not found by googleId, check if an existing user with the same email exists
+        // This handles cases where a user might have previously signed up with email/password
+        // and now tries to sign in with Google using the same email.
+        user = await User.findOne({ email: email });
+
+        if (user) {
+            // Existing user found by email, link their account to Google
+            user.googleId = googleId;
+            user.registrationMethod = 'google'; // Update registration method
+            user.photoURL = photoURL || user.photoURL; // Update photo
+            user.displayName = displayName || user.displayName; // Update display name
+            // If the existing user was not verified, and Google verifies their email, mark as verified
+            if (!user.verified && emailVerifiedByGoogle) {
+                user.verified = true;
+                user.verificationCode = undefined; // Clear any pending codes
+            }
+            user.lastLogin = new Date();
+            await user.save();
+            console.log(`Existing user linked with Google: ${email}`);
+        } else {
+            // New user: Create a new user in MongoDB
+            user = new User({
+                googleId: googleId, // Store Google's unique ID
+                email: email,
+                displayName: displayName,
+                photoURL: photoURL,
+                verified: emailVerifiedByGoogle, // Use Google's email verification status
+                registrationMethod: 'google', // Mark how they registered
+                createdAt: new Date(),
+                lastLogin: new Date(),
+            });
+            await user.save();
+            console.log(`New user registered via Google: ${user.email}`);
+        }
+    } else {
+        // User exists by Google ID: Update their information
+        user.email = email || user.email; // Update if email changed on Google side (unlikely)
+        user.displayName = displayName || user.displayName;
+        user.photoURL = photoURL || user.photoURL;
+        // Ensure 'verified' status is true if Google says email is verified
+        if (emailVerifiedByGoogle) {
+            user.verified = true;
+            user.verificationCode = undefined; // Clear any old codes if they exist
+        }
+        user.lastLogin = new Date();
+        await user.save();
+        console.log(`Existing Google user logged in: ${user.email}`);
+    }
+
+
+    // 3. Generate your own JWT for the frontend (for your application's authentication)
+    const token = jwt.sign(
+      { id: user._id, role: user.role, email: user.email, googleId: user.googleId }, // Payload
+      APP_JWT_SECRET,
+      { expiresIn: '1d' } // Token expiration
+    );
+
+    res.status(200).json({
+      message: 'Google sign-up/login successful',
+      token: token,
+      user: { // Send back relevant user data for frontend context
+        _id: user._id,
+        name: user.displayName || user.name, // Prefer Google's display name if available
+        email: user.email,
+        role: user.role,
+        profilePictureUrl: user.photoURL // Include photoURL for frontend context
+      }
+    });
+
+  } catch (error) {
+    console.error('Error in Google signup/login backend endpoint:', error);
+    // Specifically catch token verification errors
+    if (error.name === 'TokenExpiredError') {
+      return res.status(401).json({ message: 'Google ID token expired. Please try again.' });
+    }
+    if (error.name === 'JsonWebTokenError') { // Catch invalid signature etc.
+      return res.status(401).json({ message: 'Invalid Google ID token.' });
+    }
+    return res.status(500).json({ message: 'Internal server error during Google sign-up/login.', error: error.message });
+  }
+});
+
 //code-verification-process
 router.post('/code-verification', async (req, res) => {
   const { email, code } = req.body;
