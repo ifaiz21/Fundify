@@ -1,29 +1,90 @@
+// src/Pages/DonationScreen.jsx
 "use client"
 
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Added useLocation
 import Header from "./Layout/HeaderLayout";
-import Footer from "./Layout/FooterLayout";
+import Footer from "./Layout/Footer";
+import { useEffect } from "react";
 
 const DonationScreen = () => {
+  const navigate = useNavigate();
+  const location = useLocation(); // Initialize useLocation
+  const [donationAmount, setDonationAmount] = useState(25);
+  const [isCustomAmount, setIsCustomAmount] = useState(false);
+  const [donationFrequency, setDonationFrequency] = useState("one-time");
+  const [honorOf, setHonorOf] = useState("");
+  const [donationType, setDonationType] = useState("General donation");
+  const [campaignId, setCampaignId] = useState(null); // State for campaign ID
+  const [isLoading, setIsLoading] = useState(false);
 
-  const navigate = useNavigate(); // Hook for navigation
+  useEffect(() => {
+    // Check if campaignId is passed from ExploreCampaigns
+    if (location.state && location.state.campaignId) {
+      setCampaignId(location.state.campaignId);
+      setDonationType("Project specific"); // Set default donation type to 'Project specific'
+      console.log("DonationScreen received campaign ID:", location.state.campaignId);
+    }
+  }, [location.state]); // Dependency on location.state to react to navigation changes
 
-  const [donationAmount, setDonationAmount] = useState(25)
-  const [isCustomAmount, setIsCustomAmount] = useState(false)
-  const [donationFrequency, setDonationFrequency] = useState("one-time")
-  const [honorOf, setHonorOf] = useState("")
+  const getAuthToken = () => {
+    return localStorage.getItem('token');
+  };
 
-  const handleDonate = () => {
-    // Add your donation processing logic here
-    console.log("Processing donation:", {
-      amount: donationAmount,
+  const handleDonate = async () => {
+    setIsLoading(true);
+    const token = getAuthToken();
+
+    if (!token) {
+      alert("Please log in to make a donation.");
+      navigate("/login");
+      setIsLoading(false);
+      return;
+    }
+
+    if (donationAmount <= 0 || donationAmount === "") {
+        alert("Please enter a valid donation amount.");
+        setIsLoading(false);
+        return;
+    }
+
+    const donationData = {
+      amount: Number(donationAmount),
       frequency: donationFrequency,
       honorOf: honorOf,
-    });
-    // Navigate to payment page
-    navigate("/payment");
-  }
+      donationType: donationType,
+      campaignId: campaignId, // Now correctly uses the campaignId from state
+    };
+
+    console.log("Attempting to send donation:", donationData);
+
+    try {
+      const response = await fetch('http://localhost:5000/api/donations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify(donationData),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        alert("Donation initiated successfully! Redirecting to payment.");
+        console.log("Donation response:", result);
+        navigate("/payment", { state: { donationId: result.donation._id } });
+      } else {
+        const errorData = await response.json();
+        alert(`Donation failed: ${errorData.message}`);
+        console.error("Donation submission error:", errorData);
+      }
+    } catch (error) {
+      alert("An error occurred during donation processing.");
+      console.error("Network or unexpected error:", error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -54,25 +115,27 @@ const DonationScreen = () => {
             {/* Right Column - Donation Form */}
             <div className="bg-white p-6 rounded-md w-2/3">
               <div className="flex items-center mb-4">
-                {/* <img src="./images/fundify-transparent-logo.png" alt="Fundify" className="h-8 w-8 mr-2" /> */}
               <span className="text-[#4B5842] font-bold">Fundify</span>
               </div>
 
               <p className="text-gray-600 mb-6">
                 Welcome to fundify, please fill out the form below, Hopefully it is blessed.
-                {/*Your donation helps us fund the best ideas to address the climate crisis.*/}
               </p>
 
               <div className="space-y-6">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">Choose a donation type</label>
-                  <select className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]">
-                    <option>General donation</option>
-                    <option>Project specific</option>
-                    <option>Emergency relief</option>
-                    <option>Education Purpose</option>
-                    <option>Flood relief</option>
-                    <option>Others</option>
+                  <select 
+                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
+                    value={donationType}
+                    onChange={(e) => setDonationType(e.target.value)}
+                  >
+                    <option value="General donation">General donation</option>
+                    <option value="Project specific">Project specific</option>
+                    <option value="Emergency relief">Emergency relief</option>
+                    <option value="Education Purpose">Education Purpose</option>
+                    <option value="Flood relief">Flood relief</option>
+                    <option value="Others">Others</option>
                   </select>
                 </div>
 
@@ -83,9 +146,12 @@ const DonationScreen = () => {
                       <button
                         key={amount}
                         type="button"
-                        onClick={() => setDonationAmount(amount)}
+                        onClick={() => {
+                            setDonationAmount(amount);
+                            setIsCustomAmount(false);
+                        }}
                         className={`py-2 px-4 border ${
-                          donationAmount === amount
+                          donationAmount === amount && !isCustomAmount
                             ? "bg-[#4B5842] text-white border-[#4B5842]"
                             : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
                         } rounded-md focus:outline-none`}
@@ -97,7 +163,7 @@ const DonationScreen = () => {
                       type="button"
                       onClick={() => {
                         setIsCustomAmount(true);
-                        setDonationAmount(""); 
+                        setDonationAmount("");
                       }}
                       className={`py-2 px-4 border ${
                         isCustomAmount
@@ -107,20 +173,20 @@ const DonationScreen = () => {
                     >
                       Other
                     </button>
-                    </div>
+                  </div>
 
-                  {/* Custom Donation Input Field */}
                   {isCustomAmount && (
                     <input
                       type="number"
                       min="1"
                       value={donationAmount}
-                      onChange={(e) => setDonationAmount(parseInt(e.target.value)  || "")}
+                      onChange={(e) => setDonationAmount(e.target.value === "" ? "" : parseInt(e.target.value))}
                       className="mt-3 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                       placeholder="Enter your amount"
+                      required
                     />
                   )}
-                   
+                    
                 </div>
 
                 <div>
@@ -168,12 +234,15 @@ const DonationScreen = () => {
                 <div className="flex space-x-4">
                   <button onClick={() => navigate("/")}
                     className="flex-1 bg-[#A9BEA2] text-[#000000] py-2 px-4 rounded-md hover:bg-[#97AB90] transition-colors"
+                    disabled={isLoading}
                   >
                     Cancel
                   </button>
                   <button onClick={handleDonate}
-                  className="flex-1 bg-[#4B5842] text-white py-2 px-4 rounded-md hover:bg-[#3A4433] transition-colors">
-                    Go to Checkout
+                    className="flex-1 bg-[#4B5842] text-white py-2 px-4 rounded-md hover:bg-[#3A4433] transition-colors"
+                    disabled={isLoading}
+                  >
+                    {isLoading ? "Processing..." : "Go to Checkout"}
                   </button>
                 </div>
               </div>
@@ -188,4 +257,3 @@ const DonationScreen = () => {
 }
 
 export default DonationScreen;
-

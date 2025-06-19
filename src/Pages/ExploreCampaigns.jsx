@@ -8,31 +8,28 @@ import axios from "axios"; // Import axios for API calls
 const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
 function CampaignCard({ campaign }) {
-  // Ensure campaign.raised and campaign.goal are numbers before calculation
   const safeRaised = Number(campaign.raised) || 0;
-  const safeGoal = Number(campaign.goal) || 1; // Prevent division by zero
+  const safeGoal = Number(campaign.goalAmount) || 1; // Use campaign.goalAmount, default to 1 if 0/invalid
   const progressPercentage = (safeRaised / safeGoal) * 100;
   const navigate = useNavigate();
 
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col"> {/* Added flex flex-col */}
-      {/* Assuming mediaUrls[0] is the primary image, or use a placeholder */}
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col">
       <img
         src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `http://localhost:5000${campaign.mediaUrls[0]}` : "/placeholder.svg"}
         alt={campaign.title}
         className="w-full h-48 object-cover"
-        onError={(e) => { e.target.onerror = null; e.target.src="/placeholder.svg" }} // Fallback for broken images
+        onError={(e) => { e.target.onerror = null; e.target.src="/placeholder.svg" }}
       />
-      <div className="p-4 flex flex-col flex-grow"> {/* Added flex flex-col flex-grow */}
+      <div className="p-4 flex flex-col flex-grow">
         <div className="flex justify-between items-start mb-2">
           <h3 className="text-lg font-bold">{campaign.title}</h3>
           <span className="text-sm text-gray-600">{campaign.location}</span>
         </div>
-        {/* Fixed height for description to ensure visual consistency */}
-        <p className="text-sm text-gray-600 mb-4 h-20 overflow-hidden"> {/* Added h-20 and overflow-hidden */}
+        <p className="text-sm text-gray-600 mb-4 h-20 overflow-hidden">
           {campaign.description}
         </p>
-        <div className="flex justify-between text-sm mb-2 mt-auto"> {/* Added mt-auto to push progress/buttons to bottom */}
+        <div className="flex justify-between text-sm mb-2 mt-auto">
           <span className="font-medium text-gray-700">{formatCurrency(safeRaised)}</span>
           <span className="font-medium text-[#65835e]">{formatCurrency(safeGoal)}</span>
         </div>
@@ -43,12 +40,12 @@ function CampaignCard({ campaign }) {
         {/* Explore and Donate Buttons */}
         <div className="flex justify-between mt-4">
           <button
-            onClick={() => alert(`Exploring ${campaign.title}`)}
+            onClick={() => navigate(`/ProjectView?id=${campaign._id}`)} // FIX: Changed alert() to navigate() to ProjectView
             className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
             Explore
           </button>
           <button
-            onClick={() => navigate("/donate")}
+            onClick={() => navigate("/donate", { state: { campaignId: campaign._id } })}
             className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
             Donate
           </button>
@@ -59,12 +56,12 @@ function CampaignCard({ campaign }) {
 }
 
 export default function ExploreCampaigns() {
-  const [campaigns, setCampaigns] = useState([]); // State to hold fetched campaigns
+  const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [visibleCampaignsCount, setVisibleCampaignsCount] = useState(6); // Show more campaigns initially
+  const [visibleCampaignsCount, setVisibleCampaignsCount] = useState(6);
 
   const categories = [
     { id: "all", label: "All" },
@@ -75,19 +72,16 @@ export default function ExploreCampaigns() {
     { id: "education", label: "Education" },
     { id: "homeless", label: "Homeless" },
     { id: "animal", label: "Animal" },
-    // Add other categories from your backend if available
   ];
 
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/campaigns"); // Fetch from your backend
-        // Filter campaigns to only show 'Active' or 'Approved' ones
+        const response = await axios.get("http://localhost:5000/api/campaigns");
         const activeCampaigns = response.data.filter(
           campaign => campaign.status === 'Active' || campaign.status === 'Approved'
         );
-
         setCampaigns(activeCampaigns);
         setError(null);
       } catch (err) {
@@ -98,13 +92,12 @@ export default function ExploreCampaigns() {
         setLoading(false);
       }
     };
-
     fetchCampaigns();
   }, []);
 
   const filteredCampaigns = campaigns.filter((campaign) => {
     const matchesCategory =
-      selectedCategory === "all" || campaign.category.toLowerCase() === selectedCategory.toLowerCase(); // Case-insensitive match
+      selectedCategory === "all" || campaign.category.toLowerCase() === selectedCategory.toLowerCase();
     const matchesSearch =
       campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
       campaign.description.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -114,7 +107,7 @@ export default function ExploreCampaigns() {
   });
 
   const loadMore = () => {
-    setVisibleCampaignsCount((prev) => prev + 3); // Load 3 more campaigns at a time
+    setVisibleCampaignsCount((prev) => prev + 3);
   };
 
   if (loading) {
@@ -136,7 +129,7 @@ export default function ExploreCampaigns() {
         <div className="max-w-7xl mx-auto px-4 py-12 text-center">
           <p className="text-red-600 text-xl">{error}</p>
           <button
-            onClick={() => window.location.reload()} // Simple reload to retry
+            onClick={() => window.location.reload()}
             className="mt-4 bg-[#4A5D45] text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-colors"
           >
             Retry
@@ -202,7 +195,7 @@ export default function ExploreCampaigns() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ">
             {filteredCampaigns.slice(0, visibleCampaignsCount).map((campaign) => (
-              <CampaignCard key={campaign._id} campaign={campaign} /> //* Use _id for unique key *
+              <CampaignCard key={campaign._id} campaign={campaign} />
             ))}
           </div>
         )}

@@ -1,105 +1,53 @@
+// src/Pages/AdminSide/DonationHistory.jsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Added useEffect
 import Sidebar from "./SideBar"
 import { Search } from "lucide-react"
+import axios from "axios" // Import axios
 
 const DonationHistory = () => {
-  // Sample data for donations
-  const [donations, setDonations] = useState([
-    {
-      id: "#9328792374",
-      type: "Deposit",
-      campaign: "3D Printed Planters",
-      user: "Hassan",
-      amount: "10,000 PKR",
-      status: "Completed",
-    },
-    {
-      id: "#9328792374",
-      type: "Withdrawal",
-      campaign: "Children Study",
-      user: "Hamza",
-      amount: "15,000 PKR",
-      status: "Pending",
-    },
-    {
-      id: "#7328792374",
-      type: "Deposit",
-      campaign: "Save Rhino",
-      user: "David",
-      amount: "4,400 PKR",
-      status: "Failed",
-    },
-    {
-      id: "#9328792374",
-      type: "Deposit",
-      campaign: "Build Shelters",
-      user: "Williams",
-      amount: "8,000 PKR",
-      status: "Pending",
-    },
-    {
-      id: "#9328792374",
-      type: "Withdrawal",
-      campaign: "Earthquake Victims",
-      user: "Arisu",
-      amount: "9,000 PKR",
-      status: "Completed",
-    },
-    {
-      id: "#9328792374",
-      type: "Deposit",
-      campaign: "Rescue Stray Animals",
-      user: "Usapa",
-      amount: "7,700 PKR",
-      status: "Pending",
-    },
-    {
-      id: "#9328792374",
-      type: "Deposit",
-      campaign: "Water Powered Car",
-      user: "Hassan",
-      amount: "4,000 PKR",
-      status: "Failed",
-    },
-    {
-        id: "#9328792374",
-        type: "Withdrawal",
-        campaign: "Earthquake Victims",
-        user: "Arisu",
-        amount: "9,000 PKR",
-        status: "Completed",
-    },
-    {
-      id: "#9328792374",
-      type: "Deposit",
-      campaign: "Build Shelters",
-      user: "Williams",
-      amount: "8,000 PKR",
-      status: "Pending",
-    },
-    {
-      id: "#9328792374",
-      type: "Deposit",
-      campaign: "Build Shelters",
-      user: "Williams",
-      amount: "8,000 PKR",
-      status: "Pending",
-    },
-  ])
-  
-
-  // Pagination state
+  const [donations, setDonations] = useState([]) // State to store fetched donations
+  const [loading, setLoading] = useState(true) // Loading state
+  const [error, setError] = useState(null) // Error state
   const [currentPage, setCurrentPage] = useState(1)
   const [searchQuery, setSearchQuery] = useState("")
+
+  useEffect(() => {
+    const fetchDonations = async () => {
+      try {
+        setLoading(true)
+        const token = localStorage.getItem('token'); // Assuming token is stored in localStorage
+
+        if (!token) {
+            setError("Authentication required. Please log in.");
+            setLoading(false);
+            return;
+        }
+
+        const response = await axios.get("http://localhost:5000/api/donations", {
+          headers: {
+            'Authorization': `Bearer ${token}`
+          }
+        })
+        setDonations(response.data)
+        setError(null)
+      } catch (err) {
+        console.error("Error fetching donation history:", err)
+        setError("Failed to load donation history. Please try again later.")
+        setDonations([])
+      } finally {
+        setLoading(false)
+      }
+    }
+    fetchDonations()
+  }, []) // Empty dependency array means this effect runs once on mount
 
   const filteredDonations = donations.filter((donation) =>
     Object.values(donation).some((value) =>
       String(value).toLowerCase().includes(searchQuery.toLowerCase())
     )
   );
-  
 
   const itemsPerPage = 8;
   const totalItems = filteredDonations.length;
@@ -107,16 +55,17 @@ const DonationHistory = () => {
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentDonations = filteredDonations.slice(startIndex, endIndex);
-  
 
   const getStatusClass = (status) => {
     switch (status) {
-      case "Completed":
+      case "completed": // Backend status is lowercase
         return "bg-green-500 text-white"
-      case "Pending":
+      case "pending": // Backend status is lowercase
         return "bg-yellow-500 text-white"
-      case "Failed":
+      case "failed": // Backend status is lowercase
         return "bg-red-500 text-white"
+      case "refunded": // Added refunded status
+        return "bg-blue-500 text-white"
       default:
         return "bg-gray-500 text-white"
     }
@@ -125,7 +74,34 @@ const DonationHistory = () => {
   const handleSearch = (e) => {
     setSearchQuery(e.target.value)
   }
-  
+
+  if (loading) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 overflow-auto p-8 text-center">
+          <p className="text-xl text-gray-600">Loading donation history...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen bg-gray-50">
+        <Sidebar />
+        <div className="flex-1 overflow-auto p-8 text-center">
+          <p className="text-red-600 text-xl">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-[#4A5D45] text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-colors"
+          >
+            Retry
+          </button>
+        </div>
+      </div>
+    )
+  }
 
   return (
     <div className="flex h-screen bg-gray-50">
@@ -161,20 +137,26 @@ const DonationHistory = () => {
                   </tr>
                 </thead>
                 <tbody>
-                    {currentDonations.map((donation, index) => (
-                    <tr key={index} className="border-b last:border-b-0 hover:bg-gray-50">
-                      <td className="px-6 py-4 text-sm font-medium">{donation.id}</td>
-                      <td className="px-6 py-4 text-sm">{donation.type}</td>
-                      <td className="px-6 py-4 text-sm">{donation.campaign}</td>
-                      <td className="px-6 py-4 text-sm">{donation.user}</td>
-                      <td className="px-6 py-4 text-sm">{donation.amount}</td>
-                      <td className="px-6 py-4">
-                        <span className={`px-3 py-1 text-xs rounded-full ${getStatusClass(donation.status)}`}>
-                          {donation.status}
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
+                    {currentDonations.length > 0 ? (
+                        currentDonations.map((donation, index) => (
+                        <tr key={donation._id || index} className="border-b last:border-b-0 hover:bg-gray-50">
+                            <td className="px-6 py-4 text-sm font-medium">{donation.transactionId || donation._id}</td>
+                            <td className="px-6 py-4 text-sm">{donation.donationType === "General donation" ? "Deposit" : "Deposit (Project)"}</td> {/* Simplified type for now */}
+                            <td className="px-6 py-4 text-sm">{donation.campaignId ? donation.campaignId.title : "N/A (General)"}</td>
+                            <td className="px-6 py-4 text-sm">{donation.userId ? donation.userId.name : "Anonymous"}</td>
+                            <td className="px-6 py-4 text-sm">PKR {donation.amount.toLocaleString()}</td>
+                            <td className="px-6 py-4">
+                            <span className={`px-3 py-1 text-xs rounded-full ${getStatusClass(donation.status)}`}>
+                                {donation.status.charAt(0).toUpperCase() + donation.status.slice(1)} {/* Capitalize status */}
+                            </span>
+                            </td>
+                        </tr>
+                        ))
+                    ) : (
+                        <tr>
+                            <td colSpan="6" className="px-6 py-4 text-center text-gray-500">No donations found.</td>
+                        </tr>
+                    )}
                 </tbody>
               </table>
             </div>

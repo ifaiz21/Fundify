@@ -1,3 +1,4 @@
+// server/index.js
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
@@ -8,9 +9,11 @@ const path = require('path');
 // Import routes
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
-const campaignRoutes = require('./routes/campaigns');
+const campaignRoutes = require('./routes/campaigns'); // Existing campaigns route for main campaign actions (creation, etc.)
 const userRoutes = require('./routes/users');
 const contactusRoutes = require('./routes/contactus');
+const donationsRoutes = require('./routes/donations');
+const campaignUpdatesRoutes = require('./routes/campaignUpdates'); // NEW: Import campaign updates route
 
 dns.setDefaultResultOrder('ipv4first');
 
@@ -42,9 +45,11 @@ mongoose.connect(process.env.MONGO_URI, {
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/campaigns', campaignRoutes);
-app.use('/api/users', userRoutes); // User routes include profile and profile picture now
+app.use('/api/campaigns', campaignRoutes); // Main campaigns route (includes file upload for creation)
+app.use('/api/users', userRoutes);
 app.use('/api/contactus', contactusRoutes);
+app.use('/api/donations', donationsRoutes);
+app.use('/api/campaigns', campaignUpdatesRoutes); // NEW: Add campaign updates route (note: same base path as campaigns, but different sub-routes)
 
 // Catch-all for undefined routes (optional, but good for debugging)
 app.use((req, res, next) => {

@@ -1,14 +1,19 @@
+// src/Pages/Payment/PaymentScreen.jsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react" // Added useEffect
 import Footer from "../Layout/FooterLayout"
 import Header from "../Layout/HeaderLayout"
-import { useNavigate } from "react-router-dom"
+import { useNavigate, useLocation } from "react-router-dom" // Added useLocation
 
 const PaymentPage = () => {
   const navigate = useNavigate()
+  const location = useLocation() // Initialize useLocation
   const [paymentMethod, setPaymentMethod] = useState("visa")
   const [showConfirmation, setShowConfirmation] = useState(false)
+  const [isProcessing, setIsProcessing] = useState(false) // New state for loading
+  const [donationId, setDonationId] = useState(null) // State to store donation ID
+
   const [formData, setFormData] = useState({
     address: "",
     city: "",
@@ -20,6 +25,18 @@ const PaymentPage = () => {
     cvc: "",
   })
 
+  useEffect(() => {
+    // Retrieve donationId from location state
+    if (location.state && location.state.donationId) {
+      setDonationId(location.state.donationId)
+      console.log("PaymentPage received donation ID:", location.state.donationId)
+    } else {
+      // Handle case where donationId is not present (e.g., direct access or error)
+      alert("Donation ID not found. Please start a new donation.")
+      navigate("/donate") // Redirect back to donation screen
+    }
+  }, [location.state, navigate]) // Added navigate to dependency array
+
   const handleInputChange = (e) => {
     const { id, value } = e.target
     setFormData((prev) => ({
@@ -28,15 +45,71 @@ const PaymentPage = () => {
     }))
   }
 
+  const getAuthToken = () => {
+    return localStorage.getItem('token');
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault()
+    // Basic validation before showing confirmation
+    if (!formData.address || !formData.city || !formData.cardholderName || !formData.cardNumber) {
+        alert("Please fill in all required payment details.");
+        return;
+    }
     setShowConfirmation(true)
   }
 
-  const handleConfirmPayment = () => {
-    console.log("Processing payment")
+  const handleConfirmPayment = async () => {
     setShowConfirmation(false)
-    navigate("/submit-2")
+    setIsProcessing(true) // Set loading to true
+
+    if (!donationId) {
+        alert("Cannot process payment: Donation ID is missing.");
+        setIsProcessing(false);
+        navigate("/donate"); // Redirect if ID is missing
+        return;
+    }
+
+    const token = getAuthToken();
+    if (!token) {
+        alert("Authentication token missing. Please log in again.");
+        setIsProcessing(false);
+        navigate("/login");
+        return;
+    }
+
+    // Simulate payment processing delay
+    await new Promise(resolve => setTimeout(resolve, 2000)); // 2 second delay
+
+    try {
+        // Call backend to update donation status to 'completed'
+        const response = await fetch(`http://localhost:5000/api/donations/${donationId}/status`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`,
+            },
+            body: JSON.stringify({ status: 'completed', transactionId: `txn_${Date.now()}` }) // Dummy transaction ID
+        });
+
+        if (response.ok) {
+            alert("Payment successful! Thank you for your donation.");
+            console.log("Donation status updated to completed.");
+            // Redirect to Explore Campaigns or a success page
+            navigate("/explore"); 
+        } else {
+            const errorData = await response.json();
+            alert(`Payment failed to confirm: ${errorData.message}`);
+            console.error("Failed to update donation status:", errorData);
+            navigate("/donate"); // Redirect back to donation page on failure
+        }
+    } catch (error) {
+        alert("An error occurred during payment confirmation.");
+        console.error("Payment confirmation error:", error);
+        navigate("/donate"); // Redirect back to donation page on error
+    } finally {
+        setIsProcessing(false); // Reset loading state
+    }
   }
 
   const handleCancelPayment = () => {
@@ -222,8 +295,9 @@ const PaymentPage = () => {
                 <button
                   type="submit"
                   className="w-full bg-[#4B5842] text-white py-3 rounded-md hover:bg-[#3A4433] transition-colors"
+                  disabled={isProcessing} // Disable button while processing
                 >
-                  Confirm
+                  {isProcessing ? "Processing Payment..." : "Confirm Payment"}
                 </button>
               </form>
 
@@ -300,14 +374,16 @@ const PaymentPage = () => {
                 <button
                   onClick={handleCancelPayment}
                   className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200 transition-colors"
+                  disabled={isProcessing}
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleConfirmPayment}
                   className="flex-1 px-4 py-2 text-white bg-[#4B5842] rounded-md hover:bg-[#3A4433] transition-colors"
+                  disabled={isProcessing}
                 >
-                  Confirm Payment
+                  {isProcessing ? "Processing..." : "Confirm Payment"}
                 </button>
               </div>
             </div>

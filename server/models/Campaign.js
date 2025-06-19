@@ -28,6 +28,10 @@ const campaignSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
+  raised: { // CRITICAL FIX: Added 'raised' field
+    type: Number,
+    default: 0, // Default to 0, so it's always initialized
+  },
   isAdultContent: {
     type: Boolean,
     default: false,
@@ -48,13 +52,11 @@ const campaignSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  // --- CRITICAL UPDATE: Changed to mediaUrls (array of strings) ---
   mediaUrls: {
-    type: [String], // Now expects an array of strings
-    default: [],    // Default to an empty array for consistency
+    type: [String],
+    default: [],
   },
-  // --- END CRITICAL UPDATE ---
-  status: { // e.g., 'Draft', 'Pending Review', 'Active', 'Funded', 'Rejected', 'Deleted'
+  status: {
     type: String,
     default: 'Draft',
   },

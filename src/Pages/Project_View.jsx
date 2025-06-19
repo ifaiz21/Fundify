@@ -1,47 +1,75 @@
+// src/Pages/Project_View.jsx
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
+import { useLocation, useNavigate } from "react-router-dom"
 import HeaderLayout from "./Layout/HeaderLayout"
 import FooterLayout from "./Layout/FooterLayout"
+import axios from "axios"
 
 function ProjectView() {
-  const [activeTab, setActiveTab] = useState("updates") // Set default to updates tab
+  const [activeTab, setActiveTab] = useState("campaign")
+  const [campaignData, setCampaignData] = useState(null)
+  const [campaignUpdates, setCampaignUpdates] = useState([])
+  const [recentDonors, setRecentDonors] = useState([]) // New state for recent donors
+  const [totalBackersCount, setTotalBackersCount] = useState(0) // New state for total backers count
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(null)
+  const location = useLocation()
+  const navigate = useNavigate()
 
-  const projectData = {
-    title: "Electric Scooter",
-    image: "/images/scooter1.jpg",
-    pledged: 100000,
-    goal: 1000000,
-    backers: 250,
-    daysLeft: 36,
-    status: "Success",
-    organizer: "Kismat Shah",
-    location: "XYZ, Lahore",
-    createdDays: 7,
-    description: "kismat is organizing this fundraiser to benefit society",
-  }
+  const queryParams = new URLSearchParams(location.search)
+  const campaignId = queryParams.get("id")
 
-  const recentDonors = [
-    { name: "John", amount: 100 },
-    { name: "Anonymous", amount: 250 },
-    { name: "David", amount: 670 },
-  ]
+  useEffect(() => {
+    if (campaignId) {
+      const fetchCampaignDetails = async () => {
+        try {
+          setLoading(true)
+          const response = await axios.get(`http://localhost:5000/api/campaigns/${campaignId}`)
+          setCampaignData(response.data)
+          setError(null)
+        } catch (err) {
+          console.error("Error fetching campaign details:", err)
+          setError("Failed to load campaign details. Please try again later.")
+          setCampaignData(null)
+        } finally {
+          setLoading(false)
+        }
+      }
 
-  const updates = [
-    {
-      id: 2,
-      title: "Buying New RTX 3080 Ti",
-      date: "May 15, 2023",
-      content: "Thank you for your contribution and helping me buy RTX 3080 Ti.",
-      listItems: ["New PCIE Expansion Slot", "New Motherboard", "New Mouse", "New Keyboard"],
-    },
-    {
-      id: 1,
-      title: "Buying New 32GB RAM",
-      date: "May 1, 2023",
-      content: "Thank you for your contribution and helping me buy RTX 3080 Ti.",
-    },
-  ]
+      const fetchCampaignUpdates = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/campaigns/${campaignId}/updates`)
+          setCampaignUpdates(response.data)
+        } catch (err) {
+          console.error("Error fetching campaign updates:", err)
+          setCampaignUpdates([])
+        }
+      }
+
+      // NEW: Fetch recent donors and total backers
+      const fetchRecentDonors = async () => {
+        try {
+          const response = await axios.get(`http://localhost:5000/api/donations/campaign/${campaignId}/recent?limit=3`) // Fetch top 3 recent donors
+          setRecentDonors(response.data.recentDonors)
+          setTotalBackersCount(response.data.totalBackers)
+        } catch (err) {
+          console.error("Error fetching recent donors:", err);
+          setRecentDonors([]);
+          setTotalBackersCount(0);
+        }
+      }
+
+      fetchCampaignDetails()
+      fetchCampaignUpdates()
+      fetchRecentDonors() // Fetch recent donors
+
+    } else {
+      setError("No campaign ID provided in the URL.")
+      setLoading(false)
+    }
+  }, [campaignId, location.search])
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
@@ -53,9 +81,9 @@ function ProjectView() {
       .replace("₹", "")
   }
 
-  const progress = Math.min(Math.round((projectData.pledged / projectData.goal) * 100), 100)
+  const progress = campaignData ? Math.min(Math.round((campaignData.raised / campaignData.goalAmount) * 100), 100) : 0
 
-  // Sidebar component to be reused in both tabs
+  // DonorsSidebar component
   const DonorsSidebar = () => (
     <div className="donors-sidebar">
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -77,7 +105,7 @@ function ProjectView() {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          <h3 className="text-lg font-bold">{projectData.organizer}</h3>
+          <h3 className="text-lg font-bold">{campaignData ? campaignData.name : "Organizer Name"}</h3>
           <p className="text-sm text-gray-600">Project Founder</p>
         </div>
       </div>
@@ -101,26 +129,35 @@ function ProjectView() {
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          <span className="text-sm font-medium">150 people just donated</span>
+          {/* Display dynamic total backers count */}
+          <span className="text-sm font-medium">{totalBackersCount} people just donated</span> 
         </div>
 
         <div className="pt-4 space-y-4">
-          {recentDonors.map((donor, index) => (
-            <div key={index} className="flex justify-between items-center">
-              <div className="font-medium text-lg">Rs</div>
-              <div className="text-right">
-                <div className="font-medium text-lg">{formatCurrency(donor.amount)}</div>
-                <div className="text-sm text-gray-500">{donor.name}</div>
+          {recentDonors.length > 0 ? (
+            recentDonors.map((donor, index) => (
+              <div key={index} className="flex justify-between items-center">
+                <div className="font-medium text-lg">Rs</div>
+                <div className="text-right">
+                  <div className="font-medium text-lg">{formatCurrency(donor.amount)}</div>
+                  <div className="text-sm text-gray-500">{donor.name}</div>
+                </div>
               </div>
-            </div>
-          ))}
+            ))
+          ) : (
+            <p className="text-gray-500 text-sm text-center">No recent donations yet.</p>
+          )}
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <button className="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+          <button 
+            onClick={() => alert("Showing all donors for this project (functionality to be implemented).")} 
+            className="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             See all
           </button>
-<button className="text-center py-3 px-4 bg-[#4B5945] rounded-md text-sm font-medium text-white hover:bg-[#3E4B3A] transition-colors">
+          <button 
+            onClick={handleBackThisProject} 
+            className="text-center py-3 px-4 bg-[#4B5945] rounded-md text-sm font-medium text-white hover:bg-[#3E4B3A] transition-colors">
             Back this project
           </button>
         </div>
@@ -128,32 +165,82 @@ function ProjectView() {
     </div>
   )
 
+  const handleBackThisProject = () => {
+    if (campaignData && campaignData._id) {
+      navigate("/donate", { state: { campaignId: campaignData._id } });
+    } else {
+      alert("Campaign data not loaded yet. Cannot proceed to donation.");
+    }
+  };
+
+  const handleShare = () => {
+    const campaignUrl = window.location.href;
+    navigator.clipboard.writeText(campaignUrl)
+      .then(() => {
+        alert("Campaign link copied to clipboard!");
+      })
+      .catch((err) => {
+        console.error("Failed to copy link:", err);
+        alert("Failed to copy link. Please try again manually.");
+      });
+  };
+
+  if (loading) {
+    return (
+      <>
+        <HeaderLayout />
+        <div className="project-view container mx-auto px-4 py-6 text-center">
+          <p>Loading campaign details...</p>
+        </div>
+        <FooterLayout />
+      </>
+    )
+  }
+
+  if (error) {
+    return (
+      <>
+        <HeaderLayout />
+        <div className="project-view container mx-auto px-4 py-6 text-center">
+          <p className="text-red-600">{error}</p>
+          <button onClick={() => window.location.reload()} className="mt-4 bg-[#4A5D45] text-white px-4 py-2 rounded-md hover:bg-[#3E4B3A]">Retry</button>
+        </div>
+        <FooterLayout />
+      </>
+    )
+  }
+
+  if (!campaignData) {
+    return (
+      <>
+        <HeaderLayout />
+        <div className="project-view container mx-auto px-4 py-6 text-center">
+          <p>No campaign data available.</p>
+        </div>
+        <FooterLayout />
+      </>
+    )
+  }
+
   return (
     <>
-      {/* Header */}
       <HeaderLayout />
 
       <div className="project-view container mx-auto px-4 py-6">
-        {/* Project title only shown on Campaign tab */}
-        {activeTab === "campaign" && <h1 className="text-2xl font-bold text-gray-800 mb-6">{projectData.title}</h1>}
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">{campaignData.title}</h1>
 
-        {/* Project title for Updates tab */}
-        {activeTab === "updates" && <h1 className="text-2xl font-bold text-gray-800 mb-6">Project - Updates</h1>}
-
-        {/* Campaign details only shown on Campaign tab */}
-        {activeTab === "campaign" && (
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div className="lg:col-span-2">
               <img
-                src={projectData.image || "/placeholder.svg"}
-                alt={projectData.title}
+                src={campaignData.mediaUrls && campaignData.mediaUrls.length > 0 ? `http://localhost:5000${campaignData.mediaUrls[0]}` : "/placeholder.svg"}
+                alt={campaignData.title}
                 className="w-full h-auto rounded-md shadow-md mb-6"
               />
 
-              <p className="text-gray-700 mb-4">{projectData.description}</p>
+              <p className="text-gray-700 mb-4">{campaignData.description}</p>
 
               <div className="flex items-center text-sm text-gray-600 mb-6">
-                <span>Created {projectData.createdDays} days ago</span>
+                <span>Created {new Date(campaignData.createdAt).toLocaleDateString()}</span> 
                 <span className="mx-2">•</span>
                 <span className="flex items-center">
                   <svg
@@ -171,17 +258,16 @@ function ProjectView() {
                     <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
                     <circle cx="12" cy="10" r="3"></circle>
                   </svg>
-                  {projectData.location}
+                  {campaignData.location}
                 </span>
               </div>
             </div>
 
             <div>
-              {/* Campaign Stats Card */}
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="mb-4">
-                  <div className="text-2xl font-bold">{formatCurrency(projectData.pledged)}</div>
-                  <div className="text-sm text-gray-600">pledged of {formatCurrency(projectData.goal)} goal</div>
+                  <div className="text-2xl font-bold">{formatCurrency(campaignData.raised)}</div>
+                  <div className="text-sm text-gray-600">pledged of {formatCurrency(campaignData.goalAmount)} goal</div>
                 </div>
 
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
@@ -190,32 +276,35 @@ function ProjectView() {
 
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <div className="text-2xl font-bold">{projectData.backers}</div>
+                    <div className="text-2xl font-bold">{totalBackersCount}</div> {/* Dynamic backers count */}
                     <div className="text-sm text-gray-600">backers</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">{projectData.daysLeft}</div>
+                    <div className="text-2xl font-bold">--</div> {/* Placeholder for days left */}
                     <div className="text-sm text-gray-600">days to go</div>
                   </div>
                 </div>
 
                 <div className="text-right mb-4">
                   <span className="text-sm">
-                    Predicted Status: <span className="font-medium text-green-600">{projectData.status}</span>
+                    Predicted Status: <span className="font-medium text-green-600">{campaignData.status}</span>
                   </span>
                 </div>
 
-<button className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200">
+                <button 
+                  onClick={handleBackThisProject} 
+                  className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200">
                   Back this project
                 </button>
 
-                <button className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-md transition duration-200">
+                <button 
+                  onClick={handleShare} 
+                  className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-md transition duration-200">
                   Share
                 </button>
               </div>
             </div>
           </div>
-        )}
 
         {/* Campaign Tabs */}
         <div className="campaign-tabs bg-white rounded-md shadow-sm">
@@ -252,32 +341,10 @@ function ProjectView() {
                   <div className="story-section">
                     <h2 className="text-xl font-bold mb-4">Story</h2>
 
-                    <img src="/images/scooter2.png" alt="Electric Scooter" className="w-full h-auto rounded-md mb-6" />
-
-                    <div className="space-y-4 text-gray-700">
-                      <p>
-                        Lorem ipsum dolor sit amet, consectetur adipiscing elit. Suspendisse donec et nibh bibendum nec
-                        proin nisi. Elementum semper neque diam eleifend, vel quis sed. Cursus ut ipsum nulla erat morbi
-                        sociis. Amet, eget sed id. Ut nulla ut sit amet, nunc. Nulla facilisi nulla nunc in diam sit.
-                        Odio dui elit quam tincidunt et rutrum ut. Sit aliquet ullamcorper nam libero nisi. Ante
-                        vulputate sit sodales consequat. Luctus ipsum tincidunt ac tellus purus. Consectetur quis massa
-                        id quis est enim. Cras accumsan risus, vulputate porttitor in turpis. Tristique eu diam
-                        adipiscing eget erat turpis auctor varius. A risus ac nam imperdiet varius amet. Sapien
-                        sagittis, eget viverra risus. Libero ut ac nisi, elementum cras. At interdum purus tortor dui.
-                      </p>
-
-                      <p>
-                        Lorem elit viverra pellentesque integer ut nibh elementum. Sit lectus risus, dui mauris, dapibus
-                        habitasse in urna. Facilisis varius enim facilisis sit faucibus morbi. Nibh cras eu, in in
-                        tellus dignissim morbi dui. Massa nisi nulla aliquam interdum purus, consectetur luctus ac.
-                      </p>
-
-                      <p>
-                        Sit eget mauris suspendisse eget rhoncus sit feugiat. Ultrices pharetra, massa mi a auctor
-                        habitasse diam euismod egestas. Sed cursus ullamcorper nunc, id tristique suspendisse egestas.
-                        Sed enim nam malesuada neque porttitor risus mauris. Vel sociis tristique tincidunt sit neque
-                        gravida.
-                      </p>
+                    {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
+                        <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt={campaignData.title} className="w-full h-auto rounded-md mb-6" />
+                    )}
+                    <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.content }}>
                     </div>
                   </div>
                 </div>
@@ -293,73 +360,63 @@ function ProjectView() {
                 <div className="lg:col-span-2">
                   <h2 className="text-xl font-bold mb-6">Updates on the Project</h2>
 
-                  {updates.map((update) => (
-                    <div key={update.id} className="mb-8 bg-white rounded-lg shadow-md overflow-hidden">
-                      <div className="p-6">
-                        <h3 className="text-lg font-medium mb-3">
-                          Update {update.id} : {update.title}
-                        </h3>
+                  {campaignUpdates.length > 0 ? (
+                    campaignUpdates.map((update) => (
+                      <div key={update._id} className="mb-8 bg-white rounded-lg shadow-md overflow-hidden">
+                        <div className="p-6">
+                          <h3 className="text-lg font-medium mb-3">
+                            Update: {update.title}
+                          </h3>
 
-                        <div className="flex items-center mb-4">
-                          <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              width="20"
-                              height="20"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth="2"
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
-                              className="text-gray-700"
-                            >
-                              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                              <circle cx="12" cy="7" r="4"></circle>
-                            </svg>
+                          <div className="flex items-center mb-4">
+                            <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                              <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                strokeWidth="2"
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                className="text-gray-700"
+                              >
+                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                <circle cx="12" cy="7" r="4"></circle>
+                              </svg>
+                            </div>
+                            <div>
+                              <div className="font-medium">{campaignData.name}</div>
+                              <div className="text-xs text-gray-500">
+                                {new Date(update.createdAt).toLocaleDateString()}
+                              </div>
+                            </div>
                           </div>
-                          <div>
-                            <div className="font-medium">{projectData.organizer}</div>
-                            <div className="text-xs text-gray-500">Project Founder</div>
+
+                          <div className="border-t border-b border-gray-200 py-4 my-4">
+                            <div className="mb-4" dangerouslySetInnerHTML={{ __html: update.content }}></div>
+
+                            {update.mediaUrls && update.mediaUrls.length > 0 && (
+                                <img src={`http://localhost:5000${update.mediaUrls[0]}`} alt="Update Media" className="w-full h-auto rounded-md mb-4" />
+                            )}
+
+                            {update.listItems && update.listItems.length > 0 && (
+                              <ul className="list-disc pl-5 space-y-1">
+                                {update.listItems.map((item, index) => (
+                                  <li key={index} className="text-gray-700">
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
                         </div>
-
-                        <div className="border-t border-b border-gray-200 py-4 my-4">
-                          <p className="mb-4">{update.content}</p>
-
-                          {update.listItems && (
-                            <ul className="list-disc pl-5 space-y-1">
-                              {update.listItems.map((item, index) => (
-                                <li key={index} className="text-gray-700">
-                                  {item}
-                                </li>
-                              ))}
-                            </ul>
-                          )}
-                        </div>
                       </div>
-
-                      <div className="bg-gray-50 px-6 py-3 text-center">
-                        <button className="text-gray-600 text-sm font-medium flex items-center justify-center mx-auto">
-                          See More
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="16"
-                            height="16"
-                            viewBox="0 0 24 24"
-                            fill="none"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                            className="ml-1"
-                          >
-                            <polyline points="6 9 12 15 18 9"></polyline>
-                          </svg>
-                        </button>
-                      </div>
-                    </div>
-                  ))}
+                    ))
+                  ) : (
+                    <div className="text-gray-500 text-center py-10">No updates available for this project yet.</div>
+                  )}
                 </div>
 
                 <div className="lg:col-span-1">
@@ -371,7 +428,6 @@ function ProjectView() {
         </div>
       </div>
 
-      {/* Footer */}
       <FooterLayout />
     </>
   )
