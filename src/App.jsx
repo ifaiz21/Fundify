@@ -1,11 +1,7 @@
 // src/App.jsx
-import React, { useState } from 'react'; 
-import ToastNotification from './components/ToastNotification';
+import React, { useState } from 'react'; // Import useState
+import ToastNotification from './components/ToastNotification'; // Import ToastNotification
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { UserProvider } from './context/UserContext';
-import ChatWrapper from './components/ChatWrapper';
-
-
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignupPage";
 import ForgetPassword from "./Pages/PasswordReset/ForgetPassword";
@@ -34,9 +30,6 @@ import CampaignCreation04 from "./Pages/CampaignsCreation/CampCreation04";
 import CampaignCreation05 from "./Pages/CampaignsCreation/CampCreation05";
 import CampaignSubmission from "./Pages/CampaignsCreation/CampSubmission";
 import CampaignDeletion from "./Pages/CampaignsCreation/CampDeletion";
-import CampaignDate from "./Pages/CampaignsCreation/CampDate";
-
-
 import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
 import CodeVerification from "./Pages/CodeVerification";
@@ -49,6 +42,9 @@ import WalletPage from "./Pages/AdminSide/Wallet";
 import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
 import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
+import HeaderLayout from "./Pages/Layout/HeaderLayout";
+
+import { UserProvider } from './context/UserContext';
 
 function App() {
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
@@ -103,7 +99,7 @@ function App() {
           <Route path="/ProjectView" element={<ProjectView showToast={showToast} />} />
           <Route path="/campaign-update" element={<CampaignUpdate showToast={showToast} />} />
           <Route path="/user-profile" element={<UserProfileSettings showToast={showToast} />} />
-          {/*<Route path="/profile-settings" element={<UserProfileSettings showToast={showToast} />} />
+          <Route path="/profile-settings" element={<UserProfileSettings showToast={showToast} />} />
 
           {/* Admin Pages */}
           <Route path="/admin-dashboard" element={<AdminDashboard showToast={showToast} />} />
@@ -117,12 +113,13 @@ function App() {
           {/* Fallback for other routes */}
           <Route path="*" element={
             <div className="flex flex-col min-h-screen items-center justify-center">
+              {/* HeaderLayout doesn't directly need showToast prop as it's not triggering toasts */}
+              <HeaderLayout />
               <h1 className="text-4xl font-bold text-gray-800">404 - Page Not Found</h1>
               <p className="text-gray-600 mt-4">The page you are looking for does not exist.</p>
             </div>
           } />
         </Routes>
-        <ChatWrapper />
       </Router>
 
       {/* RENDER TOAST COMPONENT HERE, controlled by toast state */}
@@ -131,7 +128,7 @@ function App() {
           message={toast.message}
           type={toast.type}
           onClose={hideToast}
-          duration={3000}
+          duration={3000} // Set a default duration or pass from showToast if needed
         />
       )}
     </UserProvider>
