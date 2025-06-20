@@ -3,13 +3,38 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
-import axios from "axios"; // Import axios for API calls
+import axios from "axios";
+
+// Define the full list of categories
+const allCategories = [
+  { id: "all", label: "All" },
+  { id: "Art", label: "Art" },
+  { id: "Business", label: "Business" },
+  { id: "Comics", label: "Comics" },
+  { id: "Crafts", label: "Crafts" },
+  { id: "Dance", label: "Dance" },
+  { id: "Design", label: "Design" },
+  { id: "Education", label: "Education" },
+  { id: "Fashion", label: "Fashion" },
+  { id: "Film & Video", label: "Film & Video" },
+  { id: "Food", label: "Food" },
+  { id: "Games", label: "Games" },
+  { id: "Journalism", label: "Journalism" },
+  { id: "Medical", label: "Medical" },
+  { id: "Music", label: "Music" },
+  { id: "Nonprofit", label: "Nonprofit" },
+  { id: "Photography", label: "Photography" },
+  { id: "Publishing", label: "Publishing" },
+  { id: "Technology", label: "Technology" },
+  { id: "Theater", label: "Theater" },
+  { id: "Other", label: "Other" },
+];
 
 const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
 function CampaignCard({ campaign }) {
   const safeRaised = Number(campaign.raised) || 0;
-  const safeGoal = Number(campaign.goalAmount) || 1; // Use campaign.goalAmount, default to 1 if 0/invalid
+  const safeGoal = Number(campaign.goalAmount) || 1;
   const progressPercentage = (safeRaised / safeGoal) * 100;
   const navigate = useNavigate();
 
@@ -40,7 +65,7 @@ function CampaignCard({ campaign }) {
         {/* Explore and Donate Buttons */}
         <div className="flex justify-between mt-4">
           <button
-            onClick={() => navigate(`/ProjectView?id=${campaign._id}`)} // FIX: Changed alert() to navigate() to ProjectView
+            onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
             className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
             Explore
           </button>
@@ -63,16 +88,8 @@ export default function ExploreCampaigns() {
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCampaignsCount, setVisibleCampaignsCount] = useState(6);
 
-  const categories = [
-    { id: "all", label: "All" },
-    { id: "disaster", label: "Disaster" },
-    { id: "children", label: "Children" },
-    { id: "food-crisis", label: "Food Crisis" },
-    { id: "health", label: "Health" },
-    { id: "education", label: "Education" },
-    { id: "homeless", label: "Homeless" },
-    { id: "animal", label: "Animal" },
-  ];
+  // Use the new allCategories array
+  const categories = allCategories; //
 
   useEffect(() => {
     const fetchCampaigns = async () => {
@@ -145,7 +162,7 @@ export default function ExploreCampaigns() {
       <HeaderLayout />
       <div className="max-w-7xl mx-auto px-4 py-12 mt-2">
         <h2 className="text-4xl font-bold mb-6 mt-2 text-[#4A5D45] text-center">Explore Campaigns</h2>
-        
+
         {/* Search Bar */}
         <div className="relative max-w-2xl mx-auto mb-8">
           <input

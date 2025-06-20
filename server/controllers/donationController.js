@@ -1,7 +1,7 @@
 // server/controllers/donationController.js
 const Donation = require('../models/Donation');
-const Campaign = require('../models/Campaign');
-const User = require('../models/User'); 
+const Campaign = require('../models/Campaign'); // Import the Campaign model
+const User = require('../models/User');
 
 // Create a new donation (initial pending state)
 exports.createDonation = async (req, res) => {
@@ -87,13 +87,15 @@ exports.updateDonationStatus = async (req, res) => {
         const campaign = await Campaign.findById(donation.campaignId);
         if (campaign) {
           campaign.raised = (campaign.raised || 0) + donation.amount;
-          await campaign.save();
-          console.log(`Campaign ${campaign.title} raised amount updated by ${donation.amount}`);
+          // Increment totalBackers here
+          campaign.totalBackers = (campaign.totalBackers || 0) + 1; //
+          await campaign.save(); //
+          console.log(`Campaign ${campaign.title} raised amount updated by ${donation.amount} and totalBackers incremented to ${campaign.totalBackers}`); //
         }
       }
       await User.findByIdAndUpdate(
         donation.userId,
-        { $inc: { totalDonated: donation.amount } },
+        { $inc: { backedCampaigns: 1, totalDonated: donation.amount } }, // Assuming User model has totalDonated. Increment backedCampaigns.
         { new: true }
       );
     }
