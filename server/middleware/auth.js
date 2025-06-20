@@ -9,7 +9,8 @@ const authMiddleware = (roles = []) => {
     try {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
       if (roles.length && !roles.includes(decoded.role)) {
-        return res.status(403).json({ message: "Access forbidden: insufficient rights" });
+        // Change this line:
+        return res.status(403).json({ message: "This page is for admin use only" });
       }
       req.user = decoded;
       next();

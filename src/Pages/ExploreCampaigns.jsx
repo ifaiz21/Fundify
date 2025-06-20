@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
-import FooterLayout from "./Layout/FooterLayout";
+import FooterLayout from "./Layout/FooterLayout"; // Corrected import path for FooterLayout
 import axios from "axios";
 
 // Define the full list of categories
@@ -89,21 +89,31 @@ export default function ExploreCampaigns() {
   const [visibleCampaignsCount, setVisibleCampaignsCount] = useState(6);
 
   // Use the new allCategories array
-  const categories = allCategories; //
+  const categories = allCategories;
 
   useEffect(() => {
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
         const response = await axios.get("http://localhost:5000/api/campaigns");
-        const activeCampaigns = response.data.filter(
+        
+        // CORRECTED LINE: Access response.data.campaigns as the backend now sends an object
+        const fetchedCampaigns = response.data.campaigns || []; // Ensure it's an array
+        
+        // Filter campaigns that are 'Active' or 'Approved' for display on the explore page
+        const activeCampaigns = fetchedCampaigns.filter(
           campaign => campaign.status === 'Active' || campaign.status === 'Approved'
         );
         setCampaigns(activeCampaigns);
         setError(null);
       } catch (err) {
         console.error("Error fetching campaigns for explore page:", err);
-        setError("Failed to load campaigns. Please try again later.");
+        // Provide more specific error message based on backend response if available
+        if (err.response && err.response.status === 403) {
+            setError("Access denied. You may need to log in as an admin to view certain campaigns.");
+        } else {
+            setError("Failed to load campaigns. Please try again later.");
+        }
         setCampaigns([]);
       } finally {
         setLoading(false);

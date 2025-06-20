@@ -49,7 +49,7 @@ app.use('/api/campaigns', campaignRoutes); // Main campaigns route (includes fil
 app.use('/api/users', userRoutes);
 app.use('/api/contactus', contactusRoutes);
 app.use('/api/donations', donationsRoutes);
-app.use('/api/campaigns', campaignUpdatesRoutes); // NEW: Add campaign updates route (note: same base path as campaigns, but different sub-routes)
+//app.use('/api/campaigns', campaignUpdatesRoutes); // NEW: Add campaign updates route (note: same base path as campaigns, but different sub-routes)
 
 // Catch-all for undefined routes (optional, but good for debugging)
 app.use((req, res, next) => {

@@ -1,18 +1,22 @@
 // server/routes/campaigns.js
 const express = require('express');
 const router = express.Router();
-const Campaign = require('../models/Campaign');
-const User = require('../models/User');
+const Campaign = require('../models/Campaign'); // Ensure Campaign model is imported
+const User = require('../models/User'); // Ensure User model is imported
 const authMiddleware = require('../middleware/auth');
 const campaignController = require('../controllers/campaignController'); // Import the campaignController
 const { nanoid } = require('nanoid');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs'); // Import fs for file operations (if needed for old media deletion)
 
-// Configure multer storage
+// Configure multer storage for new campaign creation
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
-    cb(null, 'public/uploads/');
+    const uploadPath = path.join(__dirname, '..', 'public', 'uploads');
+    // Ensure the directory exists
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
   },
   filename: function (req, file, cb) {
     cb(null, file.fieldname + '-' + Date.now() + path.extname(file.originalname));
@@ -29,7 +33,7 @@ const upload = multer({
       cb(new Error('Only images and videos are allowed!'), false);
     }
   }
-}).array('mediaFile', 5);
+}).array('mediaFile', 5); // 'mediaFile' is the name of the input field in the form
 
 // Middleware to check if the user is authorized to manage the campaign
 const authorizeCampaign = async (req, res, next) => {
@@ -38,7 +42,8 @@ const authorizeCampaign = async (req, res, next) => {
     if (!campaign) {
       return res.status(404).json({ message: 'Campaign not found' });
     }
-    if (campaign.userId.toString() !== req.user.id && req.user.role !== 'admin') {
+    // Corrected to use 'creator' field from Campaign model
+    if (campaign.creator.toString() !== req.user.id && req.user.role !== 'admin') {
       return res.status(403).json({ message: 'Access forbidden: You do not own this campaign' });
     }
     req.campaign = campaign;
@@ -61,32 +66,36 @@ router.post('/', authMiddleware(), (req, res) => {
     try {
       const { name, location, category, goalAmount, isAdultContent, isIDVerifiedRequired, isProjectVerifiedRequired, title, description, content } = req.body;
 
-      if (!name || !location || !category || !goalAmount || !title || !description) {
+      // Basic validation for required fields
+      if (!name || !location || !category || !goalAmount || !title || !description || !content) {
           return res.status(400).json({ message: 'Missing required campaign fields.' });
       }
 
+      // Construct mediaUrls array from uploaded files
       const mediaUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
 
-      const newCampaignId = nanoid(10);
+      const newCampaignId = nanoid(10); // Generate a unique campaign ID
 
       const newCampaign = new Campaign({
-        userId: req.user.id,
-        campaignId: newCampaignId,
+        creator: req.user.id, // Corrected to use 'creator' field
+        campaignId: newCampaignId, // Ensure this unique ID is set
         name,
         location,
         category,
-        goalAmount,
-        isAdultContent: isAdultContent === 'true',
-        isIDVerifiedRequired: isIDVerifiedRequired === 'true',
-        isProjectVerifiedRequired: isProjectVerifiedRequired === 'true',
+        goalAmount: Number(goalAmount), // Ensure it's a number
+        isAdultContent: isAdultContent === 'true', // Convert string to boolean
+        isIDVerifiedRequired: isIDVerifiedRequired === 'true', // Convert string to boolean
+        isProjectVerifiedRequired: isProjectVerifiedRequired === 'true', // Convert string to boolean
         title,
         description,
         mediaUrls: mediaUrls,
         content,
-        status: 'Pending Review',
+        status: 'Pending Review', // Default status for new submissions
       });
-      await newCampaign.save();
 
+      await newCampaign.save(); // Save the new campaign to the database
+
+      // Update user's createdCampaigns count
       await User.findByIdAndUpdate(
         req.user.id,
         { $inc: { createdCampaigns: 1 } },
@@ -96,16 +105,48 @@ router.post('/', authMiddleware(), (req, res) => {
       res.status(201).json({ message: 'Campaign created successfully', campaign: newCampaign });
     } catch (err) {
       console.error('Create campaign error:', err);
+      // More detailed error response for debugging
       res.status(500).json({ message: 'Failed to create campaign', error: err.message, details: err.errors });
     }
   });
 });
 
-// GET /api/campaigns - Get all campaigns (can add filtering/pagination later)
-router.get('/', async (req, res) => {
+// GET /api/campaigns - Get all campaigns with optional status filtering
+// This route is called by ExploreCampaigns.jsx (should be public) and VerificationPage.jsx (needs admin for filtered view)
+router.get('/', async (req, res) => { // REMOVED authMiddleware(['admin']) to allow public access for explore page
   try {
-    const campaigns = await Campaign.find({});
-    res.status(200).json(campaigns);
+    const { status } = req.query; // Get status from query parameters
+
+    let query = {};
+    // If no status is explicitly specified, default to showing 'Active' and 'Approved' campaigns
+    // This handles the public Explore page which doesn't send a status filter.
+    if (status) {
+      query.status = status; // If status IS specified (e.g., from admin page), use that status.
+    } else {
+      query.status = { $in: ['Active', 'Approved'] }; // Default for public view
+    }
+
+
+    // Fetch campaigns based on the constructed query
+    const campaigns = await Campaign.find(query);
+
+    // Calculate overall statistics for the dashboard/pie chart (from ALL campaigns)
+    // This part remains the same as it's for general stats, not specific to the filtered list.
+    const total = await Campaign.countDocuments({});
+    const approved = await Campaign.countDocuments({ status: 'Approved' });
+    const rejected = await Campaign.countDocuments({ status: 'Rejected' });
+    const pending = await Campaign.countDocuments({ status: 'Pending Review' });
+
+    const campaignStats = {
+      total: total,
+      approved: approved,
+      rejected: rejected,
+      pending: pending,
+    };
+
+    // Respond with an object containing both the filtered campaigns and overall stats
+    res.status(200).json({ campaigns: campaigns, stats: campaignStats });
+
   } catch (err) {
     console.error('Get all campaigns error:', err);
     res.status(500).json({ message: 'Failed to retrieve campaigns', error: err.message });
@@ -126,13 +167,13 @@ router.get('/:id', async (req, res) => {
   }
 });
 
-// PUT /api/campaigns/:id - Update a campaign by ID
+// PUT /api/campaigns/:id - Update a campaign by ID (general fields)
 router.put('/:id', authMiddleware(), authorizeCampaign, async (req, res) => {
   try {
     const updatedCampaign = await Campaign.findByIdAndUpdate(
       req.params.id,
       { $set: req.body, updatedAt: Date.now() },
-      { new: true, runValidators: true }
+      { new: true, runValidators: true } // runValidators ensures schema validation on update
     );
     res.status(200).json({ message: 'Campaign updated successfully', campaign: updatedCampaign });
   } catch (err) {
@@ -146,8 +187,9 @@ router.delete('/:id', authMiddleware(['admin']), authorizeCampaign, async (req, 
   try {
     const campaignToDelete = await Campaign.findById(req.params.id);
     if (campaignToDelete) {
+        // Corrected to use 'creator' field for updating user stats
         await User.findByIdAndUpdate(
-            campaignToDelete.userId,
+            campaignToDelete.creator,
             { $inc: { createdCampaigns: -1 } },
             { new: true }
         );
@@ -161,7 +203,7 @@ router.delete('/:id', authMiddleware(['admin']), authorizeCampaign, async (req, 
   }
 });
 
-// NEW: Admin routes for approving/rejecting campaigns
+// Admin routes for approving/rejecting campaigns - These use campaignController functions directly
 router.put('/:id/approve', authMiddleware(['admin']), campaignController.approveCampaign);
 router.put('/:id/reject', authMiddleware(['admin']), campaignController.rejectCampaign);
 
