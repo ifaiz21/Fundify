@@ -1,9 +1,12 @@
+// src/Pages/AdminSide/Users.jsx
 "use client"
 
 import { useState, useEffect } from "react"
 import Sidebar from "./SideBar"
 import { Eye, Edit, Trash, Search } from "lucide-react"
 import axios from 'axios';
+import { io } from 'socket.io-client'; // This import is correct for a package
+
 
 const UserManagement = () => {
     const [allUsers, setAllUsers] = useState([]);
@@ -17,76 +20,109 @@ const UserManagement = () => {
     const [searchQuery, setSearchQuery] = useState("")
     const itemsPerPage = 5
 
-    useEffect(() => {
-        const fetchUsers = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const token = localStorage.getItem('token');
-                if (!token) {
-                    throw new Error("Authentication token missing. Please log in as admin.");
-                }
+    // Extracted fetch logic into a standalone function for reusability
+    const fetchUsersData = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+            const token = localStorage.getItem('token');
+            if (!token) {
+                throw new Error("Authentication token missing. Please log in as admin.");
+            }
 
-                const response = await axios.get('http://localhost:5000/api/admin/users', {
-                    headers: {
-                        Authorization: `Bearer ${token}`
+            const response = await axios.get('http://localhost:5000/api/admin/users', {
+                headers: {
+                    Authorization: `Bearer ${token}`
+                }
+            });
+
+            console.log("Fetched Users Data:", response.data); // Log the raw data
+
+            if (Array.isArray(response.data)) {
+                setAllUsers(response.data);
+
+                const creatorsData = [];
+                const backersData = [];
+
+                response.data.forEach(user => {
+                    // CORRECTED LOGIC: Check if createdCampaigns is greater than 0
+                    if (user.createdCampaigns > 0) { 
+                        creatorsData.push({
+                            id: user._id,
+                            name: user.name,
+                            email: user.email,
+                            // Use the number directly. Adjust text based on count.
+                            campaignName: `${user.createdCampaigns} Campaign${user.createdCampaigns > 1 ? 's' : ''}`, 
+                            fundingGoal: 'N/A', // Dynamic data ke liye mazeed API call ya backend mein pre-aggregation chahiye
+                            status: user.verified ? "Verified" : "Pending",
+                        });
+                    }
+
+                    // CORRECTED LOGIC: Check if backedCampaigns is greater than 0
+                    if (user.backedCampaigns > 0) { 
+                        backersData.push({
+                            id: user._id,
+                            name: user.name,
+                            email: user.email,
+                            // Use the number directly. Adjust text based on count.
+                            campaignName: `${user.backedCampaigns} Backed Campaign${user.backedCampaigns > 1 ? 's' : ''}`, 
+                            backedAmount: 'N/A', // Dynamic data ke liye mazeed API call ya backend mein pre-aggregation chahiye
+                            status: user.verified ? "Verified" : "Pending",
+                        });
                     }
                 });
 
-                console.log("Fetched Users Data:", response.data);
+                setCampaignCreators(creatorsData);
+                setBackers(backersData);
 
-                if (Array.isArray(response.data)) {
-                    setAllUsers(response.data);
-
-                    const creatorsData = [];
-                    const backersData = [];
-
-                    response.data.forEach(user => {
-                        if (user.createdCampaigns && user.createdCampaigns.length > 0) {
-                            creatorsData.push({
-                                id: user._id,
-                                name: user.name,
-                                email: user.email,
-                                campaignName: user.createdCampaigns.length > 1 ? `${user.createdCampaigns.length} Campaigns` : '1 Campaign',
-                                fundingGoal: 'N/A', // Dynamic data ke liye mazeed API call ya backend mein pre-aggregation chahiye
-                                status: user.verified ? "Verified" : "Pending",
-                            });
-                        }
-
-                        if (user.backedCampaigns && user.backedCampaigns.length > 0) {
-                            backersData.push({
-                                id: user._id,
-                                name: user.name,
-                                email: user.email,
-                                campaignName: user.backedCampaigns.length > 1 ? `${user.backedCampaigns.length} Backed Campaigns` : '1 Backed Campaign',
-                                backedAmount: 'N/A', // Dynamic data ke liye mazeed API call ya backend mein pre-aggregation chahiye
-                                status: user.verified ? "Verified" : "Pending",
-                            });
-                        }
-                    });
-
-                    setCampaignCreators(creatorsData);
-                    setBackers(backersData);
-
-                } else {
-                    console.warn("Users API did not return an array:", response.data);
-                    setAllUsers([]);
-                    setCampaignCreators([]);
-                    setBackers([]);
-                }
-            } catch (err) {
-                console.error("Error fetching users:", err);
-                setError(err.message || "Failed to fetch users data.");
+            } else {
+                console.warn("Users API did not return an array:", response.data);
                 setAllUsers([]);
                 setCampaignCreators([]);
                 setBackers([]);
-            } finally {
-                setLoading(false);
             }
-        };
+        } catch (err) {
+            console.error("Error fetching users:", err);
+            setError(err.message || "Failed to fetch users data.");
+            setAllUsers([]);
+            setCampaignCreators([]);
+            setBackers([]);
+        } finally {
+            setLoading(false);
+        }
+    };
 
-        fetchUsers();
-    }, []);
+    useEffect(() => {
+        fetchUsersData(); // Initial fetch when component mounts
+
+        // --- Socket.IO Integration for Real-time Update ---
+        // Ensure this URL matches your backend Socket.IO server URL
+        const socket = io('http://localhost:5000'); 
+
+        socket.on('connect', () => {
+            console.log('UserManagement: Connected to Socket.IO server');
+        });
+
+        // Listen for the 'newUserRegistered' event emitted from the backend (authController)
+        socket.on('newUserRegistered', (newUserData) => {
+            console.log('UserManagement: Received new user signup event:', newUserData);
+            // Refresh the user list to include the newly signed up user
+            fetchUsersData(); // Re-fetch all users to update the lists
+            // You might want to optionally show a local toast here as well, specific to this admin page
+            // props.showToast(`New user: ${newUserData.name} just signed up!`, 'info');
+        });
+
+        socket.on('disconnect', () => {
+            console.log('UserManagement: Disconnected from Socket.IO server');
+        });
+
+        // Clean up socket connection on component unmount
+        return () => {
+            socket.disconnect();
+        };
+        // --- End Socket.IO Integration ---
+
+    }, []); // Empty dependency array ensures this effect runs once on mount
 
     const filteredCreators = campaignCreators.filter((creator) =>
         Object.values(creator).some((value) =>
@@ -102,10 +138,14 @@ const UserManagement = () => {
 
     const handleView = (id, type) => {
         console.log(`View ${type} with ID: ${id}`);
+        // Implement navigation or modal to view user details
+        // navigate(`/admin/users/${id}`); // Example for navigation
     }
 
     const handleEdit = (id, type) => {
         console.log(`Edit ${type} with ID: ${id}`);
+        // Implement navigation or modal to edit user details
+        // navigate(`/admin/users/${id}/edit`); // Example for navigation
     }
 
     const handleDelete = async (id, type) => {
@@ -117,23 +157,34 @@ const UserManagement = () => {
                         Authorization: `Bearer ${token}`
                     }
                 });
-                alert(`${type} deleted successfully!`);
-                setAllUsers(prevUsers => prevUsers.filter(user => user._id !== id));
-                setCampaignCreators(prevCreators => prevCreators.filter(creator => creator.id !== id));
-                setBackers(prevBackers => prevBackers.filter(backer => backer.id !== id));
-
+                alert(`${type} deleted successfully!`); // Consider using a toast notification here
+                fetchUsersData(); // Re-fetch data to update UI after deletion
             } catch (err) {
                 console.error(`Error deleting ${type}:`, err);
-                alert(`Failed to delete ${type}. Please check server logs.`);
+                alert(`Failed to delete ${type}. ${err.response?.data?.message || err.message}`); // More descriptive error
             }
         }
     }
 
     const handleSearch = (e) => {
         setSearchQuery(e.target.value);
-        setCreatorsPage(1);
+        // Corrected: Reset both creatorsPage and backersPage
+        setCreatorsPage(1); 
         setBackersPage(1);
     }
+
+    const totalItemsCreators = filteredCreators.length
+    const totalPagesCreators = Math.ceil(totalItemsCreators / itemsPerPage)
+    const startIndexCreators = (creatorsPage - 1) * itemsPerPage
+    const endIndexCreators = Math.min(startIndexCreators + itemsPerPage, totalItemsCreators)
+    const currentCreators = filteredCreators.slice(startIndexCreators, endIndexCreators)
+
+    const totalItemsBackers = filteredBackers.length
+    const totalPagesBackers = Math.ceil(totalItemsBackers / itemsPerPage)
+    const startIndexBackers = (backersPage - 1) * itemsPerPage
+    const endIndexBackers = Math.min(startIndexBackers + itemsPerPage, totalItemsBackers)
+    const currentBackers = filteredBackers.slice(startIndexBackers, endIndexBackers)
+
 
     if (loading) {
         return (
@@ -152,6 +203,12 @@ const UserManagement = () => {
                 <Sidebar />
                 <div className="flex-1 overflow-auto p-8 flex justify-center items-center text-red-600">
                     <p>Error: {error}</p>
+                    <button 
+                        onClick={fetchUsersData} 
+                        className="ml-4 px-4 py-2 bg-[#4B5842] text-white rounded-md hover:bg-[#3A4433] transition-colors"
+                    >
+                        Reload
+                    </button>
                 </div>
             </div>
         );
@@ -195,9 +252,8 @@ const UserManagement = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredCreators.length > 0 ? (
-                                            filteredCreators
-                                                .slice((creatorsPage - 1) * itemsPerPage, creatorsPage * itemsPerPage)
+                                        {currentCreators.length > 0 ? (
+                                            currentCreators
                                                 .map((creator) => (
                                                     <tr key={creator.id} className="border-b last:border-b-0 hover:bg-gray-50">
                                                         <td className="px-6 py-4 text-sm">{creator.id}</td>
@@ -249,7 +305,7 @@ const UserManagement = () => {
                             {/* Pagination */}
                             <div className="px-6 py-3 flex items-center justify-between border-t">
                                 <div className="text-sm text-gray-500">
-                                    Showing {(creatorsPage - 1) * itemsPerPage + 1}–{Math.min(creatorsPage * itemsPerPage, filteredCreators.length)} of {filteredCreators.length}
+                                    Showing {(creatorsPage - 1) * itemsPerPage + 1}–{Math.min(creatorsPage * itemsPerPage, filteredCreators.length)} of {totalItemsCreators}
                                 </div>
                                 <div className="flex space-x-1">
                                     <button
@@ -262,7 +318,7 @@ const UserManagement = () => {
                                     <button
                                         className="px-3 py-1 rounded border bg-gray-100 text-sm"
                                         onClick={() => setCreatorsPage(creatorsPage + 1)}
-                                        disabled={creatorsPage * itemsPerPage >= filteredCreators.length}
+                                        disabled={creatorsPage * itemsPerPage >= totalItemsCreators}
                                     >
                                         &gt;
                                     </button>
@@ -289,9 +345,8 @@ const UserManagement = () => {
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        {filteredBackers.length > 0 ? (
-                                            filteredBackers
-                                                .slice((backersPage - 1) * itemsPerPage, backersPage * itemsPerPage)
+                                        {currentBackers.length > 0 ? (
+                                            currentBackers
                                                 .map((backer) => (
                                                     <tr key={backer.id} className="border-b last:border-b-0 hover:bg-gray-50">
                                                         <td className="px-6 py-4 text-sm">{backer.id}</td>
@@ -343,7 +398,7 @@ const UserManagement = () => {
                             {/* Pagination */}
                             <div className="px-6 py-3 flex items-center justify-between border-t">
                                 <div className="text-sm text-gray-500">
-                                    Showing {(backersPage - 1) * itemsPerPage + 1}–{Math.min(backersPage * itemsPerPage, filteredBackers.length)} of {filteredBackers.length}
+                                    Showing {(backersPage - 1) * itemsPerPage + 1}–{Math.min(backersPage * itemsPerPage, filteredBackers.length)} of {totalItemsBackers}
                                 </div>
                                 <div className="flex space-x-1">
                                     <button
@@ -356,7 +411,7 @@ const UserManagement = () => {
                                     <button
                                         className="px-3 py-1 rounded border bg-gray-100 text-sm"
                                         onClick={() => setBackersPage(backersPage + 1)}
-                                        disabled={backersPage * itemsPerPage >= filteredBackers.length}
+                                        disabled={backersPage * itemsPerPage >= totalItemsBackers}
                                     >
                                         &gt;
                                     </button>

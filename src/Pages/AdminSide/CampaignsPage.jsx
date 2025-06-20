@@ -42,11 +42,17 @@ const CampaignsPage = () => {
 
       console.log("API Response:", response.data)
 
-      if (!Array.isArray(response.data)) {
-        throw new Error("Invalid data format received from server")
+      // MODIFICATION START
+      // Check if response.data is an object and contains a 'campaigns' array
+      if (typeof response.data === 'object' && response.data !== null && Array.isArray(response.data.campaigns)) {
+        transformAndSetCampaigns(response.data.campaigns); // Pass the array from response.data.campaigns
+        // Optionally, you can also set the stats if needed in this component
+        // setCampaignStats(response.data.stats);
+      } else {
+        throw new Error("Invalid data format received from server: 'campaigns' array not found or not an array.");
       }
+      // MODIFICATION END
 
-      transformAndSetCampaigns(response.data)
       setError(null)
     } catch (err) {
       console.error("Error fetching campaigns:", err)

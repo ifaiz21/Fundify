@@ -29,6 +29,7 @@
     "react-router-dom": "^7.2.0",
     "react-scripts": "5.0.1",
     "react-toastify": "^11.0.5",
+    "socket.io-client": "^4.8.1",
     "stream-browserify": "^3.0.0",
     "url": "^0.11.4",
     "uuid": "^11.1.0",
