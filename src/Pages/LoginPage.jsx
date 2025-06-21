@@ -24,19 +24,21 @@ const LoginPage = () => {
 
   const handleEmailChange = (e) => {
     setEmail(e.target.value);
-    if (message) setMessage(""); // clear message when user types
+    if (message) setMessage("");
+    if (error) setError("");
   };
 
   const handlePasswordChange = (e) => {
     setPassword(e.target.value);
-    if (message) setMessage(""); // clear message when user types
+    if (message) setMessage("");
+    if (error) setError("");
   };
 
   const handleContinue = async (event) => {
     event.preventDefault();
 
     if (password.length < 6) {
-      setError("Incomplete Password.");
+      setError("Password must be at least 6 characters long.");
       return;
     }
 
@@ -74,98 +76,198 @@ const LoginPage = () => {
           </button>
         </div>
 
-        <div className="flex h-full">
-          <div className="w-full flex items-center justify-center">
-            <div className="w-3/5 p-8 rounded-md">
-              <h2 className="text-3xl font-bold mb-2 text-[#4b5849]">Login to Fundify</h2>
-              <p className="text-md text-gray-500 mb-6">
-                If you are already a member, login with your email and password.
-              </p>
-              {message && <div className="text-green-600 mb-4">{message}</div>} {/* Changed message color for success */}
-              <form className="space-y-4" onSubmit={handleContinue}>
-                <div className="space-y-2 text-[#696f79]">
-                  <label htmlFor="email" className="font-semibold">
-                    Email Address
-                  </label>
-                  <input
-                    type="email"
-                    id="email" // Added id for better a11y with label
-                    placeholder="Email address"
-                    value={email}
-                    onChange={handleEmailChange}
-                    className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500" // Added focus styles
-                    required
-                  />
-                </div>
+        <div className="flex h-full items-center justify-center">
+          <div className="form-container">
+            <p className="title">Welcome back</p>
 
-                <div className="space-y-2 text-[#696f79]">
-                  <label htmlFor="password" className="font-semibold">
-                    Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showPassword ? "text" : "password"}
-                      id="password" // Added id
-                      placeholder="Password"
-                      value={password}
-                      onChange={handlePasswordChange}
-                      className="w-full p-2 border rounded mb-4 border-[#8692a6] outline-none pr-12 focus:border-blue-500 focus:ring-1 focus:ring-blue-500" // Added focus styles
-                      required
-                    />
-                    <span
-                      className="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-600"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
-                      {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
-                    </span>
-                  </div>
-                </div>
+            {message && <div className="text-green-600 mb-4 text-center">{message}</div>}
+            {error && <p className="text-red-600 text-sm mt-2 text-center">{error}</p>}
 
-                <div className="flex justify-between items-center mb-4">
-                  <label className="flex items-center text-[#696f79] font-semibold">
-                    <input type="checkbox" className="mr-2" />
-                    Remember me
-                  </label>
-                  <a
-                    href="/forget-password"
-                    className="text-md text-[#91ac8f] hover:text-[#667964] font-semibold"
-                  >
-                    Forgot Password?
-                  </a>
-                </div>
+            <form className="form" onSubmit={handleContinue}>
+              <input
+                type="email"
+                className="input"
+                id="email"
+                placeholder="Email"
+                value={email}
+                onChange={handleEmailChange}
+                required
+              />
 
-                {error && <p className="text-red-600 text-sm mt-2">{error}</p>} {/* Adjusted margin */}
-
-                <button
-                  type="submit"
-                  className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] font-semibold text-md transition-colors duration-200" // Added transition
+              <div className="relative">
+                <input
+                  type={showPassword ? "text" : "password"}
+                  className="input pr-12"
+                  id="password"
+                  placeholder="Password"
+                  value={password}
+                  onChange={handlePasswordChange}
+                  required
+                />
+                <span
+                  className="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-600"
+                  onClick={() => setShowPassword(!showPassword)}
                 >
-                  Continue
-                </button>
-              </form>
-
-              <p className="text-sm text-gray-500 text-center mt-4">
-                Don't have an account?{" "}
-                <a
-                  href="/sign-up"
-                  className="text-[#91ac8f] hover:text-[#667964] font-semibold"
-                >
-                  Sign up here
+                  {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+                </span>
+              </div>
+              
+              <p className="page-link">
+                <a href="/forget-password" className="page-link-label">
+                  Forgot Password?
                 </a>
               </p>
 
-              {/* --- Google Sign-Up Integration Point --- */}
-              <div className="flex flex-col items-center mt-3 space-y-4">
-                <div className="w-full flex justify-center">
-                  <GoogleSignInButton />
-                </div>
-              </div>
-              {/* --- End Google Sign-Up Integration --- */}
+              <button className="form-btn" type="submit">
+                Log in
+              </button>
+            </form>
 
+            <p className="sign-up-label">
+              Don't have an account?
+              <a href="/sign-up" className="sign-up-link">
+                Sign up
+              </a>
+            </p>
+
+            {/* Re-integrated original GoogleSignInButton */}
+            <div className="buttons-container">
+              {/* Removed Apple Login Button */}
+              
+              {/* Original GoogleSignInButton component */}
+              <GoogleSignInButton />
             </div>
           </div>
         </div>
       </div>
+      {/* Embedded CSS for the form and buttons */}
+      <style jsx>{`
+        .form-container {
+          width: 350px;
+          height: 500px;
+          background-color: #fff;
+          box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+          border-radius: 10px;
+          box-sizing: border-box;
+          padding: 20px 30px;
+        }
+
+        .title {
+          text-align: center;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          margin: 10px 0 30px 0;
+          font-size: 28px;
+          font-weight: 800;
+        }
+
+        .form {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          margin-bottom: 15px;
+        }
+
+        .input {
+          border-radius: 20px;
+          border: 1px solid #c0c0c0;
+          outline: 0 !important;
+          box-sizing: border-box;
+          padding: 12px 15px;
+        }
+
+        .page-link {
+          text-decoration: underline;
+          margin: 0;
+          text-align: end;
+          color: #747474;
+          text-decoration-color: #747474;
+        }
+
+        .page-link-label {
+          cursor: pointer;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          font-size: 9px;
+          font-weight: 700;
+          text-decoration: none;
+        }
+
+        .page-link-label:hover {
+          color: #000;
+        }
+
+        .form-btn {
+          padding: 10px 15px;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          border-radius: 20px;
+          border: 0 !important;
+          outline: 0 !important;
+          background: #4B5842;
+          color: white;
+          cursor: pointer;
+          box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+        }
+
+        .form-btn:active {
+          box-shadow: none;
+        }
+
+        .sign-up-label {
+          margin: 0;
+          font-size: 10px;
+          color: #747474;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+        }
+
+        .sign-up-link {
+          margin-left: 1px;
+          font-size: 11px;
+          text-decoration: underline;
+          text-decoration-color: teal;
+          color: teal;
+          cursor: pointer;
+          font-weight: 800;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+        }
+
+        .buttons-container {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          justify-content: flex-start;
+          margin-top: 20px;
+          gap: 15px;
+        }
+
+        /* Removed .apple-login-button CSS rule */
+        .google-login-button { /* Keep this CSS rule, though not directly used by GoogleSignInButton */
+          border-radius: 20px;
+          box-sizing: border-box;
+          padding: 10px 15px;
+          box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
+              rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+          cursor: pointer;
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          font-size: 11px;
+          gap: 5px;
+          border: 2px solid #747474; /* Re-added border */
+        }
+        
+        /* Removed .apple-icon CSS rule */
+        .google-icon { /* Keep this CSS rule */
+          font-size: 18px;
+          margin-bottom: 1px;
+        }
+      `}</style>
     </SideLayout>
   );
 };

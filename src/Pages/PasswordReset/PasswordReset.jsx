@@ -1,8 +1,10 @@
 import React, { useState, useEffect } from "react";
-import SideLayout from "../Layout/SideLayout";
+import { useNavigate, useLocation } from "react-router-dom";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { useNavigate, useLocation } from "react-router-dom";
+// axios is not directly used in the provided code snippet, but keeping import if needed elsewhere
+// import axios from "axios";
+import SideLayout from "../Layout/SideLayout";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -77,75 +79,63 @@ const PasswordReset = () => {
             <IoChevronBackOutline size={20} /> Back
           </button>
         </div>
-        <div className="flex h-full">
-          <div className="w-full flex items-center justify-center">
-            <div className="w-3/5 p-8 rounded-md">
-              <h2 className="text-3xl font-bold mb-2">Reset Your Password</h2>
-              <p className="text-md text-gray-500 mb-6">
-                Enter your new password to recover your account.
-              </p>
+        <div className="flex h-full items-center justify-center">
+          <div className="form-container"> {/* New: Main container for the form */}
+            <p className="title">Reset Password</p> {/* New: Title */}
+            {/* Removed previous descriptive paragraphs */}
 
-              <form className="space-y-4" onSubmit={handleShowModal}>
-                <div className="space-y-2 text-[#696f79]">
-                  <label htmlFor="new-password" className="font-semibold">
-                    New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showNewPass ? "text" : "password"}
-                      placeholder="Enter new Password"
-                      className="w-full p-4 border rounded border-[#8692a6] outline-none pr-12"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      required
-                      minLength={6}
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowNewPass(!showNewPass)}
-                      className="absolute right-4 top-4 text-xl text-gray-600"
-                    >
-                      {showNewPass ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-                    </button>
-                  </div>
-                  <p className="text-sm text-gray-500 mt-1">Password must be at least 6 characters.</p>
-                </div>
-
-                <div className="space-y-2 text-[#696f79]">
-                  <label htmlFor="confirm-new-password" className="font-semibold">
-                    Confirm New Password
-                  </label>
-                  <div className="relative">
-                    <input
-                      type={showConfirmPass ? "text" : "password"}
-                      placeholder="Confirm your new Password"
-                      className="w-full p-4 border rounded border-[#8692a6] outline-none pr-12"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                    />
-                    <button
-                      type="button"
-                      onClick={() => setShowConfirmPass(!showConfirmPass)}
-                      className="absolute right-4 top-4 text-xl text-gray-600"
-                    >
-                      {showConfirmPass ? <AiOutlineEyeInvisible /> : <AiOutlineEye />}
-                    </button>
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  className="w-full bg-[#91ac8f] text-white p-3 rounded hover:bg-[#667964] ease-in-out transition duration-300 font-semibold text-md"
+            <form className="form" onSubmit={handleShowModal}> {/* New: Form structure */}
+              {/* New Password Input with Toggle */}
+              <div className="relative">
+                <input
+                  type={showNewPass ? "text" : "password"}
+                  placeholder="New Password"
+                  className="input pr-12" /* New class, added pr-12 for icon */
+                  value={newPassword}
+                  onChange={(e) => setNewPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <span
+                  type="button"
+                  onClick={() => setShowNewPass(!showNewPass)}
+                  className="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-600"
                 >
-                  Continue
-                </button>
-              </form>
-            </div>
+                  {showNewPass ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+                </span>
+              </div>
+              
+              {/* Confirm New Password Input with Toggle */}
+              <div className="relative">
+                <input
+                  type={showConfirmPass ? "text" : "password"}
+                  placeholder="Confirm New Password"
+                  className="input pr-12" /* New class, added pr-12 for icon */
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  required
+                  minLength={6}
+                />
+                <span
+                  type="button"
+                  onClick={() => setShowConfirmPass(!showConfirmPass)}
+                  className="absolute inset-y-0 right-4 flex items-center cursor-pointer text-gray-600"
+                >
+                  {showConfirmPass ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
+                </span>
+              </div>
+
+              <button
+                type="submit"
+                className="form-btn" /* New class for the button */
+              >
+                Reset Password
+              </button>
+            </form>
           </div>
         </div>
 
-        {/* Confirmation Modal */}
+        {/* Confirmation Modal - Kept separate as its styling is distinct */}
         {showConfirmModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
             <div className="bg-white p-6 rounded-lg shadow-lg w-[400px] text-center">
@@ -187,6 +177,73 @@ const PasswordReset = () => {
           </div>
         )}
       </div>
+      {/* Embedded CSS for the form and buttons */}
+      <style jsx>{`
+        .form-container {
+          width: 350px;
+          min-height: 400px; /* Adjusted min-height for this page */
+          background-color: #fff;
+          box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+          border-radius: 10px;
+          box-sizing: border-box;
+          padding: 20px 30px;
+        }
+
+        .title {
+          text-align: center;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          margin: 10px 0 30px 0;
+          font-size: 28px;
+          font-weight: 800;
+        }
+
+        .form {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 18px;
+          margin-bottom: 15px;
+        }
+
+        .input {
+          border-radius: 20px;
+          border: 1px solid #c0c0c0;
+          outline: 0 !important;
+          box-sizing: border-box;
+          padding: 12px 15px;
+        }
+
+        .form-btn {
+          padding: 10px 15px;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          border-radius: 20px;
+          border: 0 !important;
+          outline: 0 !important;
+          background: #4B5842;
+          color: white;
+          cursor: pointer;
+          box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+          width: 100%; /* Ensure button takes full width of form */
+          margin-top: 10px; /* Add some space above button */
+        }
+
+        .form-btn:hover:not(:disabled) {
+          background-color: #008080; /* Darker teal on hover */
+          box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        }
+
+        .form-btn:active {
+          box-shadow: none;
+        }
+
+        .form-btn:disabled {
+          background-color: #a0a0a0;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+      `}</style>
     </SideLayout>
   );
 };
