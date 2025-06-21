@@ -4,7 +4,7 @@ import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 import SideLayout from "./Layout/SideLayout";
-import GoogleSignInButton from '../components/GoogleSignUp';
+import GoogleSignInButton from '../components/Google-Sign-In';
 
 const LoginPage = () => {
   const navigate = useNavigate();
@@ -77,7 +77,7 @@ const LoginPage = () => {
         <div className="flex h-full">
           <div className="w-full flex items-center justify-center">
             <div className="w-3/5 p-8 rounded-md">
-              <h2 className="text-3xl font-bold mb-2">Account Login</h2>
+              <h2 className="text-3xl font-bold mb-2 text-[#4b5849]">Login to Fundify</h2>
               <p className="text-md text-gray-500 mb-6">
                 If you are already a member, login with your email and password.
               </p>
@@ -155,17 +155,10 @@ const LoginPage = () => {
               </p>
 
               {/* --- Google Sign-Up Integration Point --- */}
-              <div className="flex flex-col items-center mt-6 space-y-4">
+              <div className="flex flex-col items-center mt-3 space-y-4">
                 <div className="w-full flex justify-center">
                   <GoogleSignInButton />
                 </div>
-                <button className="mx-2">
-                  <img
-                    src="/Images/facebook-icon.png"
-                    alt="Facebook"
-                    className="w-10 h-10"
-                  />
-                </button>
               </div>
               {/* --- End Google Sign-Up Integration --- */}
 

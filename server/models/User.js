@@ -2,16 +2,21 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true },
-  email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  name: { type: String, required: true},
+  email: { type: String, required: true, unique: true},
+  password: { type: String, required: function() {
+    return this.registrationMethod === 'email' || (!this.googleId && !this.registrationMethod);
+  },
+  minlength: [6, 'Password must be at least 6 characters long'],
+  select: false // Do not return password by default on queries
+  },
   role: { type: String, default: 'user' },
   verified: { type: Boolean, default: false },
   verificationCode: { type: String },
 
   // --- New fields for Google Sign-in ---
-  googleId: { type: String, unique: true, sparse: true }, // Google's unique user ID
-  registrationMethod: { type: String, enum: ['email', 'google', 'facebook'], default: 'email' }, // How user registered
+  googleId: { type: String, unique: true, sparse: true },
+  registrationMethod: { type: String, enum: ['email', 'google'], default: 'email' }, 
 
 
   contactNo: { type: String, default: '' },
@@ -24,7 +29,7 @@ const userSchema = new mongoose.Schema({
   cvc: { type: String, default: '' },
   expiryDate: { type: String, default: '' },
 
-  profilePictureUrl: { type: String, default: '' }, // Naya field: Profile Picture ka URL/path
+  profilePictureUrl: { type: String, default: '' },
 
   // Added lastLogin and createdAt for better user tracking
   createdAt: { type: Date, default: Date.now },

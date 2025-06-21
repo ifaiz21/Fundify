@@ -1,6 +1,6 @@
 // src/App.jsx
-import React, { useState } from 'react'; // Import useState
-import ToastNotification from './components/ToastNotification'; // Import ToastNotification
+import React, { useState } from 'react'; 
+import ToastNotification from './components/ToastNotification'; 
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignupPage";
@@ -33,6 +33,7 @@ import CampaignDeletion from "./Pages/CampaignsCreation/CampDeletion";
 import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
 import CodeVerification from "./Pages/CodeVerification";
+import SetPasswordPage from "./Pages/SetPasswordPage";
 
 import CampaignUpdate from "./Pages/CampaignsCreation/CampUpdate";
 import AdminDashboard from "./Pages/AdminSide/AdminDashboard";
@@ -45,6 +46,7 @@ import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
 import HeaderLayout from "./Pages/Layout/HeaderLayout";
 
 import { UserProvider } from './context/UserContext';
+import ChatWrapper from './components/ChatWrapper';
 
 function App() {
   const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
@@ -76,6 +78,7 @@ function App() {
           <Route path="/code-verification" element={<CodeVerification showToast={showToast} />} />
           <Route path="/submitted" element={<Submitted showToast={showToast} />} />
           <Route path="/submit-2" element={<Submitted2 showToast={showToast} />} />
+          <Route path="/set-password" element={<SetPasswordPage showToast={showToast} />} />
 
           {/* Other general pages */}
           <Route path="/privacy-policy" element={<PrivacyPolicy showToast={showToast} />} />
@@ -120,6 +123,7 @@ function App() {
             </div>
           } />
         </Routes>
+        <ChatWrapper />
       </Router>
 
       {/* RENDER TOAST COMPONENT HERE, controlled by toast state */}

@@ -38,8 +38,17 @@ const GoogleSignInButton = () => {
       const data = await response.json();
 
       if (!response.ok) {
+        // Check specifically for the verification required message
+        if (response.status === 401 && data.message && data.message.includes('Email not verified')) {
+            // Redirect to verification page, passing the email
+            navigate("/code-verification", { state: { email: data.email } });
+            setError(data.message); // Display the message to the user
+            return; // Stop further processing
+        }
         throw new Error(data.message || 'Failed to authenticate user with backend.');
-      }
+    }
+
+    // ... rest of successful login logic (setting token, user profile, navigating to '/') ...
 
       if (data.token) {
         localStorage.setItem('token', data.token);

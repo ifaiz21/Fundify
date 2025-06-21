@@ -3,180 +3,212 @@ import React, { useState, useRef, useEffect } from "react";
 import SideLayout from "./Layout/SideLayout";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate } from "react-router-dom";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import axios from "axios"; 
 
-
-const EmailVerificationCode = () => {
+const CodeVerificationPage = () => { 
     const navigate = useNavigate();
-    const [email, setEmail] = useState(""); // email will be passed via location state
+    const location = useLocation();
+
+    const [email, setEmail] = useState("");
+    // NEW: State to store the registration method passed from the previous page
+    const [registrationMethod, setRegistrationMethod] = useState(null);
     const [error, setError] = useState("");
     const [loading, setLoading] = useState(false);
     const [otp, setOtp] = useState(new Array(6).fill(""));
     const inputRefs = useRef([]);
-    const [timeLeft, setTimeLeft] = useState(5 * 60);
+    const [timeLeft, setTimeLeft] = useState(5 * 60); // 5 minutes in seconds
 
-    const location = useLocation();
+    // Get email and registrationMethod from navigation state
+    useEffect(() => {
+        if (location.state && location.state.email) {
+            setEmail(location.state.email);
+            // Capture the registrationMethod if passed
+            if (location.state.registrationMethod) {
+                setRegistrationMethod(location.state.registrationMethod);
+            }
+        } else {
+            // If email is not in state, it's an unexpected entry, redirect.
+            toast.error("Email not found for verification. Redirecting to signup.", { autoClose: 3000 });
+            setTimeout(() => navigate("/sign-up"), 3000);
+        }
+    }, [location, navigate]);
 
-  useEffect(() => {
-    if (location.state && location.state.email) {
-      setEmail(location.state.email);
-    }
-  }, [location]);
-  
-  useEffect(() => {
-    if (timeLeft > 0) {
-      const timer = setInterval(() => setTimeLeft(timeLeft - 1), 1000);
-      return () => clearInterval(timer);
-    }
-  }, [timeLeft]);
+    // Timer for code expiry
+    useEffect(() => {
+        if (timeLeft > 0) {
+            const timer = setInterval(() => setTimeLeft(prevTime => prevTime - 1), 1000);
+            return () => clearInterval(timer);
+        }
+        // If timeLeft reaches 0, you might want to disable resend button or show a message
+    }, [timeLeft]);
 
-  const formatTime = () => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-  };
+    const formatTime = () => {
+        const minutes = Math.floor(timeLeft / 60);
+        const seconds = timeLeft % 60;
+        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    };
 
-  const handleChange = (e, index) => {
-    const value = e.target.value;
-    if (isNaN(value)) return; 
+    // OTP input change handler
+    const handleChange = (e, index) => {
+        const value = e.target.value;
+        if (isNaN(value)) return; // Only allow numbers
 
-    const newOtp = [...otp];
-    newOtp[index] = value.substring(value.length - 1); 
-    setOtp(newOtp);
-    if (value && index < 5) {
-      inputRefs.current[index + 1].focus();
-    }
-  };
+        const newOtp = [...otp];
+        newOtp[index] = value.substring(value.length - 1); // Take only the last character
+        setOtp(newOtp);
 
-  const handleKeyDown = (e, index) => {
-    if (e.key === "Backspace" && !otp[index] && index > 0) {
-      inputRefs.current[index - 1].focus();
-    }
-  };
+        // Auto-focus next input
+        if (value && index < 5) {
+            inputRefs.current[index + 1].focus();
+        }
+    };
 
-  const handleVerify = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
-  
-    try {
-      const code = otp.join("");
-      console.log("Sending verification:", { email, code });
-      const response = await fetch("http://localhost:5000/api/auth/verify", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" } ,
-        body: JSON.stringify({ email, code }),
-      });
-  
-      const data = await response.json();
-  
-      if (response.ok) {
-        alert("Email verified! You can now login.");
-        navigate("/login");
-      } else {
-        setError(data.message || "Invalid code");
-      }
-    } catch (err) {
-      setError("Something went wrong.");
-    } finally {
-      setLoading(false);
-    }
-  };
+    // OTP input key down for backspace
+    const handleKeyDown = (e, index) => {
+        if (e.key === "Backspace" && !otp[index] && index > 0) {
+            inputRefs.current[index - 1].focus();
+        }
+    };
 
-  const handleResendCode = async () => {
-    try {
-      setOtp(new Array(6).fill(""));
-      inputRefs.current[0].focus();
-      setTimeLeft(5 * 60);
-      setError("");
+    // Handle verification code submission
+    const handleVerify = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setError(""); // Clear previous errors
 
-      const response = await fetch("http://localhost:5000/api/auth/resend-code", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
+        try {
+            const code = otp.join(""); // Combine OTP digits into a single string
+            console.log("Sending verification:", { email, code });
 
-      const data = await response.json();
+            // Using axios for API call
+            const response = await axios.post("http://localhost:5000/api/auth/code-verification", {
+                email,
+                code,
+            });
 
-      if (response.ok) {
-        alert("A new verification code has been sent to your email.");
-      } else {
-        setError(data.message || "Failed to resend code.");
-      }
-    } catch (error) {
-      console.error("Resend code error:", error);
-      setError("Something went wrong while resending the code.");
-    }
-  };
+            // If verification is successful
+            if (response.status === 200) {
+                toast.success("Email verified successfully!", { autoClose: 2000 });
 
-  return (
-    <SideLayout>
-      <div className="h-screen bg-white overflow-y-hidden font-Inter">
-      <div className="absolute p-4">
-        <button onClick={() => navigate("/sign-up")}
-          className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">
-          <IoChevronBackOutline size={20} /> Back
-        </button>
-      </div>
-      <div className="flex flex-col items-center justify-center min-h-screen px-4">
-        <div className="bg-white p-8 w-3/5 text-center">
-          <h2 className="text-3xl font-bold mb-2">Verify your email address</h2>
-          <p className="text-md text-gray-500 mb-6">
-          A verification code has been sent to <b>{email.replace(/(.{2})(.*)(?=@)/, (_, a, b) => a + '*'.repeat(b.length))}</b>
-          </p>
-          <p className="text-md text-gray-500 mb-6">
-            Please check your email and enter the verification code below. The
-            code will expire in:{" "}
-            <span className="font-bold">{formatTime()}</span>
-          </p>
+                // 🚨 NEW LOGIC HERE: Conditional redirection based on registration method
+                if (registrationMethod === 'google') {
+                    // If it was a Google signup, redirect to set password page
+                    setTimeout(() => navigate("/set-password", { state: { email: email, registrationMethod: 'google' } }), 2000);
+                } else {
+                    // For traditional email signups, redirect to login page
+                    setTimeout(() => navigate("/login"), 2000);
+                }
+            }
+        } catch (apiError) {
+            console.error("Verification failed:", apiError.response?.data);
+            setError(apiError.response?.data?.message || "Invalid verification code. Please try again.");
+            toast.error(apiError.response?.data?.message || "Verification failed.", { autoClose: 3000 });
+        } finally {
+            setLoading(false);
+        }
+    };
 
-          <form onSubmit={handleVerify}>
-             {error && (
-             <div className="text-red-600 font-medium mb-4">
-              {error}
-             </div>
-            )}
-  
-          <div className="flex gap-2 justify-center mb-6">
-            {otp.map((digit, index) => (
-              <input
-                key={index}
-                type="text"
-                value={digit}
-                onChange={(e) => handleChange(e, index)}
-                onKeyDown={(e) => handleKeyDown(e, index)}
-                ref={(el) => (inputRefs.current[index] = el)}
-                maxLength="1"
-                className="w-12 h-12 border border-gray-400 text-center text-xl rounded focus:outline-none focus:border-green-600"
-                required
-              />
-            ))}
-          </div>
+    // Handle resending verification code
+    const handleResendCode = async () => {
+        try {
+            setOtp(new Array(6).fill("")); // Clear OTP input fields
+            inputRefs.current[0].focus(); // Focus first input
+            setTimeLeft(5 * 60); // Reset timer
+            setError(""); // Clear any errors
 
-          <button
-          type="submit"
-          disabled={loading || otp.includes("")}
-          className={`w-full text-white p-3 rounded font-semibold text-md transition duration-300 ease-in-out ${
-            loading || otp.includes("")
-              ? "bg-gray-400 cursor-not-allowed"
-              : "bg-[#91ac8f] hover:bg-[#667964]"
-          }`}
-          >
-            {loading ? "Verifying..." : "Verify"}
-          </button>
+            // Using axios for API call
+            const response = await axios.post("http://localhost:5000/api/auth/resend-code", {
+                email,
+            });
 
-          <button
-            type="button"
-            onClick={handleResendCode}
-            className="mt-4 text-[#4b5945] hover:underline font-semibold"
-          >
-            Resend code
-          </button>
-          </form>
-        </div>
-      </div>
-      </div>
-    </SideLayout>
-  );
+            if (response.status === 200) {
+                toast.success(response.data.message || "A new verification code has been sent to your email.", { autoClose: 3000 });
+            }
+        } catch (apiError) {
+            console.error("Resend code error:", apiError.response?.data);
+            setError(apiError.response?.data?.message || "Failed to resend code.");
+            toast.error(apiError.response?.data?.message || "Failed to resend code.", { autoClose: 3000 });
+        }
+    };
+
+    return (
+        <SideLayout>
+            <ToastContainer /> {/* Toast container for notifications */}
+            <div className="h-screen bg-white overflow-y-hidden font-Inter">
+                <div className="absolute p-4">
+                    <button onClick={() => navigate("/sign-up")} // Navigates back to signup page
+                        className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">
+                        <IoChevronBackOutline size={20} /> Back
+                    </button>
+                </div>
+                <div className="flex flex-col items-center justify-center min-h-screen px-4">
+                    <div className="bg-white p-8 w-3/5 text-center">
+                        <h2 className="text-3xl font-bold mb-2">Verify your email address</h2>
+                        <p className="text-md text-gray-500 mb-6">
+                            A verification code has been sent to <b>{email.replace(/(.{2})(.*)(?=@)/, (_, a, b) => a + '*'.repeat(b.length))}</b>
+                        </p>
+                        <p className="text-md text-gray-500 mb-6">
+                            Please check your email and enter the verification code below. The
+                            code will expire in:{" "}
+                            <span className="font-bold">{formatTime()}</span>
+                        </p>
+
+                        <form onSubmit={handleVerify}>
+                            {error && (
+                            <div className="text-red-600 font-medium mb-4">
+                                {error}
+                            </div>
+                            )}
+                            
+                            <div className="flex gap-2 justify-center mb-6">
+                                {otp.map((digit, index) => (
+                                    <input
+                                        key={index}
+                                        type="text"
+                                        value={digit}
+                                        onChange={(e) => handleChange(e, index)}
+                                        onKeyDown={(e) => handleKeyDown(e, index)}
+                                        ref={(el) => (inputRefs.current[index] = el)}
+                                        maxLength="1"
+                                        className="w-12 h-12 border border-gray-400 text-center text-xl rounded focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                        required
+                                        disabled={loading} // Disable inputs while loading
+                                    />
+                                ))}
+                            </div>
+
+                            <button
+                            type="submit"
+                            disabled={loading || otp.includes("")}
+                            className={`w-full text-white p-3 rounded font-semibold text-md transition duration-300 ease-in-out ${
+                                loading || otp.includes("")
+                                ? "bg-gray-400 cursor-not-allowed"
+                                : "bg-[#91ac8f] hover:bg-[#667964]"
+                            }`}
+                            >
+                                {loading ? "Verifying..." : "Verify"}
+                            </button>
+
+                            <button
+                                type="button"
+                                onClick={handleResendCode}
+                                disabled={loading || timeLeft === 0} // Disable if loading or timer is 0
+                                className={`mt-4 font-semibold transition duration-300 ease-in-out ${
+                                    loading || timeLeft === 0
+                                    ? "text-gray-500 cursor-not-allowed"
+                                    : "text-[#4b5945] hover:underline"
+                                }`}
+                            >
+                                Resend code
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </SideLayout>
+    );
 };
 
-export default EmailVerificationCode;
+export default CodeVerificationPage;

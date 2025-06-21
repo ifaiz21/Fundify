@@ -9,7 +9,7 @@ const EmailVerification = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
   const [timeLeft, setTimeLeft] = useState(5 * 60);
-  const [code, setCode] = useState("");
+  //const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
