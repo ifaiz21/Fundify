@@ -31,7 +31,7 @@ const CodeVerificationPage = () => {
         } else {
             // If email is not in state, it's an unexpected entry, redirect.
             toast.error("Email not found for verification. Redirecting to signup.", { autoClose: 3000 });
-            setTimeout(() => navigate("/sign-up"), 3000);
+            //setTimeout(() => navigate("/sign-up"), 3000);
         }
     }, [location, navigate]);
 
@@ -144,18 +144,15 @@ const CodeVerificationPage = () => {
                     </button>
                 </div>
                 <div className="flex flex-col items-center justify-center min-h-screen px-4">
-                    <div className="bg-white p-8 w-3/5 text-center">
-                        <h2 className="text-3xl font-bold mb-2">Verify your email address</h2>
-                        <p className="text-md text-gray-500 mb-6">
+                    <div className="form-container">
+                        <p className="title">Verify your Email</p>
+                        <p className="description">
                             A verification code has been sent to <b>{email.replace(/(.{2})(.*)(?=@)/, (_, a, b) => a + '*'.repeat(b.length))}</b>
-                        </p>
-                        <p className="text-md text-gray-500 mb-6">
-                            Please check your email and enter the verification code below. The
-                            code will expire in:{" "}
+                            Please enter the code below. The code will expire in: {" "}
                             <span className="font-bold">{formatTime()}</span>
                         </p>
 
-                        <form onSubmit={handleVerify}>
+                        <form onSubmit={handleVerify} className="form">
                             {error && (
                             <div className="text-red-600 font-medium mb-4">
                                 {error}
@@ -172,7 +169,7 @@ const CodeVerificationPage = () => {
                                         onKeyDown={(e) => handleKeyDown(e, index)}
                                         ref={(el) => (inputRefs.current[index] = el)}
                                         maxLength="1"
-                                        className="w-12 h-12 border border-gray-400 text-center text-xl rounded focus:outline-none focus:border-green-600 focus:ring-1 focus:ring-green-600"
+                                        className="otp-input"
                                         required
                                         disabled={loading} // Disable inputs while loading
                                     />
@@ -182,10 +179,10 @@ const CodeVerificationPage = () => {
                             <button
                             type="submit"
                             disabled={loading || otp.includes("")}
-                            className={`w-full text-white p-3 rounded font-semibold text-md transition duration-300 ease-in-out ${
+                            className={`form-btn ${
                                 loading || otp.includes("")
                                 ? "bg-gray-400 cursor-not-allowed"
-                                : "bg-[#91ac8f] hover:bg-[#667964]"
+                                : ""
                             }`}
                             >
                                 {loading ? "Verifying..." : "Verify"}
@@ -207,6 +204,91 @@ const CodeVerificationPage = () => {
                     </div>
                 </div>
             </div>
+            {/* Embedded CSS for the form and buttons */}
+      <style jsx>{`
+        .form-container {
+          width: 350px;
+          min-height: 450px; /* Adjusted min-height for this page's content */
+          background-color: #fff;
+          box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+          border-radius: 10px;
+          box-sizing: border-box;
+          padding: 20px 30px;
+        }
+
+        .title {
+          text-align: center;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          margin: 10px 0 30px 0;
+          font-size: 28px;
+          font-weight: 800;
+        }
+        
+        .description {
+          text-align: center;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          font-size: 14px;
+          color: #555;
+          margin-bottom: 20px;
+        }
+
+        .form {
+          width: 100%;
+          display: flex;
+          flex-direction: column;
+          gap: 18px; /* Adjusted gap for form elements */
+          margin-bottom: 15px;
+        }
+
+        .otp-input { /* New style for individual OTP input fields */
+          width: 48px; /* Fixed width for OTP box */
+          height: 48px; /* Fixed height for OTP box */
+          border-radius: 20px; /* Rounded corners */
+          border: 1px solid #c0c0c0; /* Border style */
+          outline: 0 !important;
+          text-align: center;
+          font-size: 1.25rem; /* text-xl equivalent */
+          box-sizing: border-box; /* Ensure padding/border are included in width/height */
+          transition: border-color 0.3s ease-in-out; /* Smooth transition for focus */
+        }
+
+        .otp-input:focus {
+          border-color: #4B5842; /* Focus color */
+          box-shadow: 0 0 0 1px #4B5842; /* Focus ring */
+        }
+
+        .form-btn {
+          padding: 10px 15px;
+          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
+              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          border-radius: 20px;
+          border: 0 !important;
+          outline: 0 !important;
+          background: #4B5842;
+          color: white;
+          cursor: pointer;
+          box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+          width: 100%; /* Ensure button takes full width of form */
+          margin-top: 10px; /* Add some space above button */
+        }
+
+        .form-btn:hover:not(:disabled) { /* Hover effect for enabled button */
+          background-color: #008080; /* Darker teal on hover */
+          box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+        }
+
+        .form-btn:active {
+          box-shadow: none;
+        }
+
+        .form-btn:disabled { /* Styling for disabled button */
+          background-color: #a0a0a0;
+          cursor: not-allowed;
+          box-shadow: none;
+        }
+      `}</style>
         </SideLayout>
     );
 };
