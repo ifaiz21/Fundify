@@ -78,10 +78,7 @@ const LoginPage = () => {
 
         <div className="flex h-full items-center justify-center">
           <div className="form-container">
-            <p className="title">Welcome back</p>
-
-            {message && <div className="text-green-600 mb-4 text-center">{message}</div>}
-            {error && <p className="text-red-600 text-sm mt-2 text-center">{error}</p>}
+            <p className="title text-[#4b5849]">Welcome back</p>
 
             <form className="form" onSubmit={handleContinue}>
               <input
@@ -111,6 +108,9 @@ const LoginPage = () => {
                   {showPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
                 </span>
               </div>
+
+              {message && <div className="text-green-600 mb-4 text-center">{message}</div>}
+              {error && <p className="text-red-600 text-sm mt-2 text-center">{error}</p>}
               
               <p className="page-link">
                 <a href="/forget-password" className="page-link-label">

@@ -20,7 +20,7 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -142,15 +142,9 @@ const SignupPage = () => {
           </button>
         </div>
 
-        <div className="flex h-full justify-center items-center">
+        <div className="flex h-full justify-center items-center mt-12">
           <div className="form-container">
-            <p className="title">Sign Up</p>
-
-            {error && (
-              <p className="text-red-600 text-sm mt-2 text-center">
-                {error}
-              </p>
-            )}
+            <p className="title text-[#4b5849]">Sign Up</p>
 
             <form className="form" onSubmit={handleContinue}>
               <input
@@ -210,6 +204,18 @@ const SignupPage = () => {
                   {showConfirmPassword ? <AiOutlineEyeInvisible size={20} /> : <AiOutlineEye size={20} />}
                 </span>
               </div>
+              
+               {/* Display messages based on type */}   
+            {error && (
+              <p className="text-red-600 text-sm mt-2 text-center">
+                {error}
+              </p>
+               )}
+            {successMessage && (
+              <p className="text-green-600 text-sm mb-4">
+                {successMessage}
+              </p>
+              )}
 
               <button className="form-btn" type="submit">
                 Sign up
@@ -224,18 +230,11 @@ const SignupPage = () => {
             </p>
 
             <div className="flex flex-col items-center mt-1 space-y-4">
-              {/* Added a visual separator *
-              <div className="flex items-center w-full my-4">
-                <div className="flex-grow border-t border-gray-300"></div>
-                <span className="flex-shrink mx-4 text-gray-500">OR</span>
-                <div className="flex-grow border-t border-gray-300"></div>
-              </div> */}
 
-              {/* THIS IS THE GOOGLE SIGN-UP BUTTON FOR NEW USERS */}
               <div className="w-full flex justify-center mt-0">
-                <GoogleSignUpButton // Using GoogleSignUpButton
-                  onGoogleSuccess={handleGoogleSignupSuccess} // Pass the handler for Google Sign-up
-                  buttonText="Sign up with Google" // Custom text for this specific button
+                <GoogleSignUpButton 
+                  onGoogleSuccess={handleGoogleSignupSuccess} 
+                  buttonText="Sign up with Google" 
                 />
               </div>
             </div>
