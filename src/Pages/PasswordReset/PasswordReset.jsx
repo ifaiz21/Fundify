@@ -24,7 +24,7 @@ const PasswordReset = () => {
       setEmail(location.state.email);
     } else {
       toast.error("Email not found. Redirecting...");
-      setTimeout(() => navigate("/forget-password"), 2000);
+      //setTimeout(() => navigate("/forget-password"), 2000);
     }
   }, [location, navigate]);
 
