@@ -33,20 +33,61 @@ export default function Hero() {
           </p>
   
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-            <a
-              href="/create-campaign"
-              className="px-8 py-3 bg-white/10 text-white rounded-full hover:bg-[#4A5D45] transition-colors backdrop-blur-sm w-full sm:w-auto text-center font-medium"
-            >
-              Start a Campaign
+            <a href="/create-campaign" className="w-full sm:w-auto">
+              <button class="btn">
+                <i class="animation"></i>START A CAMPAIGN<i class="animation"></i>
+              </button>
             </a>
-            <a
-              href="/explore"
-              className="px-8 py-3 bg-white/10 text-white rounded-full hover:bg-[#4A5D45] transition-colors backdrop-blur-sm w-full sm:w-auto text-center font-medium"
-            >
-              Explore Campaigns
+            <a href="/explore" className="w-full sm:w-auto">
+              <button class="btn">
+                <i class="animation"></i>EXPLORE CAMPAIGNS<i class="animation"></i>
+              </button>
             </a>
           </div>
         </div>
+
+        {/* Styles for the buttons - placed directly in JSX */}
+        <style jsx>{`
+          .btn {
+            outline: 0;
+            display: inline-flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #4A5D45;
+            min-width: 200px;
+            border: 0;
+            border-radius: 100px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, .1);
+            box-sizing: border-box;
+            padding: 16px 20px;
+            color: #fff;
+            font-size: 12px;
+            font-weight: 600;
+            letter-spacing: 1.2px;
+            text-transform: uppercase;
+            overflow: hidden;
+            cursor: pointer;
+          }
+
+          .btn:hover {
+            opacity: .95;
+          }
+
+          .btn .animation {
+            border-radius: 100%;
+            animation: ripple 0.6s linear infinite;
+          }
+
+          @keyframes ripple {
+            0% {
+              box-shadow: 0 0 0 0 rgba(255, 255, 255, 0.1), 0 0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 40px rgba(255, 255, 255, 0.1), 0 0 0 60px rgba(255, 255, 255, 0.1);
+            }
+
+            100% {
+              box-shadow: 0 0 0 20px rgba(255, 255, 255, 0.1), 0 0 0 40px rgba(255, 255, 255, 0.1), 0 0 0 60px rgba(255, 255, 255, 0.1), 0 0 0 80px rgba(255, 255, 255, 0);
+            }
+          }
+        `}</style>
       </section>
     );
-  } 
+  }
