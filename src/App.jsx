@@ -4,6 +4,7 @@ import ToastNotification from './components/ToastNotification';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignupPage";
+import Billing from './Pages/Billing';
 import ForgetPassword from "./Pages/PasswordReset/ForgetPassword";
 import EmailVerification from "./Pages/PasswordReset/EmailVerification";
 import PasswordReset from "./Pages/PasswordReset/PasswordReset";
@@ -111,6 +112,8 @@ function App() {
           <Route path="/admin/campaigns" element={<CampaignsPage showToast={showToast} />} />
           <Route path="/admin/verifications" element={<VerificationPage showToast={showToast} />} />
           <Route path="/admin/feedbacks" element={<FeedbacksPage showToast={showToast} />} />
+
+          <Route path="/billing" element={<Billing showToast={showToast} />} /> {/* New Route */}
 
           {/* Fallback for other routes */}
           <Route path="*" element={
