@@ -102,7 +102,6 @@ function App() {
           <Route path="/ProjectView" element={<ProjectView showToast={showToast} />} />
           <Route path="/campaign-update" element={<CampaignUpdate showToast={showToast} />} />
           <Route path="/user-profile" element={<UserProfileSettings showToast={showToast} />} />
-          <Route path="/profile-settings" element={<UserProfileSettings showToast={showToast} />} />
 
           {/* Admin Pages */}
           <Route path="/admin-dashboard" element={<AdminDashboard showToast={showToast} />} />
