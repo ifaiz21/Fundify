@@ -1,11 +1,11 @@
 // src/Pages/ExploreCampaigns.jsx
 import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom"; // Import useLocation
 import HeaderLayout from "./Layout/HeaderLayout";
-import FooterLayout from "./Layout/FooterLayout"; // Corrected import path for FooterLayout
+import FooterLayout from "./Layout/FooterLayout";
 import axios from "axios";
-import { useUser } from '../context/UserContext'; // Import useUser for saved campaigns
-import { Heart } from 'lucide-react'; // Import Heart icon
+import { useUser } from '../context/UserContext';
+import { Heart } from 'lucide-react';
 
 // Define the full list of categories
 const allCategories = [
@@ -34,17 +34,17 @@ const allCategories = [
 
 const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
-// CampaignCard now accepts showToast as a prop
-function CampaignCard({ campaign, showToast }) {
+// CampaignCard now accepts showToast and onSelectForDonation as props
+function CampaignCard({ campaign, showToast, onSelectForDonation }) {
   const safeRaised = Number(campaign.raised) || 0;
   const safeGoal = Number(campaign.goalAmount) || 1;
   const progressPercentage = (safeRaised / safeGoal) * 100;
   const navigate = useNavigate();
-  const { userProfile, setUserProfile } = useUser(); // Get user context
-  const isCampaignSaved = userProfile.savedCampaigns?.includes(campaign._id); // Check if campaign is already saved
+  const { userProfile, setUserProfile } = useUser();
+  const isCampaignSaved = userProfile.savedCampaigns?.includes(campaign._id);
 
   const handleToggleSave = async (e) => {
-    e.stopPropagation(); // Prevent navigating to ProjectView when clicking save button
+    e.stopPropagation();
     if (!userProfile.isAuthenticated) {
       showToast('Please log in to save campaigns.', 'info');
       return;
@@ -65,11 +65,9 @@ function CampaignCard({ campaign, showToast }) {
         const result = await response.json();
         if (result.saved) {
           showToast('Campaign saved successfully!', 'success');
-          // Update userProfile state to reflect the change
           setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaign._id] }));
         } else {
           showToast('Campaign unsaved.', 'info');
-          // Update userProfile state to reflect the change
           setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaign._id) }));
         }
       } else {
@@ -82,8 +80,16 @@ function CampaignCard({ campaign, showToast }) {
     }
   };
 
+  const handleCardClick = () => {
+    if (onSelectForDonation) {
+      onSelectForDonation(campaign._id);
+    } else {
+      navigate(`/ProjectView?id=${campaign._id}`);
+    }
+  };
+
   return (
-    <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col">
+    <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col cursor-pointer" onClick={handleCardClick}>
       <img
         src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `http://localhost:5000${campaign.mediaUrls[0]}` : "/placeholder.svg"}
         alt={campaign.title}
@@ -100,33 +106,42 @@ function CampaignCard({ campaign, showToast }) {
         </p>
         <div className="flex justify-between text-sm mb-2 mt-auto">
           <span className="font-medium text-gray-700">{formatCurrency(safeRaised)}</span>
-          {/* Display the percentage funded */}
           <span className="font-medium text-[#65835e]">{Math.min(progressPercentage, 100).toFixed(0)}% Funded</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5">
           <div className="bg-[#65835e] h-1.5 rounded-full" style={{ width: `${Math.min(progressPercentage, 100)}%` }}></div>
         </div>
 
-        {/* Explore, Donate, and Save Buttons */}
+        {/* Buttons - Conditional rendering based on onSelectForDonation prop */}
         <div className="flex justify-between mt-4">
-          <button
-            onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
-            className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
-            Explore
-          </button>
-          <button
-            onClick={() => navigate("/donate", { state: { campaignId: campaign._id } })}
-            className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
-            Donate
-          </button>
-          {/* Add Save/Unsave Button */}
-          <button
-            onClick={handleToggleSave}
-            className={`ml-2 p-2 rounded-full ${isCampaignSaved ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'} hover:bg-red-600 hover:text-white transition-colors`}
-            title={isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
-          >
-            <Heart className="h-5 w-5" fill={isCampaignSaved ? 'currentColor' : 'none'} />
-          </button>
+          {onSelectForDonation ? (
+            <button
+              onClick={(e) => { e.stopPropagation(); onSelectForDonation(campaign._id); }}
+              className="w-full bg-[#4A5D45] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors"
+            >
+              Select to Donate
+            </button>
+          ) : (
+            <>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate(`/ProjectView?id=${campaign._id}`); }}
+                className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
+                Explore
+              </button>
+              <button
+                onClick={(e) => { e.stopPropagation(); navigate("/donate", { state: { campaignId: campaign._id } }); }}
+                className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
+                Donate
+              </button>
+              <button
+                onClick={handleToggleSave}
+                className={`ml-2 p-2 rounded-full ${isCampaignSaved ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'} hover:bg-red-600 hover:text-white transition-colors`}
+                title={isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
+              >
+                <Heart className="h-5 w-5" fill={isCampaignSaved ? 'currentColor' : 'none'} />
+              </button>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -141,8 +156,12 @@ export default function ExploreCampaigns({ showToast }) {
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [searchQuery, setSearchQuery] = useState("");
   const [visibleCampaignsCount, setVisibleCampaignsCount] = useState(6);
+  const navigate = useNavigate(); // Get navigate from react-router-dom
+  const location = useLocation(); // Get location from react-router-dom
 
-  // Use the new allCategories array
+  // Check if we are in "select for donation" mode
+  const isSelectForDonationMode = location.state?.purpose === "select-for-donation";
+
   const categories = allCategories;
 
   useEffect(() => {
@@ -151,10 +170,8 @@ export default function ExploreCampaigns({ showToast }) {
         setLoading(true);
         const response = await axios.get("http://localhost:5000/api/campaigns");
         
-        // CORRECTED LINE: Access response.data.campaigns as the backend now sends an object
-        const fetchedCampaigns = response.data.campaigns || []; // Ensure it's an array
+        const fetchedCampaigns = response.data.campaigns || [];
         
-        // Filter campaigns that are 'Active' or 'Approved' for display on the explore page
         const activeCampaigns = fetchedCampaigns.filter(
           campaign => campaign.status === 'Active' || campaign.status === 'Approved'
         );
@@ -162,7 +179,6 @@ export default function ExploreCampaigns({ showToast }) {
         setError(null);
       } catch (err) {
         console.error("Error fetching campaigns for explore page:", err);
-        // Provide more specific error message based on backend response if available
         if (err.response && err.response.status === 403) {
             setError("Access denied. You may need to log in as an admin to view certain campaigns.");
         } else {
@@ -189,6 +205,11 @@ export default function ExploreCampaigns({ showToast }) {
 
   const loadMore = () => {
     setVisibleCampaignsCount((prev) => prev + 3);
+  };
+
+  // Function to handle campaign selection when in donation mode
+  const handleSelectForDonation = (campaignId) => {
+    navigate("/donate", { state: { campaignId: campaignId } });
   };
 
   if (loading) {
@@ -226,6 +247,14 @@ export default function ExploreCampaigns({ showToast }) {
       <HeaderLayout />
       <div className="max-w-7xl mx-auto px-4 py-12 mt-2">
         <h2 className="text-4xl font-bold mb-6 mt-2 text-[#4A5D45] text-center">Explore Campaigns</h2>
+
+        {/* Message for donation selection mode */}
+        {isSelectForDonationMode && (
+          <div className="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4 mb-6" role="alert">
+            <p className="font-bold">Please select the campaign first where you want to donate.</p>
+            <p className="text-sm">Click on any campaign card to proceed to donation.</p>
+          </div>
+        )}
 
         {/* Search Bar */}
         <div className="relative max-w-2xl mx-auto mb-8">
@@ -276,8 +305,13 @@ export default function ExploreCampaigns({ showToast }) {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ">
             {filteredCampaigns.slice(0, visibleCampaignsCount).map((campaign) => (
-              // Pass showToast to CampaignCard
-              <CampaignCard key={campaign._id} campaign={campaign} showToast={showToast} />
+              <CampaignCard
+                key={campaign._id}
+                campaign={campaign}
+                showToast={showToast}
+                // Pass onSelectForDonation prop only when in selection mode
+                onSelectForDonation={isSelectForDonationMode ? handleSelectForDonation : null}
+              />
             ))}
           </div>
         )}

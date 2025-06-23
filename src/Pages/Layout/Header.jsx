@@ -1,12 +1,10 @@
 // src/Pages/Layout/Header.jsx
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-//import { User } from "lucide-react";
 import { useUser } from '../../context/UserContext';
-
+import { ToastNotification } from "../..//components/ToastNotification"; // Assuming ToastNotification is available globally or can be imported here
 
 export default function Header({ hideHome }) {
-  //const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
@@ -18,7 +16,6 @@ const { userProfile, loadingUserContext } = useUser();
 const dropdownRef = useRef(null);
 
 
-  // ADDED: Default avatar logic
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
   // Close dropdown when clicking outside
@@ -49,11 +46,21 @@ const dropdownRef = useRef(null);
 
     setTimeout(() => {
       setLogoutMessage("");
+      // You might want to refresh the user context here as well if it's not automatically
+      // being updated after logout (e.g., set isAuthenticated to false in context).
+      // This might involve calling setUserProfile in the context.
     }, 3000);
   };
 
+  const handleDonateClick = (e) => {
+    e.preventDefault();
+    // Navigate to ExploreCampaigns, passing a state that indicates
+    // the user needs to select a campaign for donation.
+    navigate("/explore", { state: { purpose: "select-for-donation" } });
+  };
+
   return (
-   <>
+    <>
       {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
@@ -71,29 +78,29 @@ const dropdownRef = useRef(null);
           />
 
           {/* Desktop Navigation */}
-          
-            <nav className="flex space-x-6">
-              {!hideHome && (
-                <a href="/" className="text-white hover:text-gray-300">Home</a>
-              )}
-              <a href="/donate" className="text-white hover:text-gray-300">Donate</a>
-              <a href="/about" className="text-white hover:text-gray-300">About Us</a>
-            </nav>
+          <nav className="flex space-x-6">
+            {!hideHome && (
+              <a href="/" className="text-white hover:text-gray-300">Home</a>
+            )}
+            {/* Modified Donate Link */}
+            <a href="#" onClick={handleDonateClick} className="text-white hover:text-gray-300">Donate</a>
+            <a href="/about" className="text-white hover:text-gray-300">About Us</a>
+          </nav>
         </div>
 
-            <div className="flex space-x-6 items-center">
-              <a href="/create-campaign" className="text-white hover:text-gray-300">
-                Create Campaign
-              </a>
-              <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
+        <div className="flex space-x-6 items-center">
+          <a href="/create-campaign" className="text-white hover:text-gray-300">
+            Create Campaign
+          </a>
+          <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
 
-              {/* User Account Icon with Login Check */}
+          {/* User Account Icon with Login Check */}
           {isLoggedIn ? (
             <div className="relative" ref={dropdownRef}>
               {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full flex items-center justify-center" // Remove hardcoded bg-gray and border for the image to show
+                className="w-10 h-10 rounded-full flex items-center justify-center"
               >
                 {loadingUserContext ? (
                   <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
@@ -128,8 +135,8 @@ const dropdownRef = useRef(null);
                 <a href="/login" className="text-white hover:text-gray-300">
                   Login / Sign Up
                 </a>
-              )}
-         </div>
+              )}   
+          </div>
       </header>
 
       {/* Logout Confirmation Modal */}
@@ -158,6 +165,6 @@ const dropdownRef = useRef(null);
           </div>
         </div>
       )}
-   </>
+    </>
   );
 }
