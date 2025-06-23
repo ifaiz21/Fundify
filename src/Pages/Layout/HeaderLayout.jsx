@@ -8,13 +8,13 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState("");
-  const [message, setMessage] = useState("");
+  const [message, setMessage] = useState(""); // Assuming 'message' is for general notifications
   const navigate = useNavigate();
   const location = useLocation();
 
   const { userProfile, loadingUserContext } = useUser();
 
-  // ADDED: Default avatar logic
+  // Default avatar logic
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
   useEffect(() => {
@@ -32,6 +32,12 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
     setTimeout(() => {
       setLogoutMessage("");
     }, 3000);
+  };
+
+  // New handler for the Donate button
+  const handleDonateClick = (e) => {
+    e.preventDefault(); // Prevent default link behavior
+    navigate("/explore", { state: { purpose: "select-for-donation" } });
   };
 
   return (
@@ -64,7 +70,8 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
           <nav className="flex space-x-6 text-[#000000]">
             <Link to="/" className="hover:underline">Home</Link>
             {!hideDonate && (
-              <Link to="/donate" className="hover:underline">Donate</Link>
+              // Modified Donate Link to use onClick handler
+              <a href="#" onClick={handleDonateClick} className="hover:underline">Donate</a>
             )}
             {!hideAboutUs && (
               <Link to="/about" className="hover:underline">About Us</Link>
@@ -89,7 +96,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full flex items-center justify-center" // Remove hardcoded bg-gray and border for the image to show
+                className="w-10 h-10 rounded-full flex items-center justify-center"
               >
                 {loadingUserContext ? (
                   <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>

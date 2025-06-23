@@ -444,7 +444,7 @@ function UserProfileSettings({ showToast }) {
               <div className="text-left flex-grow">
                 <h1 className="text-xl font-semibold mb-2">Profile Picture</h1>
                 <p className="text-sm text-gray-600 mb-4">
-                  {profileImagePreview ? 'Click on picture to change' : 'No photo uploaded'}
+                  {profileImagePreview ? 'Click on picture to change' : 'Click On Picture to Upload Your Photo'}
                 </p>
                 <input
                   type="file"

@@ -1,12 +1,10 @@
 // src/Pages/Layout/Header.jsx
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-//import { User } from "lucide-react";
 import { useUser } from '../../context/UserContext';
-
+import { ToastNotification } from "../..//components/ToastNotification"; // Assuming ToastNotification is available globally or can be imported here
 
 export default function Header({ hideHome }) {
-  //const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
@@ -14,11 +12,9 @@ export default function Header({ hideHome }) {
   const navigate = useNavigate();
   const location = useLocation();
 
-const { userProfile, loadingUserContext } = useUser();
+  const { userProfile, loadingUserContext } = useUser();
 
-  // ADDED: Default avatar logic
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
-
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -34,11 +30,21 @@ const { userProfile, loadingUserContext } = useUser();
 
     setTimeout(() => {
       setLogoutMessage("");
+      // You might want to refresh the user context here as well if it's not automatically
+      // being updated after logout (e.g., set isAuthenticated to false in context).
+      // This might involve calling setUserProfile in the context.
     }, 3000);
   };
 
+  const handleDonateClick = (e) => {
+    e.preventDefault();
+    // Navigate to ExploreCampaigns, passing a state that indicates
+    // the user needs to select a campaign for donation.
+    navigate("/explore", { state: { purpose: "select-for-donation" } });
+  };
+
   return (
-   <>
+    <>
       {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
@@ -56,29 +62,29 @@ const { userProfile, loadingUserContext } = useUser();
           />
 
           {/* Desktop Navigation */}
-          
-            <nav className="flex space-x-6">
-              {!hideHome && (
-                <a href="/" className="text-white hover:text-gray-300">Home</a>
-              )}
-              <a href="/donate" className="text-white hover:text-gray-300">Donate</a>
-              <a href="/about" className="text-white hover:text-gray-300">About Us</a>
-            </nav>
+          <nav className="flex space-x-6">
+            {!hideHome && (
+              <a href="/" className="text-white hover:text-gray-300">Home</a>
+            )}
+            {/* Modified Donate Link */}
+            <a href="#" onClick={handleDonateClick} className="text-white hover:text-gray-300">Donate</a>
+            <a href="/about" className="text-white hover:text-gray-300">About Us</a>
+          </nav>
         </div>
 
-            <div className="flex space-x-6 items-center">
-              <a href="/create-campaign" className="text-white hover:text-gray-300">
-                Create Campaign
-              </a>
-              <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
+        <div className="flex space-x-6 items-center">
+          <a href="/create-campaign" className="text-white hover:text-gray-300">
+            Create Campaign
+          </a>
+          <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
 
-              {/* User Account Icon with Login Check */}
+          {/* User Account Icon with Login Check */}
           {isLoggedIn ? (
             <div className="relative">
               {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full flex items-center justify-center" // Remove hardcoded bg-gray and border for the image to show
+                className="w-10 h-10 rounded-full flex items-center justify-center"
               >
                 {loadingUserContext ? (
                   <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
@@ -95,26 +101,26 @@ const { userProfile, loadingUserContext } = useUser();
                 )}
               </button>
 
-                  {showDropdown && (
-                    <div className="absolute right-2 mt-1 bg-gray-200 text-black rounded shadow-lg py-2 w-40">
-                      <a href="/user-profile" className="block px-4 py-2 hover:bg-[#B2C9AD]">
-                        My Profile
-                      </a>
-                      <button
-                        onClick={() => setShowConfirmLogout(true)}
-                        className="w-full text-left px-4 py-2 hover:bg-red-400"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-              </div>
-              ) : (
-                <a href="/login" className="text-white hover:text-gray-300">
-                  Login / Sign Up
-                </a>
+              {showDropdown && (
+                <div className="absolute right-2 mt-1 bg-gray-200 text-black rounded shadow-lg py-2 w-40">
+                  <a href="/user-profile" className="block px-4 py-2 hover:bg-[#B2C9AD]">
+                    My Profile
+                  </a>
+                  <button
+                    onClick={() => setShowConfirmLogout(true)}
+                    className="w-full text-left px-4 py-2 hover:bg-red-400"
+                  >
+                    Logout
+                  </button>
+                </div>
               )}
-         </div>
+            </div>
+          ) : (
+            <a href="/login" className="text-white hover:text-gray-300">
+              Login / Sign Up
+            </a>
+          )}
+        </div>
       </header>
 
       {/* Logout Confirmation Modal */}
@@ -143,6 +149,6 @@ const { userProfile, loadingUserContext } = useUser();
           </div>
         </div>
       )}
-   </>
+    </>
   );
 }
