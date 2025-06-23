@@ -6,8 +6,9 @@ import HeaderLayout from "./Layout/HeaderLayout" // Assuming this path is correc
 import FooterLayout from "./Layout/FooterLayout" // Assuming this path is correct
 import { useUser } from '../context/UserContext';
 import SideBar from '../components/SideBar';
+import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Import toast functions
 
-function UserProfileSettings({ showToast }) {
+function UserProfileSettings() { // Removed showToast from props
   const { userProfile, setUserProfile, loadingUserContext } = useUser();
 
   const [profileData, setProfileData] = useState({
@@ -139,7 +140,7 @@ function UserProfileSettings({ showToast }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        showToast("No authentication token found. Please log in.", "error");
+        showErrorMessage("No authentication token found. Please log in."); // Replaced showToast
         navigate("/login");
         return;
       }
@@ -147,7 +148,7 @@ function UserProfileSettings({ showToast }) {
       const formDataToSend = new FormData();
 
       if (!selectedProfileImage) {
-        showToast("Please select a new photo to save.", "info");
+        showErrorMessage("Please select a new photo to save."); // Replaced showToast
         setLoading(false);
         return;
       }
@@ -187,11 +188,11 @@ function UserProfileSettings({ showToast }) {
 
       setUserProfile(prev => ({ ...prev, profilePictureUrl: newPicUrl }));
 
-      showToast("Profile picture saved successfully!", "success");
+      showSuccessMessage("Profile picture saved successfully!"); // Replaced showToast
     } catch (err) {
       console.error("Save profile picture error:", err);
       setError(err.message || "Failed to save profile picture.");
-      showToast(`Error saving profile picture: ${err.message}`, "error");
+      showErrorMessage(`Error saving profile picture: ${err.message}`); // Replaced showToast
     } finally {
       setLoading(false);
     }
@@ -203,7 +204,7 @@ function UserProfileSettings({ showToast }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        showToast("No authentication token found. Please log in.", "error");
+        showErrorMessage("No authentication token found. Please log in."); // Replaced showToast
         navigate("/login");
         return;
       }
@@ -243,11 +244,11 @@ function UserProfileSettings({ showToast }) {
 
       setUserProfile(prev => ({ ...prev, profilePictureUrl: newPicUrl }));
 
-      showToast("Profile picture removed successfully!", "success");
+      showSuccessMessage("Profile picture removed successfully!"); // Replaced showToast
     } catch (err) {
       console.error("Remove profile picture error:", err);
       setError(err.message || "Failed to remove profile picture.");
-      showToast(`Error removing profile picture: ${err.message}`, "error");
+      showErrorMessage(`Error removing profile picture: ${err.message}`); // Replaced showToast
     } finally {
       setLoading(false);
     }
@@ -260,7 +261,7 @@ function UserProfileSettings({ showToast }) {
     try {
       const token = localStorage.getItem('token');
       if (!token) {
-        showToast("No authentication token found. Please log in.", "error");
+        showErrorMessage("No authentication token found. Please log in."); // Replaced showToast
         navigate("/login");
         return;
       }
@@ -310,11 +311,11 @@ function UserProfileSettings({ showToast }) {
       setIsProfileEditMode(false);
       setIsAddingEmail(false);
 
-      showToast("Profile details saved successfully!", "success");
+      showSuccessMessage("Profile details saved successfully!"); // Replaced showToast
     } catch (err) {
       console.error("Save profile details error:", err);
       setError(err.message || "Failed to save profile details.");
-      showToast(`Error saving profile details: ${err.message}`, "error");
+      showErrorMessage(`Error saving profile details: ${err.message}`); // Replaced showToast
     } finally {
       setLoading(false);
     }
@@ -344,7 +345,7 @@ function UserProfileSettings({ showToast }) {
 
   const handleKYC = () => {
     console.log("KYC verification logic here")
-    showToast("KYC verification functionality coming soon!", "info");
+    showErrorMessage("KYC verification functionality coming soon!"); // Replaced showToast
   }
 
   const handleAddEmailClick = () => {

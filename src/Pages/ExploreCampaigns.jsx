@@ -6,6 +6,7 @@ import FooterLayout from "./Layout/FooterLayout";
 import axios from "axios";
 import { useUser } from '../context/UserContext';
 import { Heart } from 'lucide-react';
+import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Import toast functions
 
 // Define the full list of categories
 const allCategories = [
@@ -34,8 +35,8 @@ const allCategories = [
 
 const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
-// CampaignCard now accepts showToast and onSelectForDonation as props
-function CampaignCard({ campaign, showToast, onSelectForDonation }) {
+// CampaignCard now accepts onSelectForDonation as props
+function CampaignCard({ campaign, onSelectForDonation }) { // Removed showToast prop
   const safeRaised = Number(campaign.raised) || 0;
   const safeGoal = Number(campaign.goalAmount) || 1;
   const progressPercentage = (safeRaised / safeGoal) * 100;
@@ -46,7 +47,7 @@ function CampaignCard({ campaign, showToast, onSelectForDonation }) {
   const handleToggleSave = async (e) => {
     e.stopPropagation();
     if (!userProfile.isAuthenticated) {
-      showToast('Please log in to save campaigns.', 'info');
+      showErrorMessage('Please log in to save campaigns.'); // Replaced showToast
       return;
     }
 
@@ -64,19 +65,19 @@ function CampaignCard({ campaign, showToast, onSelectForDonation }) {
       if (response.ok) {
         const result = await response.json();
         if (result.saved) {
-          showToast('Campaign saved successfully!', 'success');
+          showSuccessMessage('Campaign saved successfully!'); // Replaced showToast
           setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaign._id] }));
         } else {
-          showToast('Campaign unsaved.', 'info');
+          showSuccessMessage('Campaign unsaved.'); // Replaced showToast
           setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaign._id) }));
         }
       } else {
         const errorData = await response.json();
-        showToast(`Failed to save/unsave campaign: ${errorData.message}`, 'error');
+        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`); // Replaced showToast
       }
     } catch (error) {
       console.error('Error toggling saved campaign:', error);
-      showToast('An error occurred while saving/unsaving the campaign.', 'error');
+      showErrorMessage('An error occurred while saving/unsaving the campaign.'); // Replaced showToast
     }
   };
 
@@ -148,8 +149,8 @@ function CampaignCard({ campaign, showToast, onSelectForDonation }) {
   );
 }
 
-// ExploreCampaigns now accepts showToast as a prop
-export default function ExploreCampaigns({ showToast }) {
+// ExploreCampaigns now does NOT accept showToast as a prop
+export default function ExploreCampaigns() { // Removed showToast prop
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -169,9 +170,9 @@ export default function ExploreCampaigns({ showToast }) {
       try {
         setLoading(true);
         const response = await axios.get("http://localhost:5000/api/campaigns");
-        
+
         const fetchedCampaigns = response.data.campaigns || [];
-        
+
         const activeCampaigns = fetchedCampaigns.filter(
           campaign => campaign.status === 'Active' || campaign.status === 'Approved'
         );
@@ -180,8 +181,10 @@ export default function ExploreCampaigns({ showToast }) {
       } catch (err) {
         console.error("Error fetching campaigns for explore page:", err);
         if (err.response && err.response.status === 403) {
+            showErrorMessage("Access denied. You may need to log in as an admin to view certain campaigns."); // Replaced alert
             setError("Access denied. You may need to log in as an admin to view certain campaigns.");
         } else {
+            showErrorMessage("Failed to load campaigns. Please try again later."); // Replaced alert
             setError("Failed to load campaigns. Please try again later.");
         }
         setCampaigns([]);
@@ -308,7 +311,6 @@ export default function ExploreCampaigns({ showToast }) {
               <CampaignCard
                 key={campaign._id}
                 campaign={campaign}
-                showToast={showToast}
                 // Pass onSelectForDonation prop only when in selection mode
                 onSelectForDonation={isSelectForDonationMode ? handleSelectForDonation : null}
               />
