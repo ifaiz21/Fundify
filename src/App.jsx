@@ -45,6 +45,8 @@ import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
 import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
 import HeaderLayout from "./Pages/Layout/HeaderLayout";
+import MyCampaigns from './Pages/MyCampaigns'; // Import the new MyCampaigns component
+
 
 import { UserProvider } from './context/UserContext';
 import ChatWrapper from './components/ChatWrapper';
@@ -103,6 +105,7 @@ function App() {
           <Route path="/ProjectView" element={<ProjectView showToast={showToast} />} />
           <Route path="/campaign-update" element={<CampaignUpdate showToast={showToast} />} />
           <Route path="/user-profile" element={<UserProfileSettings showToast={showToast} />} />
+          <Route path="/my-campaigns" element={<MyCampaigns showToast={showToast} />} /> {/* New Route */}
 
           {/* Admin Pages */}
           <Route path="/admin-dashboard" element={<AdminDashboard showToast={showToast} />} />
@@ -112,7 +115,8 @@ function App() {
           <Route path="/admin/campaigns" element={<CampaignsPage showToast={showToast} />} />
           <Route path="/admin/verifications" element={<VerificationPage showToast={showToast} />} />
           <Route path="/admin/feedbacks" element={<FeedbacksPage showToast={showToast} />} />
-
+          
+          
           <Route path="/billing" element={<Billing showToast={showToast} />} /> {/* New Route */}
 
           {/* Fallback for other routes */}

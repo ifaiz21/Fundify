@@ -2,8 +2,7 @@
 "use client"
 import React, { useState, useEffect, useRef } from "react"
 import { useNavigate } from "react-router-dom"
-// Removed PaymentMethodIcons as it's now in Billing.jsx
-import HeaderLayout from "./Layout/HeaderLayout"
+import HeaderLayout from "./Layout/HeaderLayout" // Assuming this path is correct
 import FooterLayout from "./Layout/FooterLayout" // Assuming this path is correct
 import { useUser } from '../context/UserContext';
 import SideBar from '../components/SideBar';
@@ -26,7 +25,6 @@ function UserProfileSettings({ showToast }) {
   const [emailError, setEmailError] = useState("")
 
   const [isProfileEditMode, setIsProfileEditMode] = useState(false);
-  // Removed isPaymentEditMode as it's moved to Billing.jsx
 
   const [isAddingEmail, setIsAddingEmail] = useState(false)
   const [editedProfile, setEditedProfile] = useState({ ...profileData })
@@ -98,7 +96,6 @@ function UserProfileSettings({ showToast }) {
               } else {
                 setIsProfileEditMode(false);
               }
-              // Removed payment mode check from here
 
             } catch (err) {
               console.error("Fetch user profile details error:", err);
@@ -345,9 +342,6 @@ function UserProfileSettings({ showToast }) {
     }
   };
 
-  // Removed handleAccountSave and togglePaymentEditMode
-  // Removed handleWithdraw as it's moved to Billing.jsx
-
   const handleKYC = () => {
     console.log("KYC verification logic here")
     showToast("KYC verification functionality coming soon!", "info");
@@ -399,14 +393,15 @@ function UserProfileSettings({ showToast }) {
     setActiveMenuItem(itemName);
     if (itemName === "Logout") {
       setShowConfirmLogout(true);
+    } else if (itemName === "Profile") {
+        // Already on this page, no navigation needed
     } else if (itemName === "My Campaigns") {
-      navigate("/my-campaigns");
+        navigate("/my-campaigns");
     } else if (itemName === "Billing") {
-      navigate("/billing"); // Navigate to the new Billing page
+        navigate("/billing");
     } else if (itemName === "Notifications") {
-      navigate("/notifications");
+        navigate("/notifications");
     }
-    // No specific navigation for "Profile" here as it's the current page
   };
 
   if (loading || loadingUserContext) {
@@ -589,12 +584,6 @@ function UserProfileSettings({ showToast }) {
             </>
           )}
 
-          {activeMenuItem === "My Campaigns" && (
-            <div className="bg-white rounded-lg shadow-md p-6">
-              <h2 className="text-xl font-semibold">My Campaigns Content (Coming Soon)</h2>
-            </div>
-          )}
-          {/* Billing content is now on its own page */}
           {activeMenuItem === "Notifications" && (
             <div className="bg-white rounded-lg shadow-md p-6">
               <h2 className="text-xl font-semibold">Notifications (Coming Soon)</h2>

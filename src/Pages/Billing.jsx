@@ -12,7 +12,6 @@ function Billing({ showToast }) {
   const { userProfile, setUserProfile, loadingUserContext } = useUser();
   const navigate = useNavigate();
 
-  // State specific to billing/account details
   const [accountDetails, setAccountDetails] = useState({
     accountType: "Choose",
     accountNumber: "",
@@ -25,7 +24,8 @@ function Billing({ showToast }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const [activeMenuItem, setActiveMenuItem] = useState("Billing"); // Set default active item for this page
+  const [activeMenuItem, setActiveMenuItem] = useState("Billing");
+  const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
   useEffect(() => {
     if (!loadingUserContext) {
@@ -34,7 +34,6 @@ function Billing({ showToast }) {
         navigate("/login");
         return;
       } else {
-        // Fetch only account details for this page
         const fetchAccountDetails = async () => {
           setLoading(true);
           setError(null);
@@ -115,7 +114,7 @@ function Billing({ showToast }) {
 
       console.log("Data to send for account update:", dataToUpdate);
 
-      const response = await fetch('http://localhost:5000/api/users/profile', { // Assuming same profile endpoint for update
+      const response = await fetch('http://localhost:5000/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
@@ -176,22 +175,25 @@ function Billing({ showToast }) {
     showToast("Withdrawal functionality coming soon!", "info");
   }
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setShowConfirmLogout(false);
+    setUserProfile(prev => ({ ...prev, profilePictureUrl: null, isAuthenticated: false }));
+    navigate("/login");
+  };
+
   const handleMenuItemClick = (itemName) => {
     setActiveMenuItem(itemName);
-    // This component is specifically for billing, so navigation for other items
-    // will happen via the SideBar's own navigate logic
     if (itemName === "Logout") {
-      // Logic for logout modal from UserProfileSettings might need to be shared
-      // or you can implement it here as well. For now, assuming direct logout for brevity.
-      localStorage.removeItem("token");
-      setUserProfile(prev => ({ ...prev, profilePictureUrl: null, isAuthenticated: false }));
-      navigate("/login");
+      setShowConfirmLogout(true);
     } else if (itemName === "Profile") {
         navigate("/user-profile");
     } else if (itemName === "My Campaigns") {
         navigate("/my-campaigns");
     } else if (itemName === "Notifications") {
         navigate("/notifications");
+    } else if (itemName === "Billing") {
+        // Already on this page, no navigation needed
     }
   };
 
@@ -222,7 +224,7 @@ function Billing({ showToast }) {
       <HeaderLayout hideProfile={true}/>
 
       <div className="flex flex-grow bg-gray-50">
-        <SideBar activeItem={activeMenuItem} onItemClick={handleMenuItemClick} handleLogout={handleMenuItemClick} /> {/* Pass handleMenuItemClick for logout */}
+        <SideBar activeItem={activeMenuItem} onItemClick={handleMenuItemClick} handleLogout={() => setShowConfirmLogout(true)} />
 
         <main className="flex-grow container mx-auto px-4 py-6">
           <h1 className="text-2xl font-bold mb-6">Billing Details</h1>
@@ -300,6 +302,29 @@ function Billing({ showToast }) {
           </div>
         </main>
       </div>
+
+      {showConfirmLogout && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+            <h2 className="text-lg font-semibold mb-4">Confirm Sign Out</h2>
+            <p className="mb-6">Are you sure you want to sign out?</p>
+            <div className="flex justify-center space-x-4">
+              <button
+                onClick={() => setShowConfirmLogout(false)}
+                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleLogout}
+                className="bg-[#4b5945] text-white px-4 py-2 rounded"
+              >
+                Sign Out
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <FooterLayout />
     </div>
