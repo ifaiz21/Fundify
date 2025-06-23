@@ -439,26 +439,13 @@ function UserProfileSettings({ showToast }) {
               <h1 className="text-2xl font-bold mb-6">Profile Settings</h1>
 
               {/* Profile Picture Section */}
-              <div className="bg-white rounded-lg shadow-md p-6 mb-6 text-center">
-                <h2 className="text-xl font-semibold mb-4">Profile Picture</h2>
-                <div className="w-40 h-40 rounded-full mx-auto overflow-hidden border-2 border-gray-300 flex items-center justify-center cursor-pointer relative group">
-                  <img
-                    src={profileImagePreview || "/Images/default-avatar.png"}
-                    alt="Profile"
-                    className="w-full h-full object-cover"
-                    referrerPolicy="no-referrer"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/Images/default-avatar.png";
-                    }}
-                  />
-                  <div
-                    className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity rounded-full"
-                    onClick={() => fileInputRef.current.click()}
-                  >
-                    {profileImagePreview ? 'Change Photo' : 'Upload Photo'}
-                  </div>
-                </div>
+              <div className="bg-white rounded-lg shadow-md p-6 mb-6 flex items-center justify-between">
+              {/* Left Section: Text and File Input */}
+              <div className="text-left flex-grow">
+                <h1 className="text-xl font-semibold mb-2">Profile Picture</h1>
+                <p className="text-sm text-gray-600 mb-4">
+                  {profileImagePreview ? 'Click on picture to change' : 'No photo uploaded'}
+                </p>
                 <input
                   type="file"
                   ref={fileInputRef}
@@ -466,15 +453,12 @@ function UserProfileSettings({ showToast }) {
                   accept="image/*"
                   className="hidden"
                 />
-                <p className="text-sm text-gray-600 mt-2">
-                  {profileImagePreview ? 'Click picture to change' : 'No photo uploaded'}
-                </p>
-
-                <div className="mt-4 flex justify-center space-x-4">
+                {/* Buttons */}
+                <div className="flex space-x-3">
                   {selectedProfileImage && (
                     <button
                       onClick={handleProfilePictureSave}
-                      className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm"
+                      className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm hover:bg-[#3d4f3a] transition-colors duration-200"
                     >
                       Save Photo
                     </button>
@@ -482,13 +466,34 @@ function UserProfileSettings({ showToast }) {
                   {(profileData.profilePictureUrl || selectedProfileImage) && (
                     <button
                       onClick={handleRemoveProfilePicture}
-                      className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded text-sm"
+                      className="bg-red-500 hover:bg-red-700 text-white py-2 px-4 rounded text-sm transition-colors duration-200"
                     >
                       Remove Photo
                     </button>
                   )}
                 </div>
               </div>
+
+              {/* Right Section: Profile Picture Display */}
+              <div
+                className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center cursor-pointer relative group flex-shrink-0"
+                onClick={() => fileInputRef.current.click()}
+              >
+                <img
+                  src={profileImagePreview || "/Images/default-avatar.png"}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                  referrerPolicy="no-referrer"
+                  onError={(e) => {
+                    e.target.onerror = null;
+                    e.target.src = "/Images/default-avatar.png";
+                  }}
+                />
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
+                  {profileImagePreview ? 'Change Photo' : 'Upload Photo'}
+                </div>
+              </div>
+            </div>
 
               {/* Profile Details Section */}
               <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -595,8 +600,8 @@ function UserProfileSettings({ showToast }) {
       {showConfirmLogout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
-            <h2 className="text-lg font-semibold mb-4">Confirm Sign Out</h2>
-            <p className="mb-6">Are you sure you want to sign out?</p>
+            <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
+            <p className="mb-6">Are you sure you want to log out?</p>
             <div className="flex justify-center space-x-4">
               <button
                 onClick={() => setShowConfirmLogout(false)}
@@ -606,9 +611,9 @@ function UserProfileSettings({ showToast }) {
               </button>
               <button
                 onClick={handleLogout}
-                className="bg-[#4b5945] text-white px-4 py-2 rounded"
+                className="bg-[#4b5945] text-white px-4 py-2 rounded hover:bg-[#B2C9AD]"
               >
-                Sign Out
+                Log Out
               </button>
             </div>
           </div>

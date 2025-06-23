@@ -121,8 +121,8 @@ const { userProfile, loadingUserContext } = useUser();
       {showConfirmLogout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
-            <h2 className="text-lg font-semibold mb-4">Confirm Sign Out</h2>
-            <p className="mb-6">Are you sure you want to sign out?</p>
+            <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
+            <p className="mb-6">Are you sure you want to log out?</p>
             <div className="flex justify-center space-x-4">
               <button
                 onClick={() => setShowConfirmLogout(false)}
@@ -135,7 +135,7 @@ const { userProfile, loadingUserContext } = useUser();
                   handleLogout();
                   setShowConfirmLogout(false);
                 }}
-                className="bg-[#4A5D45] text-white px-4 py-2 rounded"
+                className="bg-[#4A5D45] text-white px-4 py-2 rounded hover:bg-red-500"
               >
                 Confirm
               </button>
