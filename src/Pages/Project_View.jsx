@@ -8,7 +8,7 @@ import FooterLayout from "./Layout/FooterLayout"
 import axios from "axios"
 import { useUser } from '../context/UserContext'; // Import useUser for saved campaigns
 import { Heart } from 'lucide-react'; // Import Heart icon
-
+import { showSuccessMessage, showErrorMessage } from "../utils/toast"
 // ProjectView now accepts showToast as a prop
 function ProjectView({ showToast }) {
   const [activeTab, setActiveTab] = useState("campaign")
@@ -218,7 +218,7 @@ function ProjectView({ showToast }) {
     if (campaignData && campaignData._id) {
       navigate("/donate", { state: { campaignId: campaignData._id } });
     } else {
-      alert("Campaign data not loaded yet. Cannot proceed to donation.");
+      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.")
     }
   };
 

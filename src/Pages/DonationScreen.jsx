@@ -1,31 +1,30 @@
 // src/Pages/DonationScreen.jsx
 "use client"
 
-import { useState } from "react";
-import { useNavigate, useLocation } from "react-router-dom"; // Added useLocation
+import { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
 import Header from "./Layout/HeaderLayout";
 import Footer from "./Layout/Footer";
-import { useEffect } from "react";
+import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Adjust path based on where you saved toast.js
 
 const DonationScreen = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // Initialize useLocation
+  const location = useLocation();
   const [donationAmount, setDonationAmount] = useState(25);
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [donationFrequency, setDonationFrequency] = useState("one-time");
   const [honorOf, setHonorOf] = useState("");
   const [donationType, setDonationType] = useState("General donation");
-  const [campaignId, setCampaignId] = useState(null); // State for campaign ID
+  const [campaignId, setCampaignId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
-    // Check if campaignId is passed from ExploreCampaigns
     if (location.state && location.state.campaignId) {
       setCampaignId(location.state.campaignId);
-      setDonationType("Project specific"); // Set default donation type to 'Project specific'
+      setDonationType("Project specific");
       console.log("DonationScreen received campaign ID:", location.state.campaignId);
     }
-  }, [location.state]); // Dependency on location.state to react to navigation changes
+  }, [location.state]);
 
   const getAuthToken = () => {
     return localStorage.getItem('token');
@@ -36,16 +35,16 @@ const DonationScreen = () => {
     const token = getAuthToken();
 
     if (!token) {
-      alert("Please log in to make a donation.");
+      showErrorMessage("Please log in to make a donation."); // Replaced alert
       navigate("/login");
       setIsLoading(false);
       return;
     }
 
     if (donationAmount <= 0 || donationAmount === "") {
-        alert("Please enter a valid donation amount.");
-        setIsLoading(false);
-        return;
+      showErrorMessage("Please enter a valid donation amount."); // Replaced alert
+      setIsLoading(false);
+      return;
     }
 
     const donationData = {
@@ -53,7 +52,7 @@ const DonationScreen = () => {
       frequency: donationFrequency,
       honorOf: honorOf,
       donationType: donationType,
-      campaignId: campaignId, // Now correctly uses the campaignId from state
+      campaignId: campaignId,
     };
 
     console.log("Attempting to send donation:", donationData);
@@ -70,16 +69,16 @@ const DonationScreen = () => {
 
       if (response.ok) {
         const result = await response.json();
-        alert("Donation initiated successfully! Redirecting to payment.");
+        showSuccessMessage("Donation initiated successfully! Redirecting to payment."); // Replaced alert
         console.log("Donation response:", result);
         navigate("/payment", { state: { donationId: result.donation._id } });
       } else {
         const errorData = await response.json();
-        alert(`Donation failed: ${errorData.message}`);
+        showErrorMessage(`Donation failed: ${errorData.message}`); // Replaced alert
         console.error("Donation submission error:", errorData);
       }
     } catch (error) {
-      alert("An error occurred during donation processing.");
+      showErrorMessage("An error occurred during donation processing."); // Replaced alert
       console.error("Network or unexpected error:", error);
     } finally {
       setIsLoading(false);

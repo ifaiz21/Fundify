@@ -1,19 +1,20 @@
 // server/index.js
+require('dotenv').config(); // <-- MOVE THIS TO THE VERY TOP
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const dns = require('dns');
-require('dotenv').config();
 const path = require('path');
 
 // Import routes
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
-const campaignRoutes = require('./routes/campaigns'); // Existing campaigns route for main campaign actions (creation, etc.)
+const campaignRoutes = require('./routes/campaigns');
 const userRoutes = require('./routes/users');
 const contactusRoutes = require('./routes/contactus');
 const donationsRoutes = require('./routes/donations');
-const campaignUpdatesRoutes = require('./routes/campaignUpdates'); // NEW: Import campaign updates route
+const campaignUpdatesRoutes = require('./routes/campaignUpdates');
+const newsletterRoutes = require('./routes/newsletter'); // Import newsletter routes
 
 dns.setDefaultResultOrder('ipv4first');
 
@@ -22,18 +23,16 @@ const PORT = process.env.PORT || 5000;
 
 // Middleware
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(express.json()); // For parsing application/json
-app.use(express.urlencoded({ extended: true })); // For parsing application/x-www-form-urlencoded - important for some form submissions
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 
 // Serve static files from the 'public' directory
-// This allows images uploaded to 'public/uploads' to be accessible
 app.use(express.static(path.join(__dirname, 'public')));
-
 
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URI, {
-  useNewUrlParser: true, // Deprecated, but good practice to keep for older versions
-  useUnifiedTopology: true, // Deprecated, but good practice to keep for older versions
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
 })
   .then(() => {
     console.log("MongoDB connected");
@@ -41,22 +40,22 @@ mongoose.connect(process.env.MONGO_URI, {
   })
   .catch(err => console.error("MongoDB connection error:", err));
 
-
 // Routes
 app.use('/api/admin', adminRoutes);
 app.use('/api/auth', authRoutes);
-app.use('/api/campaigns', campaignRoutes); // Main campaigns route (includes file upload for creation)
+app.use('/api/campaigns', campaignRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contactus', contactusRoutes);
 app.use('/api/donations', donationsRoutes);
-//app.use('/api/campaigns', campaignUpdatesRoutes); // NEW: Add campaign updates route (note: same base path as campaigns, but different sub-routes)
+app.use('/api/campaigns', campaignUpdatesRoutes);
+app.use('/api/newsletter', newsletterRoutes);
 
-// Catch-all for undefined routes (optional, but good for debugging)
+// Catch-all for undefined routes
 app.use((req, res, next) => {
   res.status(404).json({ message: 'API Route not found' });
 });
 
-// Global Error Handler (optional, but good practice)
+// Global Error Handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ message: 'Something broke on the server!', error: err.message });
