@@ -56,7 +56,7 @@ router.post('/', async (req, res) => {
       to: process.env.EMAIL_USER, // Yahan aap apni support team ka email address de sakte hain
       subject: `Naya Support Request: ${subject} from ${name}`,
       html: `
-        <p>Aik nayi support request receive hui hai:</p>
+        <p>You have received new support request:</p>
         <ul>
           <li><strong>Name:</strong> ${name}</li>
           <li><strong>Email:</strong> ${email}</li>
@@ -64,7 +64,7 @@ router.post('/', async (req, res) => {
           <li><strong>Subject:</strong> ${subject}</li>
           <li><strong>Message:</strong><br>${message}</li>
         </ul>
-        <p>Baraye meherbani jald az jald review karein.</p>
+        <p>Please review as soon as possible.</p>
       `
     });
 

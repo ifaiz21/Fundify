@@ -407,7 +407,7 @@ function ProjectView() { // Removed showToast from props
                     {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
                         <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
                     )}
-                    <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.content }}>
+                    <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.story }}>
                     </div>
                   </div>
                 </div>
