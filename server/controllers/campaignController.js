@@ -146,33 +146,30 @@ exports.rejectCampaign = async (req, res) => {
     }
 };
 
-// Get all campaigns with optional filtering by status and return counts
+// Get all campaigns with optional filtering by status (for public view or admin all campaigns)
 exports.getAllCampaigns = async (req, res) => {
     try {
-        const { status } = req.query; // Get status from query parameter
+        const { status } = req.query; // Only get status from query parameter
 
         let query = {}; // Initialize an empty query object
 
         // If a status query parameter is provided, add it to the query object
         if (status) {
             query.status = status;
+        } else {
+            // Default for public view (Explore Campaigns) - only show active/approved
+            query.status = { $in: ['Active', 'Approved'] };
         }
 
         // Find campaigns based on the constructed query
         const campaigns = await Campaign.find(query);
-
-        // --- Debugging Log ---
-        console.log(`Backend: Received status query: ${status || 'None'}`);
-        console.log(`Backend: MongoDB query object:`, query);
-        console.log(`Backend: Number of campaigns found with this query: ${campaigns.length}`);
-        // --- End Debugging Log ---
 
         // Calculate and fetch overall campaign statistics (these are for the pie chart and stats section)
         const stats = await calculateCampaignStats();
 
         // Return both the filtered campaigns (for the table) and the overall statistics (for the dashboard/chart)
         res.status(200).json({
-            campaigns, // This array will contain only campaigns matching the 'status' filter (e.g., 'Pending Review')
+            campaigns, // This array will contain only campaigns matching the 'status' filter
             stats: {    // This object contains counts for ALL campaigns (total, approved, rejected, pending)
                 total: stats.total,
                 approved: stats.approved,
@@ -183,5 +180,30 @@ exports.getAllCampaigns = async (req, res) => {
     } catch (err) {
         console.error('Get all campaigns error:', err);
         res.status(500).json({ message: 'Failed to retrieve campaigns', error: err.message });
+    }
+};
+
+// Get campaigns for the authenticated user
+exports.getMyCampaigns = async (req, res) => {
+    try {
+        const userId = req.user.id; // User ID from authenticated token
+        console.log('Fetching campaigns for userId:', userId); // ADDED LOG
+        if (!userId) {
+            console.log('Error: userId is null or undefined in getMyCampaigns'); // ADDED LOG
+            return res.status(401).json({ message: 'User ID not found in token.' });
+        }
+
+        // Find campaigns where the 'creator' field matches the authenticated user's ID
+        const campaigns = await Campaign.find({ creator: userId });
+        console.log('Number of campaigns found for user:', campaigns.length); // ADDED LOG
+        console.log('Found campaigns:', campaigns); // ADDED LOG
+
+        // Sort campaigns by creation date, newest first
+        campaigns.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+        res.status(200).json({ campaigns });
+    } catch (err) {
+        console.error('Error fetching my campaigns:', err);
+        res.status(500).json({ message: 'Failed to retrieve your campaigns', error: err.message });
     }
 };

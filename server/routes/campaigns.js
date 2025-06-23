@@ -111,47 +111,12 @@ router.post('/', authMiddleware(), (req, res) => {
   });
 });
 
-// GET /api/campaigns - Get all campaigns with optional status filtering
-// This route is called by ExploreCampaigns.jsx (should be public) and VerificationPage.jsx (needs admin for filtered view)
-router.get('/', async (req, res) => { // REMOVED authMiddleware(['admin']) to allow public access for explore page
-  try {
-    const { status } = req.query; // Get status from query parameters
+// GET /api/campaigns - Get all campaigns with optional status filtering (for public view or admin all campaigns)
+router.get('/', campaignController.getAllCampaigns); // NO AUTH MIDDLEWARE, this is for public access
 
-    let query = {};
-    // If no status is explicitly specified, default to showing 'Active' and 'Approved' campaigns
-    // This handles the public Explore page which doesn't send a status filter.
-    if (status) {
-      query.status = status; // If status IS specified (e.g., from admin page), use that status.
-    } else {
-      query.status = { $in: ['Active', 'Approved'] }; // Default for public view
-    }
+// NEW ROUTE: GET /api/campaigns/my-campaigns - Get campaigns for the authenticated user
+router.get('/my-campaigns', authMiddleware(), campaignController.getMyCampaigns);
 
-
-    // Fetch campaigns based on the constructed query
-    const campaigns = await Campaign.find(query);
-
-    // Calculate overall statistics for the dashboard/pie chart (from ALL campaigns)
-    // This part remains the same as it's for general stats, not specific to the filtered list.
-    const total = await Campaign.countDocuments({});
-    const approved = await Campaign.countDocuments({ status: 'Approved' });
-    const rejected = await Campaign.countDocuments({ status: 'Rejected' });
-    const pending = await Campaign.countDocuments({ status: 'Pending Review' });
-
-    const campaignStats = {
-      total: total,
-      approved: approved,
-      rejected: rejected,
-      pending: pending,
-    };
-
-    // Respond with an object containing both the filtered campaigns and overall stats
-    res.status(200).json({ campaigns: campaigns, stats: campaignStats });
-
-  } catch (err) {
-    console.error('Get all campaigns error:', err);
-    res.status(500).json({ message: 'Failed to retrieve campaigns', error: err.message });
-  }
-});
 
 // GET /api/campaigns/:id - Get a single campaign by ID
 router.get('/:id', async (req, res) => {

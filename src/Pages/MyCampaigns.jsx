@@ -6,97 +6,121 @@ import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
 import { useUser } from '../context/UserContext';
 import SideBar from '../components/SideBar';
+import axios from 'axios'; // Import axios
 
 function MyCampaigns({ showToast }) {
-  const { userProfile, setUserProfile, loadingUserContext } = useUser();
+  const { userProfile, loadingUserContext } = useUser();
   const navigate = useNavigate();
 
   const [campaigns, setCampaigns] = useState([]);
   const [activeTab, setActiveTab] = useState("All campaigns");
   const [searchTerm, setSearchTerm] = useState("");
-  const [loading, setLoading] = useState(true); // CORRECTED: useState(true)
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   const [activeMenuItem, setActiveMenuItem] = useState("My Campaigns");
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
-  // Dummy data for now, replace with API fetch later
-  const dummyCampaigns = [
-    { id: 1, name: "Summer Sale", status: "Active", fundRaise: "$500", backers: "$250", createdDate: "07/15/2023", donation: "5%" },
-    { id: 2, name: "Back to School", status: "Paused", fundRaise: "$1,000", backers: "$750", createdDate: "08/01/2023", donation: "5%" },
-    { id: 3, name: "Holiday Promotion", status: "Ended", fundRaise: "$2,000", backers: "$1,500", createdDate: "11/20/2023", donation: "5%" },
-    { id: 4, name: "Spring Collection", status: "Active", fundRaise: "$750", backers: "$375", createdDate: "03/10/2024", donation: "5%" },
-    { id: 5, name: "Winter Clearance", status: "Paused", fundRaise: "$1,250", backers: "$875", createdDate: "12/28/2023", donation: "5%" },
-    { id: 6, name: "Fall Fashion", status: "Ended", fundRaise: "$2,500", backers: "$2,000", createdDate: "09/05/2023", donation: "5%" },
-    { id: 7, name: "New Arrivals", status: "Active", fundRaise: "$600", backers: "$300", createdDate: "01/20/2024", donation: "5%" },
-    { id: 8, name: "Clearance Sale", status: "Paused", fundRaise: "$1,100", backers: "$800", createdDate: "06/02/2023", donation: "5%" },
-    { id: 9, name: "Summer Collection", status: "Ended", fundRaise: "$2,200", backers: "$1,800", createdDate: "05/15/2023", donation: "5%" },
-    { id: 10, name: "Back to School Sale", status: "Active", fundRaise: "$800", backers: "$400", createdDate: "08/05/2023", donation: "5%" },
-  ];
-
   useEffect(() => {
+    // Only attempt to fetch data once user context has finished loading
     if (!loadingUserContext) {
-      if (!userProfile.isAuthenticated) {
-        setError("No authentication token found or session expired. Please log in.");
+      // If user is not authenticated or user ID is missing after context loads,
+      // then redirect to login. This is the condition that triggers logout.
+      if (!userProfile.isAuthenticated || !userProfile.id) {
+        setError("Authentication required or user ID not found. Please log in.");
         navigate("/login");
-        return;
-      } else {
-        setLoading(true);
-        setTimeout(() => { // Simulate API call delay
-          setCampaigns(dummyCampaigns);
-          setLoading(false);
-        }, 500);
+        return; // Stop execution of this effect
       }
+
+      const fetchMyCampaigns = async () => {
+        setLoading(true);
+        setError(null);
+        try {
+          const token = localStorage.getItem('token');
+          // No longer need userId as a query parameter; backend will use req.user.id
+          const response = await axios.get(`http://localhost:5000/api/campaigns/my-campaigns`, { // UPDATED URL
+            headers: {
+              'Authorization': `Bearer ${token}`, // Send the token in the header
+            },
+          });
+
+          // Assuming the backend returns an object with a 'campaigns' array
+          const fetchedCampaigns = response.data?.campaigns || [];
+          setCampaigns(fetchedCampaigns);
+          setError(null); // Clear any previous error
+        } catch (err) {
+          console.error("Error fetching my campaigns:", err);
+          // Handle specific error codes from the backend
+          if (err.response) {
+            if (err.response.status === 401 || err.response.status === 403) {
+              // If unauthorized or forbidden, clear token and redirect to login
+              localStorage.removeItem('token');
+              localStorage.removeItem('userProfile'); // Assuming userProfile is also stored here
+              setError("Session expired or unauthorized. Please log in again.");
+              navigate("/login");
+              showToast('Session expired, please log in again.', 'error'); // Show a toast notification
+            } else {
+              setError(`Failed to load your campaigns: ${err.response.data?.message || err.message}`);
+            }
+          } else {
+            setError("Network error or server unreachable. Please try again later.");
+          }
+          setCampaigns([]); // Clear campaigns on error
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      fetchMyCampaigns();
     }
-  }, [userProfile.isAuthenticated, loadingUserContext, navigate, setUserProfile]);
+  }, [userProfile.isAuthenticated, userProfile.id, loadingUserContext, navigate, showToast]); // Added showToast to dependencies
 
   const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch = campaign.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesTab = activeTab === "All campaigns" || (activeTab === "Saved Campaigns" && true); // Placeholder
+    const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()); // Corrected from campaign.name to campaign.title
+    // Adjust the tab filtering logic if "Saved Campaigns" implies something other than created campaigns
+    const matchesTab = activeTab === "All campaigns" || (activeTab === "Saved Campaigns" && campaign.status === 'Draft'); // Example: show drafts for "Saved"
     return matchesSearch && matchesTab;
   });
 
   const handleLogout = () => {
-    localStorage.removeItem("token");
+    localStorage.removeItem('token');
+    localStorage.removeItem('userProfile'); // Make sure this matches where you store user data
+    navigate('/login');
     setShowConfirmLogout(false);
-    setUserProfile(prev => ({ ...prev, profilePictureUrl: null, isAuthenticated: false }));
-    navigate("/login");
+    showToast('You have been logged out successfully!', 'success');
   };
 
-  const handleMenuItemClick = (itemName) => {
-    setActiveMenuItem(itemName);
-    if (itemName === "Logout") {
-      setShowConfirmLogout(true);
-    } else if (itemName === "Profile") {
-        navigate("/user-profile");
-    } else if (itemName === "Billing") {
-        navigate("/billing");
-    } else if (itemName === "Notifications") {
-        navigate("/notifications");
-    } else if (itemName === "My Campaigns") {
-        // Already on this page, no navigation needed
+  const handleMenuItemClick = (menuItem) => {
+    setActiveMenuItem(menuItem);
+    if (menuItem === "My Campaigns") {
+      navigate("/my-campaigns");
+    } else if (menuItem === "Profile") {
+      navigate("/profile");
+    } else if (menuItem === "Billing") {
+      navigate("/billing");
+    } else if (menuItem === "Help & Support") { // Assuming Help & Support maps to contactus
+      navigate("/contactus");
     }
+    // No explicit logout here; rely on useEffect for session checks on page load
   };
 
   if (loading || loadingUserContext) {
     return (
-      <div className="flex flex-col min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-xl text-gray-600">Loading campaigns...</p>
-      </div>
+      <HeaderLayout>
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-gray-600">Loading campaigns...</p>
+        </div>
+      </HeaderLayout>
     );
   }
 
-  if (error && !userProfile.isAuthenticated) {
+  if (error) {
     return (
-      <div className="flex flex-col min-h-screen items-center justify-center bg-gray-50">
-        <p className="text-red-600 text-xl mb-4">Error: {error}</p>
-        <button
-          onClick={() => navigate("/login")}
-          className="bg-[#4A5D45] text-white py-2 px-4 rounded"
-        >
-          Go to Login
-        </button>
-      </div>
+      <HeaderLayout>
+        <div className="flex justify-center items-center min-h-screen">
+          <p className="text-red-500">{error}</p>
+        </div>
+      </HeaderLayout>
     );
   }
 
@@ -110,7 +134,7 @@ function MyCampaigns({ showToast }) {
         <main className="flex-grow container mx-auto px-4 py-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">My Campaigns</h1>
-            <button className="bg-[#4A5D45] text-white py-2 px-4 rounded-md text-sm whitespace-nowrap">
+            <button className="bg-[#4A5D45] text-white py-2 px-4 rounded-md text-sm whitespace-nowrap" onClick={() => navigate("/create-campaign")}>
               New campaign
             </button>
           </div>
@@ -128,8 +152,7 @@ function MyCampaigns({ showToast }) {
                 className={`px-4 py-2 text-sm font-medium ${activeTab === "Saved Campaigns" ? "border-b-2 border-[#4A5D45] text-[#4A5D45]" : "text-gray-600 hover:text-gray-900"}`}
                 onClick={() => setActiveTab("Saved Campaigns")}
               >
-                  {/* You might need to adjust this tab logic based on how "Saved Campaigns" are filtered */}
-                Saved Campaigns
+                  Saved Campaigns (Drafts)
               </button>
             </div>
 
@@ -152,59 +175,75 @@ function MyCampaigns({ showToast }) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold"> {/* Added font-bold */}
-                      Campaign
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                      Campaign Title
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold"> {/* Added font-bold */}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
                       Status
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold"> {/* Added font-bold */}
-                      Fund raise
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                      Funds Raised
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold"> {/* Added font-bold */}
-                      Backers
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                      Total Backers
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold"> {/* Added font-bold */}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
                       Created Date
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold"> {/* Added font-bold */}
-                      Donation %
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                      Actions
                     </th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {filteredCampaigns.map((campaign) => (
-                    <tr key={campaign.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                        {campaign.name}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
-                          ${campaign.status === 'Active' ? 'bg-green-100 text-green-800' :
-                             campaign.status === 'Paused' ? 'bg-yellow-100 text-yellow-800' :
-                             'bg-red-100 text-red-800'}`}>
-                          {campaign.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {campaign.fundRaise}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {campaign.backers}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {campaign.createdDate}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {campaign.donation}
-                      </td>
+                  {filteredCampaigns.length > 0 ? (
+                    filteredCampaigns.map((campaign) => (
+                      <tr key={campaign._id} className="hover:bg-gray-50">
+                        <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                          {campaign.title}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full
+                            ${campaign.status === 'Active' || campaign.status === 'Approved' ? 'bg-green-100 text-green-800' :
+                               campaign.status === 'Pending Review' || campaign.status === 'Draft' ? 'bg-yellow-100 text-yellow-800' :
+                               'bg-red-100 text-red-800'}`}>
+                            {campaign.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          Rs. {Number(campaign.raised || 0).toLocaleString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {campaign.totalBackers || 0}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {new Date(campaign.createdAt).toLocaleDateString()}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                              <button
+                                  onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
+                                  className="text-[#4A5D45] hover:underline text-sm mr-2"
+                              >
+                                  View
+                              </button>
+                              {campaign.status === 'Draft' && ( // Only allow editing drafts
+                                <button
+                                    onClick={() => navigate("/campaign-creation-05", { state: { campaignData: campaign } })} // Pass entire campaign object for editing
+                                    className="text-blue-600 hover:underline text-sm"
+                                >
+                                    Edit
+                                </button>
+                              )}
+                          </td>
+                      </tr>
+                    ))
+                  ) : (
+                    <tr>
+                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">No campaigns found.</td>
                     </tr>
-                  ))}
+                  )}
                 </tbody>
               </table>
-              {filteredCampaigns.length === 0 && !loading && (
-                <p className="text-center text-gray-500 py-4">No campaigns found.</p>
-              )}
             </div>
           </div>
         </main>
