@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "axios"; // Make sure axios is imported
 
@@ -175,11 +175,13 @@ export default function CampaignListing() {
                 <p className="text-gray-600 mb-4 line-clamp-3 h-20">
                   {campaign.description}
                 </p>
+                <div className="mt-auto">
                 <button
                   onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
                   className="w-full px-4 py-2 bg-[#4A5D45] text-white rounded-full shadow-md hover:bg-[#B2C9AD] transition-colors duration-300 mt-auto">
                   Explore Campaign
                 </button>
+                </div>
               </div>
             </div>
           ))
@@ -234,6 +236,6 @@ export default function CampaignListing() {
           </button>
         </div>
       )}
-    </div>
+      </div>
   );
 }

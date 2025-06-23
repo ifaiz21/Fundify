@@ -1,5 +1,5 @@
 // src/Pages/Layout/HeaderLayout.jsx
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from '../../context/UserContext';
 
@@ -13,9 +13,23 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
   const location = useLocation();
 
   const { userProfile, loadingUserContext } = useUser();
+  const dropdownRef = useRef(null);
 
   // ADDED: Default avatar logic
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -85,7 +99,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
 
           {/* User Account Icon with Login Check */}
           {isLoggedIn ? (
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
@@ -107,15 +121,15 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 mt-1 bg-gray-200 text-black rounded shadow-lg py-2 w-40 z-50">
+                <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
                   {!hideProfile && (
-                    <a href="/user-profile" className="block px-4 py-2 hover:bg-[#B2C9AD]">
+                    <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-gray-100 hover:text-[#4A5D45] transition-colors duration-200">
                       My Profile
                     </a>
                   )}
                   <button
                     onClick={() => setShowConfirmLogout(true)}
-                    className="w-full text-left px-4 py-2 hover:bg-red-400"
+                    className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
                   >
                     Logout
                   </button>
