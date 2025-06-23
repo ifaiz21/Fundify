@@ -1,9 +1,9 @@
+// src/Pages/PasswordReset/ForgetPassword.jsx
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBackOutline } from "react-icons/io5";
-// Removed AiOutlineEye, AiOutlineEyeInvisible, axios as they are not used in this simplified version
-// import axios from "axios"; // Keeping axios import as fetch is used, but typically axios would be used for post
 import SideLayout from "../Layout/SideLayout";
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // Import toast functions
 
 const ForgetPassword = () => {
   const navigate = useNavigate();
@@ -24,13 +24,14 @@ const ForgetPassword = () => {
       const data = await res.json();
   
       if (res.ok) {
+        showSuccessMessage("Verification code sent to your email."); // Replaced alert
         navigate("/email-verification", { state: { email } });
       } else {
-        alert(data.message || "Failed to send code.");
+        showErrorMessage(data.message || "Failed to send code."); // Replaced alert
       }
     } catch (error) {
       console.error("Fetch error:", error);
-      alert("Something went wrong.");
+      showErrorMessage("Something went wrong."); // Replaced alert
     }
   };
 
@@ -48,7 +49,6 @@ const ForgetPassword = () => {
         <div className="flex h-full items-center justify-center">
           <div className="form-container"> {/* New: Main container for the form */}
             <p className="title">Forgot Password?</p> {/* New: Title */}
-            {/* Removed previous descriptive paragraphs */}
             
             <form className="form" onSubmit={handleContinue}> {/* New: Form structure */}
               <input
@@ -120,7 +120,6 @@ const ForgetPassword = () => {
         .form-btn:active {
           box-shadow: none;
         }
-        /* Removed .page-link, .page-link-label, .sign-up-label, .sign-up-link, .buttons-container, .apple-login-button, .google-login-button, .apple-icon, .google-icon as they are not needed for this page */
       `}</style>
     </SideLayout>
   );

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // Import toast functions
 
 const CampaignCreation05 = () => {
   const location = useLocation()
@@ -70,13 +71,13 @@ const CampaignCreation05 = () => {
     const token = getAuthToken();
 
     if (!token) {
-      alert("No authentication token found. Please log in.");
+      showErrorMessage("No authentication token found. Please log in."); // Replaced alert
       navigate("/login");
       return;
     }
     
     if (!fullCampaignData._id) {
-        alert("Campaign ID not found for deletion.");
+        showErrorMessage("Campaign ID not found for deletion."); // Replaced alert
         return;
     }
 
@@ -90,15 +91,15 @@ const CampaignCreation05 = () => {
       });
 
       if (response.ok) {
-        alert("Campaign deleted successfully!");
+        showSuccessMessage("Campaign deleted successfully!"); // Replaced alert
         navigate("/campaign-deletion");
       } else {
         const errorData = await response.json();
-        alert(`Failed to delete campaign: ${errorData.message}`);
+        showErrorMessage(`Failed to delete campaign: ${errorData.message}`); // Replaced alert
         console.error("Delete failed:", errorData);
       }
     } catch (error) {
-      alert("An error occurred during deletion.");
+      showErrorMessage("An error occurred during deletion."); // Replaced alert
       console.error("Delete error:", error);
     }
   };
@@ -118,7 +119,7 @@ const CampaignCreation05 = () => {
     const token = getAuthToken();
 
     if (!token) {
-      alert("No authentication token found. Please log in.");
+      showErrorMessage("No authentication token found. Please log in."); // Replaced alert
       navigate("/login");
       setIsSubmitting(false);
       return;
@@ -157,15 +158,15 @@ const CampaignCreation05 = () => {
       });
 
       if (response.ok) {
-        alert("Campaign submitted successfully for verification!");
+        showSuccessMessage("Campaign submitted successfully for verification!"); // Replaced alert
         navigate("/campaign-submission");
       } else {
         const errorData = await response.json();
-        alert(`Campaign submission failed: ${errorData.message}`);
+        showErrorMessage(`Campaign submission failed: ${errorData.message}`); // Replaced alert
         console.error("Submission failed:", errorData);
       }
     } catch (error) {
-      alert("An error occurred during submission.");
+      showErrorMessage("An error occurred during submission."); // Replaced alert
       console.error("Submission error:", error);
     } finally {
       setIsSubmitting(false);

@@ -1,3 +1,4 @@
+// src/Pages/Payment/PaymentScreen.jsx
 "use client"
 
 import { useState, useEffect } from "react" // Added useEffect
@@ -96,7 +97,7 @@ const PaymentPage = () => {
             showSuccessMessage("Payment successful! Thank you for your donation."); // Replaced alert
             console.log("Donation status updated to completed.");
             // Redirect to Explore Campaigns or a success page
-            navigate("/explore"); 
+            navigate("/explore");
         } else {
             const errorData = await response.json();
             showErrorMessage(`Payment failed to confirm: ${errorData.message}`); // Replaced alert
@@ -396,4 +397,4 @@ const PaymentPage = () => {
   )
 }
 
-export default PaymentPage
+export default PaymentPage;

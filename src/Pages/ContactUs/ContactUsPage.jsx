@@ -5,9 +5,9 @@ import { useState } from "react"
 import Header from "../Layout/HeaderLayout" // This will now receive profile pic from context
 import Footer from "../Layout/FooterLayout"
 import { useNavigate } from "react-router-dom"
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // Import toast functions
 
-// MODIFIED: Accept showToast as a prop
-const ContactUsPage = ({ showToast }) => {
+const ContactUsPage = () => { // Removed showToast prop
   const navigate = useNavigate()
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false)
   const [formData, setFormData] = useState({
@@ -28,10 +28,9 @@ const ContactUsPage = ({ showToast }) => {
 
   const handleSubmitRequest = (event) => {
     event.preventDefault()
-    // Validation here using showToast instead of alert
+    // Validation here using showErrorMessage instead of showToast
     if (!formData.name || !formData.email || !formData.issue || !formData.subject || !formData.message) {
-        // MODIFIED: Use showToast for client-side validation
-        showToast("Please fill all required fields.", "error");
+        showErrorMessage("Please fill all required fields."); // Replaced showToast
         return;
     }
     setShowSubmitConfirmation(true)
@@ -51,8 +50,7 @@ const ContactUsPage = ({ showToast }) => {
       });
 
       if (response.ok) {
-        // MODIFIED: Use showToast for success message
-        showToast("Your support request has been submitted successfully!", "success");
+        showSuccessMessage("Your support request has been submitted successfully!"); // Replaced showToast
         // Clear the form after successful submission
         setFormData({
           name: "",
@@ -64,13 +62,11 @@ const ContactUsPage = ({ showToast }) => {
         // navigate("/Submitted"); // Optional: Navigate to success page. Commented out if toast is main feedback
       } else {
         const errorData = await response.json();
-        // MODIFIED: Use showToast for backend error message
-        showToast(`Failed to submit request: ${errorData.message || "Unknown error"}`, "error");
+        showErrorMessage(`Failed to submit request: ${errorData.message || "Unknown error"}`); // Replaced showToast
         console.error("Submission failed:", errorData);
       }
     } catch (error) {
-      // MODIFIED: Use showToast for network/other errors
-      showToast("An error occurred during submission. Please try again.", "error");
+      showErrorMessage("An error occurred during submission. Please try again."); // Replaced showToast
       console.error("Submission error:", error);
     }
   }
@@ -81,7 +77,7 @@ const ContactUsPage = ({ showToast }) => {
 
   return (
     <div className="flex flex-col min-h-screen">
-      <Header hideContact={true}/> 
+      <Header hideContact={true}/>
 
       <main className="flex-1 py-12">
         <div className="container mx-auto px-4 md:px-6">
