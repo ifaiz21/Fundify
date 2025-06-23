@@ -31,6 +31,12 @@ const userSchema = new mongoose.Schema({
 
   profilePictureUrl: { type: String, default: '' },
 
+  // Added new field for saved campaigns
+  savedCampaigns: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Campaign'
+  }],
+
   // Added lastLogin and createdAt for better user tracking
   createdAt: { type: Date, default: Date.now },
   lastLogin: { type: Date, default: Date.now },

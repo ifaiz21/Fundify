@@ -1,4 +1,3 @@
-// server/routes/users.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -6,6 +5,7 @@ const authMiddleware = require('../middleware/auth');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const userController = require('../controllers/userController'); // Import userController
 
 // --- Multer Storage Setup ---
 const storage = multer.diskStorage({
@@ -57,14 +57,12 @@ const deleteOldProfilePicture = async (userId) => {
 // GET /api/users/profile - Authenticated user ki profile fetch karna
 router.get('/profile', authMiddleware(), async (req, res) => {
   try {
-    const user = await User.findById(req.user.id).select('-password -verificationCode');
-
-    if (!user) {
-      return res.status(404).json({ message: 'User profile not found' });
-    }
-    res.status(200).json(user);
+    // Calling the controller function
+    await userController.getProfile(req, res);
   } catch (err) {
-    console.error('Error fetching user profile:', err);
+    // This catch block might not be strictly necessary if controller handles all responses,
+    // but kept for robustness.
+    console.error('Error fetching user profile in route:', err);
     res.status(500).json({ message: 'Failed to fetch user profile', error: err.message });
   }
 });
@@ -72,49 +70,10 @@ router.get('/profile', authMiddleware(), async (req, res) => {
 // PUT /api/users/profile - Authenticated user ki general profile details update karna
 router.put('/profile', authMiddleware(), async (req, res) => {
   try {
-    const { fullName, contactNo, additionalEmails, accountType, accountNumber, cvc, expiryDate } = req.body;
-
-    const updateFields = {};
-    if (fullName !== undefined) updateFields.name = fullName;
-    if (contactNo !== undefined) updateFields.contactNo = contactNo;
-
-    // additionalEmails ko handle karein: Frontend JSON.stringify karke bhejega
-    if (additionalEmails !== undefined) {
-      try {
-        // Agar additionalEmails empty string hai, to empty array set karein
-        updateFields.additionalEmails = additionalEmails === '' ? [] : JSON.parse(additionalEmails);
-        if (!Array.isArray(updateFields.additionalEmails)) {
-          throw new Error('additionalEmails must be an array after parsing');
-        }
-      } catch (parseError) {
-        console.error('Error parsing additionalEmails:', parseError);
-        return res.status(400).json({ message: 'Invalid format for additional emails. Must be a valid JSON array string.' });
-      }
-    }
-
-
-    // Payment details
-    if (accountType !== undefined) updateFields.accountType = accountType;
-    if (accountNumber !== undefined) updateFields.accountNumber = accountNumber;
-    if (cvc !== undefined) updateFields.cvc = cvc;
-    if (expiryDate !== undefined) updateFields.expiryDate = expiryDate;
-
-    const updatedUser = await User.findByIdAndUpdate(
-      req.user.id,
-      { $set: updateFields },
-      { new: true, runValidators: true }
-    ).select('-password -verificationCode');
-
-    if (!updatedUser) {
-      return res.status(404).json({ message: 'User profile not found or could not be updated' });
-    }
-    res.status(200).json({ message: 'Profile updated successfully', user: updatedUser });
+    // Calling the controller function
+    await userController.updateProfile(req, res);
   } catch (err) {
-    console.error('Error updating user profile:', err);
-    if (err.name === 'ValidationError') {
-      const errors = Object.keys(err.errors).map(key => err.errors[key].message);
-      return res.status(400).json({ message: 'Validation Error', errors });
-    }
+    console.error('Error updating user profile in route:', err);
     res.status(500).json({ message: 'Failed to update user profile', error: err.message });
   }
 });
@@ -178,5 +137,7 @@ router.delete('/profile-picture', authMiddleware(), async (req, res) => {
   }
 });
 
+// New route to toggle saved campaigns
+router.post('/saved-campaigns', authMiddleware(), userController.toggleSavedCampaign);
 
 module.exports = router;

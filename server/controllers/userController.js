@@ -1,4 +1,6 @@
+// server/controllers/userController.js
 const User = require('../models/User');
+const Campaign = require('../models/Campaign'); // Import Campaign model
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Assuming JWT might be needed for some profile operations or if token is generated here
 // const upload = require('../middleware/multer'); // Agar Multer yahan use hota hai, warna route mein handle hoga
@@ -19,7 +21,8 @@ exports.getAllUsers = async (req, res) => {
 exports.getProfile = async (req, res) => {
     try {
         // req.user will be populated by the auth middleware
-        const user = await User.findById(req.user.id).select('-password -verificationCode');
+        // Populate savedCampaigns to get full campaign objects for the user's saved list
+        const user = await User.findById(req.user.id).select('-password -verificationCode').populate('savedCampaigns');
         if (!user) {
             return res.status(404).json({ message: 'User not found' });
         }
@@ -114,5 +117,44 @@ exports.removeProfilePicture = async (req, res) => {
     } catch (err) {
         console.error('Remove profile picture error:', err);
         res.status(500).json({ message: 'Server error' });
+    }
+};
+
+// Toggle saving a campaign (add/remove from savedCampaigns array)
+exports.toggleSavedCampaign = async (req, res) => {
+    try {
+      const userId = req.user.id; // From authMiddleware
+      const { campaignId } = req.body;
+
+      if (!campaignId) {
+        return res.status(400).json({ message: 'Campaign ID is required.' });
+      }
+
+      const user = await User.findById(userId);
+      if (!user) {
+        return res.status(404).json({ message: 'User not found.' });
+      }
+
+      const campaignExists = await Campaign.findById(campaignId);
+      if (!campaignExists) {
+          return res.status(404).json({ message: 'Campaign not found.' });
+      }
+
+      const isSaved = user.savedCampaigns.includes(campaignId);
+
+      if (isSaved) {
+        // Remove from saved campaigns
+        user.savedCampaigns.pull(campaignId);
+        await user.save();
+        res.status(200).json({ message: 'Campaign removed from saved.', saved: false });
+      } else {
+        // Add to saved campaigns
+        user.savedCampaigns.push(campaignId);
+        await user.save();
+        res.status(200).json({ message: 'Campaign added to saved.', saved: true });
+      }
+    } catch (err) {
+      console.error('Error toggling saved campaign:', err);
+      res.status(500).json({ message: 'Failed to update saved campaigns.', error: err.message });
     }
 };

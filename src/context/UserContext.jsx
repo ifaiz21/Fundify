@@ -1,6 +1,5 @@
 // src/context/UserContext.jsx
 import React, { createContext, useState, useContext, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom'; // REMOVE: useNavigate from here
 
 const UserContext = createContext();
 
@@ -9,9 +8,9 @@ export const UserProvider = ({ children }) => {
     profilePictureUrl: null,
     isAuthenticated: false, // ADDED: Track authentication status
     id: null, // ADDED: Initialize id to null
+    savedCampaigns: [], // ADDED: Initialize savedCampaigns as an empty array
   });
   const [loadingUserContext, setLoadingUserContext] = useState(true);
-  // const navigate = useNavigate(); // REMOVE: Get navigate function here
 
   // Fetch initial profile data when the app loads to populate context
   useEffect(() => {
@@ -19,7 +18,8 @@ export const UserProvider = ({ children }) => {
       const token = localStorage.getItem('token');
       if (!token) {
         setLoadingUserContext(false);
-        setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null })); // Set authenticated to false and id to null
+        // Ensure savedCampaigns is reset when not authenticated
+        setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null, savedCampaigns: [] }));
         return;
       }
 
@@ -39,29 +39,33 @@ export const UserProvider = ({ children }) => {
             profilePictureUrl: data.profilePictureUrl ? `http://localhost:5000${data.profilePictureUrl}` : null,
             isAuthenticated: true, // User is authenticated
             id: data._id, // ADDED: Store the user's ID here
+            // Populate saved campaigns: map to IDs for consistency with includes() checks
+            savedCampaigns: data.savedCampaigns ? data.savedCampaigns.map(campaign => campaign._id) : [],
           }));
         } else {
           // If token is invalid or user not found, clear storage and mark as unauthenticated
           if (response.status === 401 || response.status === 403 || response.status === 404) {
             localStorage.removeItem('token');
             console.warn("Authentication token invalid or user profile not found.");
-            setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null })); // Mark as unauthenticated and id to null
-            // No direct navigate here. Components consuming context will react.
+            // Ensure savedCampaigns is reset when unauthenticated
+            setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null, savedCampaigns: [] }));
           } else {
             console.error("Failed to fetch initial user profile for context:", response.statusText);
-            setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null })); // Assume unauthenticated on other errors too, and id to null
+            // Assume unauthenticated on other errors too, and ensure savedCampaigns is reset
+            setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null, savedCampaigns: [] }));
           }
         }
       } catch (error) {
         console.error("Error fetching initial user profile for context:", error);
-        setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null })); // Assume unauthenticated on fetch error, and id to null
+        // Assume unauthenticated on fetch error, and ensure savedCampaigns is reset
+        setUserProfile(prev => ({ ...prev, isAuthenticated: false, id: null, savedCampaigns: [] }));
       } finally {
         setLoadingUserContext(false);
       }
     };
 
     fetchInitialProfile();
-  }, []); // Removed navigate from dependency array as it's no longer used here
+  }, []);
 
   return (
     <UserContext.Provider value={{ userProfile, setUserProfile, loadingUserContext }}>

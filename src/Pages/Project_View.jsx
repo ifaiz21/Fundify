@@ -6,8 +6,11 @@ import { useLocation, useNavigate } from "react-router-dom"
 import HeaderLayout from "./Layout/HeaderLayout"
 import FooterLayout from "./Layout/FooterLayout"
 import axios from "axios"
+import { useUser } from '../context/UserContext'; // Import useUser for saved campaigns
+import { Heart } from 'lucide-react'; // Import Heart icon
 
-function ProjectView() {
+// ProjectView now accepts showToast as a prop
+function ProjectView({ showToast }) {
   const [activeTab, setActiveTab] = useState("campaign")
   const [campaignData, setCampaignData] = useState(null)
   const [campaignUpdates, setCampaignUpdates] = useState([])
@@ -17,9 +20,13 @@ function ProjectView() {
   const [error, setError] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
+  const { userProfile, setUserProfile } = useUser(); // Get user context
 
   const queryParams = new URLSearchParams(location.search)
   const campaignId = queryParams.get("id")
+
+  // Check if the current campaign is saved by the user
+  const isCampaignSaved = userProfile.savedCampaigns?.includes(campaignId);
 
   useEffect(() => {
     if (campaignId) {
@@ -82,6 +89,48 @@ function ProjectView() {
   }
 
   const progress = campaignData ? Math.min(Math.round((campaignData.raised / campaignData.goalAmount) * 100), 100) : 0
+
+  // handleToggleSave function for saving/unsaving campaigns
+  const handleToggleSave = async () => {
+    if (!userProfile.isAuthenticated) {
+      showToast('Please log in to save campaigns.', 'info');
+      return;
+    }
+    if (!campaignId) {
+        showToast('Campaign ID is missing. Cannot save.', 'error');
+        return;
+    }
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:5000/api/users/saved-campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ campaignId: campaignId }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.saved) {
+          showToast('Campaign saved successfully!', 'success');
+          setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaignId] }));
+        } else {
+          showToast('Campaign unsaved.', 'info');
+          setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaignId) }));
+        }
+      } else {
+        const errorData = await response.json();
+        showToast(`Failed to save/unsave campaign: ${errorData.message}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error toggling saved campaign:', error);
+      showToast('An error occurred while saving/unsaving the campaign.', 'error');
+    }
+  };
+
 
   // DonorsSidebar component
   const DonorsSidebar = () => (
@@ -177,11 +226,11 @@ function ProjectView() {
     const campaignUrl = window.location.href;
     navigator.clipboard.writeText(campaignUrl)
       .then(() => {
-        alert("Campaign link copied to clipboard!");
+        showToast("Campaign link copied to clipboard!", 'success'); // Use showToast
       })
       .catch((err) => {
         console.error("Failed to copy link:", err);
-        alert("Failed to copy link. Please try again manually.");
+        showToast("Failed to copy link. Please try again manually.", 'error'); // Use showToast
       });
   };
 
@@ -268,6 +317,10 @@ function ProjectView() {
                 <div className="mb-4">
                   <div className="text-2xl font-bold">{formatCurrency(campaignData.raised)}</div>
                   <div className="text-sm text-gray-600">pledged of {formatCurrency(campaignData.goalAmount)} goal</div>
+                  {/* Display the percentage funded */}
+                  <div className="text-sm font-bold text-green-600">
+                    {Math.min(progress, 100).toFixed(0)}% Funded
+                  </div>
                 </div>
 
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
@@ -301,6 +354,16 @@ function ProjectView() {
                   onClick={handleShare} 
                   className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-md transition duration-200">
                   Share
+                </button>
+
+                {/* Add Save/Unsave Button */}
+                <button
+                  onClick={handleToggleSave}
+                  className={`w-full mt-3 p-3 rounded-md flex items-center justify-center ${isCampaignSaved ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'} hover:opacity-80 transition-colors`}
+                  title={isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
+                >
+                  <Heart className="h-5 w-5 mr-2" fill={isCampaignSaved ? 'currentColor' : 'none'} />
+                  {isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
                 </button>
               </div>
             </div>
@@ -342,7 +405,7 @@ function ProjectView() {
                     <h2 className="text-xl font-bold mb-4">Story</h2>
 
                     {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
-                        <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt={campaignData.title} className="w-full h-auto rounded-md mb-6" />
+                        <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
                     )}
                     <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.content }}>
                     </div>

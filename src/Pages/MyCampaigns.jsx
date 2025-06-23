@@ -9,10 +9,12 @@ import SideBar from '../components/SideBar';
 import axios from 'axios'; // Import axios
 
 function MyCampaigns({ showToast }) {
-  const { userProfile, loadingUserContext } = useUser();
+  // Corrected: Destructure setUserProfile from useUser()
+  const { userProfile, loadingUserContext, setUserProfile } = useUser();
   const navigate = useNavigate();
 
-  const [campaigns, setCampaigns] = useState([]);
+  const [campaigns, setCampaigns] = useState([]); // All campaigns created by user
+  const [savedCampaignsData, setSavedCampaignsData] = useState([]); // Full data for saved campaigns
   const [activeTab, setActiveTab] = useState("All campaigns");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -22,69 +24,81 @@ function MyCampaigns({ showToast }) {
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
 
   useEffect(() => {
-    // Only attempt to fetch data once user context has finished loading
     if (!loadingUserContext) {
-      // If user is not authenticated or user ID is missing after context loads,
-      // then redirect to login. This is the condition that triggers logout.
       if (!userProfile.isAuthenticated || !userProfile.id) {
         setError("Authentication required or user ID not found. Please log in.");
         navigate("/login");
-        return; // Stop execution of this effect
+        return;
       }
 
-      const fetchMyCampaigns = async () => {
+      const fetchMyCampaignsAndSaved = async () => {
         setLoading(true);
         setError(null);
         try {
           const token = localStorage.getItem('token');
-          // No longer need userId as a query parameter; backend will use req.user.id
-          const response = await axios.get(`http://localhost:5000/api/campaigns/my-campaigns`, { // UPDATED URL
-            headers: {
-              'Authorization': `Bearer ${token}`, // Send the token in the header
-            },
-          });
 
-          // Assuming the backend returns an object with a 'campaigns' array
-          const fetchedCampaigns = response.data?.campaigns || [];
-          setCampaigns(fetchedCampaigns);
-          setError(null); // Clear any previous error
+          // Fetch campaigns created by the user
+          const myCampaignsResponse = await axios.get(`http://localhost:5000/api/campaigns/my-campaigns`, {
+            headers: { 'Authorization': `Bearer ${token}` },
+          });
+          setCampaigns(myCampaignsResponse.data?.campaigns || []);
+
+          // Fetch details for saved campaigns
+          const fetchedSavedCampaignsDetails = [];
+          if (userProfile.savedCampaigns && userProfile.savedCampaigns.length > 0) {
+            // Fetch each saved campaign's details individually
+            // OPTIMIZATION: Ideally, the backend should provide a single endpoint
+            // to fetch multiple campaigns by their IDs to reduce API calls.
+            for (const campaignId of userProfile.savedCampaigns) {
+              try {
+                const response = await axios.get(`http://localhost:5000/api/campaigns/${campaignId}`);
+                fetchedSavedCampaignsDetails.push(response.data);
+              } catch (fetchError) {
+                console.warn(`Failed to fetch saved campaign ${campaignId}:`, fetchError);
+                // Continue even if one saved campaign fails to fetch
+              }
+            }
+          }
+          setSavedCampaignsData(fetchedSavedCampaignsDetails);
+
+          setError(null);
         } catch (err) {
-          console.error("Error fetching my campaigns:", err);
-          // Handle specific error codes from the backend
+          console.error("Error fetching campaigns or saved campaigns:", err);
           if (err.response) {
             if (err.response.status === 401 || err.response.status === 403) {
-              // If unauthorized or forbidden, clear token and redirect to login
               localStorage.removeItem('token');
-              localStorage.removeItem('userProfile'); // Assuming userProfile is also stored here
+              localStorage.removeItem('userProfile');
               setError("Session expired or unauthorized. Please log in again.");
               navigate("/login");
-              showToast('Session expired, please log in again.', 'error'); // Show a toast notification
+              showToast('Session expired, please log in again.', 'error');
             } else {
               setError(`Failed to load your campaigns: ${err.response.data?.message || err.message}`);
             }
           } else {
             setError("Network error or server unreachable. Please try again later.");
           }
-          setCampaigns([]); // Clear campaigns on error
+          setCampaigns([]);
+          setSavedCampaignsData([]);
         } finally {
           setLoading(false);
         }
       };
 
-      fetchMyCampaigns();
+      fetchMyCampaignsAndSaved();
     }
-  }, [userProfile.isAuthenticated, userProfile.id, loadingUserContext, navigate, showToast]); // Added showToast to dependencies
+  }, [userProfile.isAuthenticated, userProfile.id, userProfile.savedCampaigns, loadingUserContext, navigate, showToast]);
 
-  const filteredCampaigns = campaigns.filter(campaign => {
-    const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase()); // Corrected from campaign.name to campaign.title
-    // Adjust the tab filtering logic if "Saved Campaigns" implies something other than created campaigns
-    const matchesTab = activeTab === "All campaigns" || (activeTab === "Saved Campaigns" && campaign.status === 'Draft'); // Example: show drafts for "Saved"
-    return matchesSearch && matchesTab;
+  // Determine which campaigns to display based on the active tab
+  const displayedCampaigns = activeTab === "All campaigns" ? campaigns : savedCampaignsData;
+
+  const filteredCampaigns = displayedCampaigns.filter(campaign => {
+    const matchesSearch = campaign.title.toLowerCase().includes(searchTerm.toLowerCase());
+    return matchesSearch;
   });
 
   const handleLogout = () => {
     localStorage.removeItem('token');
-    localStorage.removeItem('userProfile'); // Make sure this matches where you store user data
+    localStorage.removeItem('userProfile');
     navigate('/login');
     setShowConfirmLogout(false);
     showToast('You have been logged out successfully!', 'success');
@@ -95,14 +109,49 @@ function MyCampaigns({ showToast }) {
     if (menuItem === "My Campaigns") {
       navigate("/my-campaigns");
     } else if (menuItem === "Profile") {
-      navigate("/profile");
+      navigate("/user-profile"); // Assuming /user-profile is the correct route
     } else if (menuItem === "Billing") {
       navigate("/billing");
-    } else if (menuItem === "Help & Support") { // Assuming Help & Support maps to contactus
-      navigate("/contactus");
+    } else if (menuItem === "Help & Support") {
+      navigate("/contactus"); // Assuming Help & Support maps to contactus
     }
-    // No explicit logout here; rely on useEffect for session checks on page load
   };
+
+  // Function to handle unsaving a campaign from the "Saved Campaigns" tab
+  const handleUnsaveCampaign = async (campaignIdToUnsave) => {
+    if (!userProfile.isAuthenticated) {
+      showToast('Please log in to unsave campaigns.', 'info');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:5000/api/users/saved-campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ campaignId: campaignIdToUnsave }),
+      });
+
+      if (response.ok) {
+        showToast('Campaign unsaved.', 'info');
+        // Update userProfile state to reflect the change
+        const updatedSavedCampaignsIds = userProfile.savedCampaigns.filter(id => id !== campaignIdToUnsave);
+        const updatedSavedCampaignsData = savedCampaignsData.filter(campaign => campaign._id !== campaignIdToUnsave);
+        setUserProfile(prev => ({ ...prev, savedCampaigns: updatedSavedCampaignsIds }));
+        setSavedCampaignsData(updatedSavedCampaignsData); // Also update the local state for immediate UI refresh
+      } else {
+        const errorData = await response.json();
+        showToast(`Failed to unsave campaign: ${errorData.message}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error unsaving campaign:', error);
+      showToast('An error occurred while unsaving the campaign.', 'error');
+    }
+  };
+
 
   if (loading || loadingUserContext) {
     return (
@@ -119,6 +168,12 @@ function MyCampaigns({ showToast }) {
       <HeaderLayout>
         <div className="flex justify-center items-center min-h-screen">
           <p className="text-red-500">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-[#4A5D45] text-white px-6 py-2 rounded-md hover:bg-opacity-90 transition-colors"
+          >
+            Retry
+          </button>
         </div>
       </HeaderLayout>
     );
@@ -135,7 +190,7 @@ function MyCampaigns({ showToast }) {
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">My Campaigns</h1>
             <button className="bg-[#4A5D45] text-white py-2 px-4 rounded-md text-sm whitespace-nowrap" onClick={() => navigate("/create-campaign")}>
-              New campaign
+              Create New Campaign 
             </button>
           </div>
 
@@ -152,7 +207,7 @@ function MyCampaigns({ showToast }) {
                 className={`px-4 py-2 text-sm font-medium ${activeTab === "Saved Campaigns" ? "border-b-2 border-[#4A5D45] text-[#4A5D45]" : "text-gray-600 hover:text-gray-900"}`}
                 onClick={() => setActiveTab("Saved Campaigns")}
               >
-                  Saved Campaigns (Drafts)
+                  Saved Campaigns
               </button>
             </div>
 
@@ -187,6 +242,10 @@ function MyCampaigns({ showToast }) {
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
                       Total Backers
                     </th>
+                    {/* New header for Progress */}
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                      Progress
+                    </th>
                     <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
                       Created Date
                     </th>
@@ -216,30 +275,44 @@ function MyCampaigns({ showToast }) {
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {campaign.totalBackers || 0}
                         </td>
+                        {/* Display percentage funded */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {`${Math.min(((Number(campaign.raised) || 0) / (Number(campaign.goalAmount) || 1)) * 100, 100).toFixed(0)}%`}
+                        </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(campaign.createdAt).toLocaleDateString()}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                              <button
-                                  onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
-                                  className="text-[#4A5D45] hover:underline text-sm mr-2"
-                              >
-                                  View
-                              </button>
-                              {campaign.status === 'Draft' && ( // Only allow editing drafts
-                                <button
-                                    onClick={() => navigate("/campaign-creation-05", { state: { campaignData: campaign } })} // Pass entire campaign object for editing
-                                    className="text-blue-600 hover:underline text-sm"
-                                >
-                                    Edit
-                                </button>
-                              )}
-                          </td>
+                          <button
+                            onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
+                            className="text-[#4A5D45] hover:underline text-sm mr-2"
+                          >
+                            View
+                          </button>
+                          {/* Show Edit button only for 'All campaigns' tab and 'Draft' status */}
+                          {activeTab === 'All campaigns' && campaign.status === 'Draft' && (
+                            <button
+                              onClick={() => navigate("/campaign-creation-05", { state: { campaignData: campaign } })}
+                              className="text-blue-600 hover:underline text-sm"
+                            >
+                              Edit
+                            </button>
+                          )}
+                          {/* Show Unsave button only for 'Saved Campaigns' tab */}
+                          {activeTab === 'Saved Campaigns' && (
+                            <button
+                              onClick={() => handleUnsaveCampaign(campaign._id)}
+                              className="text-red-600 hover:underline text-sm ml-2"
+                            >
+                              Unsave
+                            </button>
+                          )}
+                        </td>
                       </tr>
                     ))
                   ) : (
                     <tr>
-                      <td colSpan="6" className="px-6 py-4 text-center text-gray-500">No campaigns found.</td>
+                      <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No campaigns found.</td>
                     </tr>
                   )}
                 </tbody>

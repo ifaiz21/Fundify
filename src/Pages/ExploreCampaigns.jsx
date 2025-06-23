@@ -4,6 +4,8 @@ import { useNavigate } from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout"; // Corrected import path for FooterLayout
 import axios from "axios";
+import { useUser } from '../context/UserContext'; // Import useUser for saved campaigns
+import { Heart } from 'lucide-react'; // Import Heart icon
 
 // Define the full list of categories
 const allCategories = [
@@ -32,11 +34,53 @@ const allCategories = [
 
 const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
-function CampaignCard({ campaign }) {
+// CampaignCard now accepts showToast as a prop
+function CampaignCard({ campaign, showToast }) {
   const safeRaised = Number(campaign.raised) || 0;
   const safeGoal = Number(campaign.goalAmount) || 1;
   const progressPercentage = (safeRaised / safeGoal) * 100;
   const navigate = useNavigate();
+  const { userProfile, setUserProfile } = useUser(); // Get user context
+  const isCampaignSaved = userProfile.savedCampaigns?.includes(campaign._id); // Check if campaign is already saved
+
+  const handleToggleSave = async (e) => {
+    e.stopPropagation(); // Prevent navigating to ProjectView when clicking save button
+    if (!userProfile.isAuthenticated) {
+      showToast('Please log in to save campaigns.', 'info');
+      return;
+    }
+
+    const token = localStorage.getItem('token');
+    try {
+      const response = await fetch('http://localhost:5000/api/users/saved-campaigns', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`,
+        },
+        body: JSON.stringify({ campaignId: campaign._id }),
+      });
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.saved) {
+          showToast('Campaign saved successfully!', 'success');
+          // Update userProfile state to reflect the change
+          setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaign._id] }));
+        } else {
+          showToast('Campaign unsaved.', 'info');
+          // Update userProfile state to reflect the change
+          setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaign._id) }));
+        }
+      } else {
+        const errorData = await response.json();
+        showToast(`Failed to save/unsave campaign: ${errorData.message}`, 'error');
+      }
+    } catch (error) {
+      console.error('Error toggling saved campaign:', error);
+      showToast('An error occurred while saving/unsaving the campaign.', 'error');
+    }
+  };
 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col">
@@ -56,13 +100,14 @@ function CampaignCard({ campaign }) {
         </p>
         <div className="flex justify-between text-sm mb-2 mt-auto">
           <span className="font-medium text-gray-700">{formatCurrency(safeRaised)}</span>
-          <span className="font-medium text-[#65835e]">{formatCurrency(safeGoal)}</span>
+          {/* Display the percentage funded */}
+          <span className="font-medium text-[#65835e]">{Math.min(progressPercentage, 100).toFixed(0)}% Funded</span>
         </div>
         <div className="w-full bg-gray-200 rounded-full h-1.5">
           <div className="bg-[#65835e] h-1.5 rounded-full" style={{ width: `${Math.min(progressPercentage, 100)}%` }}></div>
         </div>
 
-        {/* Explore and Donate Buttons */}
+        {/* Explore, Donate, and Save Buttons */}
         <div className="flex justify-between mt-4">
           <button
             onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
@@ -74,13 +119,22 @@ function CampaignCard({ campaign }) {
             className="bg-[#65835e] text-white px-4 py-2 rounded-md hover:bg-green-600 transition-colors">
             Donate
           </button>
+          {/* Add Save/Unsave Button */}
+          <button
+            onClick={handleToggleSave}
+            className={`ml-2 p-2 rounded-full ${isCampaignSaved ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'} hover:bg-red-600 hover:text-white transition-colors`}
+            title={isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
+          >
+            <Heart className="h-5 w-5" fill={isCampaignSaved ? 'currentColor' : 'none'} />
+          </button>
         </div>
       </div>
     </div>
   );
 }
 
-export default function ExploreCampaigns() {
+// ExploreCampaigns now accepts showToast as a prop
+export default function ExploreCampaigns({ showToast }) {
   const [campaigns, setCampaigns] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -222,7 +276,8 @@ export default function ExploreCampaigns() {
         ) : (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8 ">
             {filteredCampaigns.slice(0, visibleCampaignsCount).map((campaign) => (
-              <CampaignCard key={campaign._id} campaign={campaign} />
+              // Pass showToast to CampaignCard
+              <CampaignCard key={campaign._id} campaign={campaign} showToast={showToast} />
             ))}
           </div>
         )}
