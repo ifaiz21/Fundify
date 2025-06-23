@@ -107,17 +107,17 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               </button>
 
               {showDropdown && (
-                <div className="absolute right-0 mt-2 bg-white text-black rounded shadow-lg py-2 w-40 z-50">
+                <div className="absolute right-0 mt-1 bg-gray-200 text-black rounded shadow-lg py-2 w-40 z-50">
                   {!hideProfile && (
-                    <a href="/user-profile" className="block px-4 py-2 hover:bg-gray-100">
+                    <a href="/user-profile" className="block px-4 py-2 hover:bg-[#B2C9AD]">
                       My Profile
                     </a>
                   )}
                   <button
                     onClick={() => setShowConfirmLogout(true)}
-                    className="w-full text-left px-4 py-2 hover:bg-gray-100"
+                    className="w-full text-left px-4 py-2 hover:bg-red-400"
                   >
-                    Sign Out
+                    Logout
                   </button>
                 </div>
               )}

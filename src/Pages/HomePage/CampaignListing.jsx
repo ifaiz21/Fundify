@@ -115,7 +115,7 @@ export default function CampaignListing() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-16 bg-gradient-to-br from-white to-gray-50 rounded-xl shadow-lg">
+    <div className="max-w-7xl mx-auto px-4 py-16 to-gray-50 rounded-xl shadow-lg bg-[#B2C9AD]">
       {/* Headings */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-semibold text-[#4A5D45] mb-2 drop-shadow-md">
@@ -157,7 +157,7 @@ export default function CampaignListing() {
       {/* Removed Categories Section */}
 
       {/* Campaign Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-12">
         {currentCampaigns.length > 0 ? (
           currentCampaigns.map((campaign) => (
             <div
@@ -169,7 +169,7 @@ export default function CampaignListing() {
                 alt={campaign.title}
                 className="w-full h-48 object-cover rounded-t-xl"
               />
-              <div className="p-6 flex flex-col flex-grow justify-between">
+              <div className="p-6 flex flex-col flex-grow justify-between bg-[#ffffff]">
                 <p className="text-gray-500 text-sm mb-2">{new Date(campaign.createdAt).toLocaleDateString()}</p>
                 <h3 className="text-xl font-semibold mb-2 text-gray-800">{campaign.title}</h3>
                 <p className="text-gray-600 mb-4 line-clamp-3 h-20">
@@ -177,7 +177,7 @@ export default function CampaignListing() {
                 </p>
                 <button
                   onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
-                  className="w-full px-4 py-2 bg-[#4A5D45] text-white rounded-full shadow-md hover:shadow-lg transition-colors duration-300 mt-auto">
+                  className="w-full px-4 py-2 bg-[#4A5D45] text-white rounded-full shadow-md hover:bg-[#B2C9AD] transition-colors duration-300 mt-auto">
                   Explore Campaign
                 </button>
               </div>
