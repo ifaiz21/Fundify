@@ -115,7 +115,7 @@ export default function CampaignListing() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto px-4 py-16 to-gray-50 rounded-xl shadow-lg bg-[#B2C9AD]">
+    <div className="max-w-7xl mx-auto px-4 py-16 to-gray-50 rounded-xl shadow-lg bg-[#F0FFF0]">
       {/* Headings */}
       <div className="text-center mb-8">
         <h1 className="text-4xl font-semibold text-[#4A5D45] mb-2 drop-shadow-md">

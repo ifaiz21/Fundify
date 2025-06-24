@@ -12,7 +12,7 @@ function PartnersSection() {
     ];
 
     return (
-      <div className="bg-gray-50 py-16">
+      <div className="bg-[#F0FFF0] py-16">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           {/* Header Section */}
           <div className="mb-16">
@@ -57,31 +57,31 @@ function PartnersSection() {
           </div>
   
           {/* Contact Section */}
-          <div className="bg-[#5EBFB5] rounded-xl overflow-hidden shadow-xl">
-            <div className="flex flex-col md:flex-row">
-              <div className="p-8 md:p-12 md:w-1/2">
-                <p className="text-white uppercase tracking-wider mb-2">
-                  CALL CENTER
-                </p>
-                <p className="text-white text-3xl font-light mb-8">
-                  (XXX) XXXX-XXX
-                </p>
-  
-                <p className="text-white uppercase tracking-wider mb-2">EMAIL</p>
-                <p className="text-[#2A5F59] text-3xl font-light">
-                  contact@fundify.com
-                </p>
-              </div>
-              <div className="md:w-1/2 relative">
-                <img
-                  src="/images/contact-person.png"
-                  alt="Person using Fundify app"
-                  className="w-full h-full object-cover object-center"
-                />
-              </div>
+          <div className="bg-[#5eb0bf] rounded-xl overflow-hidden shadow-xl">
+          <div className="flex flex-col md:flex-row">
+            <div className="p-8 md:p-12 md:w-1/2"> {/* Keep original padding or adjust as in Option 1 */}
+              <p className="text-white uppercase tracking-wider mb-2">
+                CALL CENTER
+              </p>
+              <p className="text-white text-3xl font-light mb-8">
+                (XXX) XXXX-XXX
+              </p>
+
+              <p className="text-white uppercase tracking-wider mb-2">EMAIL</p>
+              <p className="text-[#2A5F59] text-3xl font-light">
+                contact@fundify.com
+              </p>
+            </div>
+            {/* Add a max-h-XX class here */}
+            <div className="md:w-1/2 relative max-h-96 md:h-72 lg:h-80"> {/* Adjust max-h value */}
+              <img
+                src="/images/contacting-person.png"
+                alt="Person using Fundify app"
+                className="w-full h-full object-cover object-center"
+              />
             </div>
           </div>
-
+        </div>
         </div>
       </div>
     );

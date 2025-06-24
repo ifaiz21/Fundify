@@ -70,7 +70,7 @@ const PasswordReset = () => {
   return (
     <SideLayout>
       <ToastContainer />
-      <div className="h-screen bg-white overflow-y-hidden font-Inter">
+      <div className="h-screen bg-[#F0FFF0] overflow-y-hidden font-Inter">
         <div className="absolute p-4">
           <button
             onClick={() => navigate("/forget-password")}

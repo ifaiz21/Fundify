@@ -47,7 +47,8 @@ import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
 import HeaderLayout from "./Pages/Layout/HeaderLayout";
 import MyCampaigns from './Pages/MyCampaigns';
-import ChatWrapper from './components/ChatWrapper';
+//import ChatWrapper from './components/ChatWrapper';
+import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
 
 
@@ -142,7 +143,7 @@ function App() {
             </div>
           } />
         </Routes>
-        <ChatWrapper />
+        <ConditionalChatWrapper />
       </Router>
 
       {/* ToastContainer must be rendered once at the root of your app */}
