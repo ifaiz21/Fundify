@@ -115,7 +115,7 @@ const EmailVerification = () => {
 
   return (
     <SideLayout>
-      <div className="h-screen bg-white overflow-y-hidden font-Inter">
+      <div className="h-screen bg-[#F0FFF0] overflow-y-hidden font-Inter">
       <div className="absolute p-4">
         <button onClick={() => navigate("/forget-password")}
           className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold">

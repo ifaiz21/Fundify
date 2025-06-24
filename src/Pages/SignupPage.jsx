@@ -132,7 +132,7 @@ const SignupPage = () => {
 
   return (
     <SideLayout>
-      <div className="min-h-screen bg-white overflow-y-auto font-Inter">
+      <div className="min-h-screen bg-[#F0FFF0] overflow-y-auto font-Inter">
         <div className="absolute p-4">
           <button
             onClick={() => navigate("/login")}
