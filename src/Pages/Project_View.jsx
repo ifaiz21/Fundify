@@ -8,9 +8,9 @@ import FooterLayout from "./Layout/FooterLayout"
 import axios from "axios"
 import { useUser } from '../context/UserContext'; // Import useUser for saved campaigns
 import { Heart } from 'lucide-react'; // Import Heart icon
+import { showSuccessMessage, showErrorMessage } from "../utils/toast" // Import toast functions directly
 
-// ProjectView now accepts showToast as a prop
-function ProjectView({ showToast }) {
+function ProjectView() { // Removed showToast from props
   const [activeTab, setActiveTab] = useState("campaign")
   const [campaignData, setCampaignData] = useState(null)
   const [campaignUpdates, setCampaignUpdates] = useState([])
@@ -93,11 +93,11 @@ function ProjectView({ showToast }) {
   // handleToggleSave function for saving/unsaving campaigns
   const handleToggleSave = async () => {
     if (!userProfile.isAuthenticated) {
-      showToast('Please log in to save campaigns.', 'info');
+      showErrorMessage('Please log in to save campaigns.'); // Replaced showToast
       return;
     }
     if (!campaignId) {
-        showToast('Campaign ID is missing. Cannot save.', 'error');
+        showErrorMessage('Campaign ID is missing. Cannot save.'); // Replaced showToast
         return;
     }
 
@@ -115,19 +115,19 @@ function ProjectView({ showToast }) {
       if (response.ok) {
         const result = await response.json();
         if (result.saved) {
-          showToast('Campaign saved successfully!', 'success');
+          showSuccessMessage('Campaign saved successfully!'); // Replaced showToast
           setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaignId] }));
         } else {
-          showToast('Campaign unsaved.', 'info');
+          showSuccessMessage('Campaign unsaved.'); // Replaced showToast
           setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaignId) }));
         }
       } else {
         const errorData = await response.json();
-        showToast(`Failed to save/unsave campaign: ${errorData.message}`, 'error');
+        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`); // Replaced showToast
       }
     } catch (error) {
       console.error('Error toggling saved campaign:', error);
-      showToast('An error occurred while saving/unsaving the campaign.', 'error');
+      showErrorMessage('An error occurred while saving/unsaving the campaign.'); // Replaced showToast
     }
   };
 
@@ -149,7 +149,7 @@ function ProjectView({ showToast }) {
               strokeLinecap="round"
               strokeLinejoin="round"
               className="text-gray-700"
-            > 
+            >
               <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
@@ -179,7 +179,7 @@ function ProjectView({ showToast }) {
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
           {/* Display dynamic total backers count */}
-          <span className="text-sm font-medium">{totalBackersCount} people just donated</span> 
+          <span className="text-sm font-medium">{totalBackersCount} people just donated</span>
         </div>
 
         <div className="pt-4 space-y-4">
@@ -199,13 +199,13 @@ function ProjectView({ showToast }) {
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => alert("Showing all donors for this project (functionality to be implemented).")} 
+          <button
+            onClick={() => showErrorMessage("Showing all donors for this project (functionality to be implemented).")} // Replaced alert
             className="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             See all
           </button>
-          <button 
-            onClick={handleBackThisProject} 
+          <button
+            onClick={handleBackThisProject}
             className="text-center py-3 px-4 bg-[#4B5945] rounded-md text-sm font-medium text-white hover:bg-[#3E4B3A] transition-colors">
             Back this project
           </button>
@@ -218,7 +218,7 @@ function ProjectView({ showToast }) {
     if (campaignData && campaignData._id) {
       navigate("/donate", { state: { campaignId: campaignData._id } });
     } else {
-      alert("Campaign data not loaded yet. Cannot proceed to donation.");
+      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.") // Replaced showToast
     }
   };
 
@@ -226,11 +226,11 @@ function ProjectView({ showToast }) {
     const campaignUrl = window.location.href;
     navigator.clipboard.writeText(campaignUrl)
       .then(() => {
-        showToast("Campaign link copied to clipboard!", 'success'); // Use showToast
+        showSuccessMessage("Campaign link copied to clipboard!"); // Use showSuccessMessage
       })
       .catch((err) => {
         console.error("Failed to copy link:", err);
-        showToast("Failed to copy link. Please try again manually.", 'error'); // Use showToast
+        showErrorMessage("Failed to copy link. Please try again manually."); // Use showErrorMessage
       });
   };
 
@@ -289,7 +289,7 @@ function ProjectView({ showToast }) {
               <p className="text-gray-700 mb-4">{campaignData.description}</p>
 
               <div className="flex items-center text-sm text-gray-600 mb-6">
-                <span>Created {new Date(campaignData.createdAt).toLocaleDateString()}</span> 
+                <span>Created {new Date(campaignData.createdAt).toLocaleDateString()}</span>
                 <span className="mx-2">•</span>
                 <span className="flex items-center">
                   <svg
@@ -344,14 +344,14 @@ function ProjectView({ showToast }) {
                   </span>
                 </div>
 
-                <button 
-                  onClick={handleBackThisProject} 
+                <button
+                  onClick={handleBackThisProject}
                   className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200">
                   Back this project
                 </button>
 
-                <button 
-                  onClick={handleShare} 
+                <button
+                  onClick={handleShare}
                   className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-md transition duration-200">
                   Share
                 </button>
@@ -407,7 +407,7 @@ function ProjectView({ showToast }) {
                     {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
                         <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
                     )}
-                    <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.content }}>
+                    <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.story }}>
                     </div>
                   </div>
                 </div>

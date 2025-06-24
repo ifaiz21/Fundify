@@ -1,7 +1,10 @@
 // src/App.jsx
-import React, { useState } from 'react'; 
-import ToastNotification from './components/ToastNotification'; 
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+
+// Import all your page and component files
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignupPage";
 import Billing from './Pages/Billing';
@@ -20,7 +23,6 @@ import GetStartedPage from "./Pages/GetStartedPage";
 import ContactUsPage from "./Pages/ContactUs/ContactUsPage";
 import Submitted from "./Pages/ContactUs/Submitted";
 import Submitted2 from "./Pages/Payment/Submitted2";
-
 import DonationScreen from "./Pages/DonationScreen";
 import AboutUs from "./Pages/AboutUs";
 import PaymentScreen from "./Pages/Payment/PaymentScreen";
@@ -35,7 +37,6 @@ import ProjectView from "./Pages/Project_View";
 import UserProfileSettings from "./Pages/UserProfileSettings";
 import CodeVerification from "./Pages/CodeVerification";
 import SetPasswordPage from "./Pages/SetPasswordPage";
-
 import CampaignUpdate from "./Pages/CampaignsCreation/CampUpdate";
 import AdminDashboard from "./Pages/AdminSide/AdminDashboard";
 import UserManagement from "./Pages/AdminSide/Users";
@@ -45,84 +46,96 @@ import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
 import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
 import HeaderLayout from "./Pages/Layout/HeaderLayout";
-import MyCampaigns from './Pages/MyCampaigns'; // Import the new MyCampaigns component
-
-
-import { UserProvider } from './context/UserContext';
+import MyCampaigns from './Pages/MyCampaigns';
 import ChatWrapper from './components/ChatWrapper';
+import { UserProvider } from './context/UserContext';
+
 
 function App() {
-  const [toast, setToast] = useState({ message: '', type: 'success', visible: false });
-
-  const showToast = (message, type = 'success', duration = 3000) => {
-    setToast({ message, type, visible: true });
+  // Functions to show toast notifications
+  const showSuccess = (message) => {
+    toast.success(message, {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
-  const hideToast = () => {
-    setToast(prev => ({ ...prev, visible: false, message: '' }));
+  const showError = (message) => {
+    toast.error(message, {
+      position: "top-right",
+      autoClose: 5000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   return (
-    <UserProvider> {/* Wrap your entire app with UserProvider */}
+    <UserProvider>
       <Router>
         <Routes>
           {/* All Route elements must be nested directly inside <Routes> */}
-          {/* Pass showToast function as a prop to components that need to trigger it */}
-          <Route path="/" element={<Home showToast={showToast} />} />
-          <Route path="/homepage" element={<Home showToast={showToast} />} />
+          {/* Pass showSuccess and showError functions as props to components that need to trigger them */}
+          <Route path="/" element={<Home showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/homepage" element={<Home showSuccess={showSuccess} showError={showError} />} />
 
           {/* Login/Signup/Password Reset Pages */}
-          <Route path="/login" element={<LoginPage showToast={showToast} />} />
-          <Route path="/sign-up" element={<SignupPage showToast={showToast} />} />
-          <Route path="/forget-password" element={<ForgetPassword showToast={showToast} />} />
-          <Route path="/email-verification" element={<EmailVerification showToast={showToast} />} />
-          <Route path="/password-reset" element={<PasswordReset showToast={showToast} />} />
-          <Route path="/success" element={<Success showToast={showToast} />} />
-          <Route path="/code-verification" element={<CodeVerification showToast={showToast} />} />
-          <Route path="/submitted" element={<Submitted showToast={showToast} />} />
-          <Route path="/submit-2" element={<Submitted2 showToast={showToast} />} />
-          <Route path="/set-password" element={<SetPasswordPage showToast={showToast} />} />
+          <Route path="/login" element={<LoginPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/sign-up" element={<SignupPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/forget-password" element={<ForgetPassword showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/email-verification" element={<EmailVerification showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/password-reset" element={<PasswordReset showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/success" element={<Success showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/code-verification" element={<CodeVerification showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/submitted" element={<Submitted showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/submit-2" element={<Submitted2 showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/set-password" element={<SetPasswordPage showSuccess={showSuccess} showError={showError} />} />
 
           {/* Other general pages */}
-          <Route path="/privacy-policy" element={<PrivacyPolicy showToast={showToast} />} />
-          <Route path="/terms-of-use" element={<TermsOfUse showToast={showToast} />} />
-          <Route path="/cookie-policy" element={<CookiePolicy showToast={showToast} />} />
-          <Route path="/trust-safety" element={<TrustSafety showToast={showToast} />} />
-          <Route path="/faq" element={<FAQs showToast={showToast} />} />
-          <Route path="/explore" element={<ExploreCampaigns showToast={showToast} />} />
-          <Route path="/how-to" element={<GetStartedPage showToast={showToast} />} />
-          <Route path="/contact" element={<ContactUsPage showToast={showToast} />} />
-          <Route path="/donate" element={<DonationScreen showToast={showToast} />} />
-          <Route path="/about" element={<AboutUs showToast={showToast} />} />
-          <Route path="/payment" element={<PaymentScreen showToast={showToast} />} />
-          <Route path="/create-campaign" element={<CampaignCreation01 showToast={showToast} />} />
-          <Route path="/campaign-creation-02" element={<CampaignCreation02 showToast={showToast} />} />
-          <Route path="/campaign-creation-03" element={<CampaignCreation03 showToast={showToast} />} />
-          <Route path="/campaign-creation-04" element={<CampaignCreation04 showToast={showToast} />} />
-          <Route path="/campaign-creation-05" element={<CampaignCreation05 showToast={showToast} />} />
-          <Route path="/campaign-submission" element={<CampaignSubmission showToast={showToast} />} />
-          <Route path="/campaign-deletion" element={<CampaignDeletion showToast={showToast} />} />
-          <Route path="/ProjectView" element={<ProjectView showToast={showToast} />} />
-          <Route path="/campaign-update" element={<CampaignUpdate showToast={showToast} />} />
-          <Route path="/user-profile" element={<UserProfileSettings showToast={showToast} />} />
-          <Route path="/my-campaigns" element={<MyCampaigns showToast={showToast} />} /> {/* New Route */}
+          <Route path="/privacy-policy" element={<PrivacyPolicy showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/terms-of-use" element={<TermsOfUse showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/cookie-policy" element={<CookiePolicy showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/trust-safety" element={<TrustSafety showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/faq" element={<FAQs showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/explore" element={<ExploreCampaigns showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/how-to" element={<GetStartedPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/contact" element={<ContactUsPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/donate" element={<DonationScreen showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/about" element={<AboutUs showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/payment" element={<PaymentScreen showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/create-campaign" element={<CampaignCreation01 showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-creation-02" element={<CampaignCreation02 showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-creation-03" element={<CampaignCreation03 showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-creation-04" element={<CampaignCreation04 showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-creation-05" element={<CampaignCreation05 showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-submission" element={<CampaignSubmission showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-deletion" element={<CampaignDeletion showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/ProjectView" element={<ProjectView showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/campaign-update" element={<CampaignUpdate showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/user-profile" element={<UserProfileSettings showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/my-campaigns" element={<MyCampaigns showSuccess={showSuccess} showError={showError} />} />
 
           {/* Admin Pages */}
-          <Route path="/admin-dashboard" element={<AdminDashboard showToast={showToast} />} />
-          <Route path="/admin/users" element={<UserManagement showToast={showToast} />} />
-          <Route path="/admin/donations" element={<DonationHistory showToast={showToast} />} />
-          <Route path="/admin/wallet" element={<WalletPage showToast={showToast} />} />
-          <Route path="/admin/campaigns" element={<CampaignsPage showToast={showToast} />} />
-          <Route path="/admin/verifications" element={<VerificationPage showToast={showToast} />} />
-          <Route path="/admin/feedbacks" element={<FeedbacksPage showToast={showToast} />} />
+          <Route path="/admin-dashboard" element={<AdminDashboard showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/users" element={<UserManagement showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/donations" element={<DonationHistory showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/wallet" element={<WalletPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/campaigns" element={<CampaignsPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/verifications" element={<VerificationPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/feedbacks" element={<FeedbacksPage showSuccess={showSuccess} showError={showError} />} />
           
-          
-          <Route path="/billing" element={<Billing showToast={showToast} />} /> {/* New Route */}
+          <Route path="/billing" element={<Billing showSuccess={showSuccess} showError={showError} />} />
 
           {/* Fallback for other routes */}
           <Route path="*" element={
             <div className="flex flex-col min-h-screen items-center justify-center">
-              {/* HeaderLayout doesn't directly need showToast prop as it's not triggering toasts */}
               <HeaderLayout />
               <h1 className="text-4xl font-bold text-gray-800">404 - Page Not Found</h1>
               <p className="text-gray-600 mt-4">The page you are looking for does not exist.</p>
@@ -132,15 +145,8 @@ function App() {
         <ChatWrapper />
       </Router>
 
-      {/* RENDER TOAST COMPONENT HERE, controlled by toast state */}
-      {toast.visible && (
-        <ToastNotification
-          message={toast.message}
-          type={toast.type}
-          onClose={hideToast}
-          duration={3000} // Set a default duration or pass from showToast if needed
-        />
-      )}
+      {/* ToastContainer must be rendered once at the root of your app */}
+      <ToastContainer />
     </UserProvider>
   );
 }

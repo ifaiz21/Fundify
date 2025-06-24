@@ -5,6 +5,7 @@ import { useState, useEffect } from "react" // Added useEffect
 import Footer from "../Layout/FooterLayout"
 import Header from "../Layout/HeaderLayout"
 import { useNavigate, useLocation } from "react-router-dom" // Added useLocation
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // Import toast functions
 
 const PaymentPage = () => {
   const navigate = useNavigate()
@@ -32,7 +33,7 @@ const PaymentPage = () => {
       console.log("PaymentPage received donation ID:", location.state.donationId)
     } else {
       // Handle case where donationId is not present (e.g., direct access or error)
-      alert("Donation ID not found. Please start a new donation.")
+      showErrorMessage("Donation ID not found. Please start a new donation.") // Replaced alert
       navigate("/donate") // Redirect back to donation screen
     }
   }, [location.state, navigate]) // Added navigate to dependency array
@@ -53,8 +54,8 @@ const PaymentPage = () => {
     e.preventDefault()
     // Basic validation before showing confirmation
     if (!formData.address || !formData.city || !formData.cardholderName || !formData.cardNumber) {
-        alert("Please fill in all required payment details.");
-        return;
+      showErrorMessage("Please fill in all required payment details."); // Replaced alert
+      return;
     }
     setShowConfirmation(true)
   }
@@ -64,18 +65,18 @@ const PaymentPage = () => {
     setIsProcessing(true) // Set loading to true
 
     if (!donationId) {
-        alert("Cannot process payment: Donation ID is missing.");
-        setIsProcessing(false);
-        navigate("/donate"); // Redirect if ID is missing
-        return;
+      showErrorMessage("Cannot process payment: Donation ID is missing."); // Replaced alert
+      setIsProcessing(false);
+      navigate("/donate"); // Redirect if ID is missing
+      return;
     }
 
     const token = getAuthToken();
     if (!token) {
-        alert("Authentication token missing. Please log in again.");
-        setIsProcessing(false);
-        navigate("/login");
-        return;
+      showErrorMessage("Authentication token missing. Please log in again."); // Replaced alert
+      setIsProcessing(false);
+      navigate("/login");
+      return;
     }
 
     // Simulate payment processing delay
@@ -93,18 +94,18 @@ const PaymentPage = () => {
         });
 
         if (response.ok) {
-            alert("Payment successful! Thank you for your donation.");
+            showSuccessMessage("Payment successful! Thank you for your donation."); // Replaced alert
             console.log("Donation status updated to completed.");
             // Redirect to Explore Campaigns or a success page
-            navigate("/explore"); 
+            navigate("/explore");
         } else {
             const errorData = await response.json();
-            alert(`Payment failed to confirm: ${errorData.message}`);
+            showErrorMessage(`Payment failed to confirm: ${errorData.message}`); // Replaced alert
             console.error("Failed to update donation status:", errorData);
             navigate("/donate"); // Redirect back to donation page on failure
         }
     } catch (error) {
-        alert("An error occurred during payment confirmation.");
+        showErrorMessage("An error occurred during payment confirmation."); // Replaced alert
         console.error("Payment confirmation error:", error);
         navigate("/donate"); // Redirect back to donation page on error
     } finally {
@@ -125,7 +126,7 @@ const PaymentPage = () => {
             {/* Left Column - Logo */}
             <div className="flex flex-col items-center ">
               <div className="w-64 h-64 mb-6">
-                <img src="./Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
+                <img src="./Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-64" />
               </div>
             </div>
 
@@ -396,4 +397,4 @@ const PaymentPage = () => {
   )
 }
 
-export default PaymentPage
+export default PaymentPage;

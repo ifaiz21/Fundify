@@ -1,92 +1,105 @@
-import React, { useState } from 'react';
+// src/Pages/HomePage/SubscribeBox.jsx
+import React, { useState, useEffect } from "react";
+import axios from 'axios'; // Import axios for API calls
 
-function SubscribeBox() {
+export default function SubscribeBox({ showToast }) { // Accepts showToast as a prop
   const [email, setEmail] = useState('');
-  const [isSubscribed, setIsSubscribed] = useState(false);
-  const [showSuccessMessage, setShowSuccessMessage] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [showNewsletterForm, setShowNewsletterForm] = useState(true);
+  const [loading, setLoading] = useState(false);
+  const [message, setMessage] = useState(null); // Local message state for feedback
+
+  // Effect to check sessionStorage on component mount
+  useEffect(() => {
+    if (sessionStorage.getItem('newsletterSubscribedThisSession') === 'true') {
+      setShowNewsletterForm(false);
+    }
+  }, []);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setErrorMessage(''); // Clear previous errors
-
-    if (!email) {
-      setErrorMessage('Please enter your email address.');
-      return;
-    }
+    setLoading(true);
+    setMessage(null); // Clear previous messages
 
     try {
-      // Simulate API call to your backend
-      // In a real application, you'd replace this with an actual axios.post or fetch call:
-      // await axios.post('/api/subscribe', { email });
-      console.log(`Subscribing with email: ${email}`);
-
-      // Simulate success after a short delay
-      await new Promise(resolve => setTimeout(resolve, 1000));
-
-      setIsSubscribed(true); // Mark as subscribed
-      setShowSuccessMessage(true); // Show success message
-
-      // Optionally, hide the success message after a few seconds
-      setTimeout(() => {
-        setShowSuccessMessage(false);
-      }, 5000); // Message disappears after 5 seconds
-
+      const response = await axios.post('http://localhost:5000/api/newsletter/subscribe', { email });
+      
+      if (response.status === 201) {
+        setMessage({ type: 'success', text: response.data.message || 'Successfully subscribed!' });
+        setShowNewsletterForm(false); // Hide the form on successful subscription
+        sessionStorage.setItem('newsletterSubscribedThisSession', 'true'); // Store flag in sessionStorage
+        if (showToast) showToast(response.data.message || 'Successfully subscribed!', 'success');
+      }
     } catch (error) {
-      console.error('Subscription failed:', error);
-      setErrorMessage('Subscription failed. Please try again.');
+      console.error("Newsletter subscription error:", error);
+      let errorMessage = 'Failed to subscribe. Please try again.';
+      if (error.response) {
+        if (error.response.status === 409) {
+          errorMessage = error.response.data.message || 'This email is already subscribed.';
+        } else {
+          errorMessage = error.response.data.message || errorMessage;
+        }
+      }
+      setMessage({ type: 'error', text: errorMessage });
+      if (showToast) showToast(errorMessage, 'error');
+    } finally {
+      setLoading(false);
+      setEmail(''); // Clear email input
     }
   };
 
-  if (showSuccessMessage) {
-    return (
-      <div className="bg-green-100 border border-green-400 text-green-700 px-4 py-3 rounded relative mb-4" role="alert">
-        <strong className="font-bold">Success!</strong>
-        <span className="block sm:inline ml-6">You have successfully subscribed to our newsletter.</span>
-      </div>
-    );
-  }
-
-  if (isSubscribed) {
-    // If subscribed and success message has faded, you might want to show nothing or a subtle message
-    return null; // Or return a simple "Thank You!" if desired after the success message fades
+  if (!showNewsletterForm) {
+    // If the form should be hidden (either subscribed or session storage flag set)
+    // You can optionally show a brief success message or nothing at all
+    if (message && message.type === 'success') {
+      return (
+        <section className="py-12 px-4">
+          <div className="max-w-xl mx-auto p-8 rounded-lg shadow-xl bg-green-100 text-green-800 text-center">
+            <p className="text-xl font-semibold">{message.text}</p>
+          </div>
+        </section>
+      );
+    }
+    return null; // Don't render anything if not showing the form and no success message
   }
 
   return (
-    <section className=" text-white py-12 px-4">
-    <div className="max-w-xl mx-auto p-8 rounded-lg shadow-xl" style={{ backgroundColor: '#4a5d45' }}>
-    <h1 className="text-3xl font-bold mb-4 text-white">Subscribe to Our Newsletter.</h1>
-    <p className="text-gray-200 mb-6 text-justify">Stay updated with Fundify's latest campaigns, success stories, and community news. Get insights into impactful projects and discover new ways to make a difference.</p>
+    <section className="py-12 px-4">
+      <div className="max-w-xl mx-auto p-8 rounded-lg shadow-xl" style={{ backgroundColor: '#4a5d45' }}>
+        <h2 className="text-3xl font-bold mb-4 text-white">
+          Subscribe to our newsletter.
+        </h2>
+        <p className="text-gray-200 mb-6 text-justify">
+          Stay updated with Fundify's latest campaigns, success stories, and community news. Get insights into impactful projects and discover new ways to make a difference.
+        </p>
+        
+        {message && (
+          <div className={`mb-4 p-3 rounded text-center ${
+            message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
+            {message.text}
+          </div>
+        )}
 
-    <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-        <label htmlFor="email" className="sr-only">Email Address</label>
-        <input
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+          <input
             type="email"
-            id="email"
-            className="w-full px-4 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4A5D45] focus:border-transparent"
             placeholder="Enter your email"
+            className="flex-grow p-3 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
-        />
-        </div>
-
-        {errorMessage && (
-        <p className="text-red-500 text-sm mb-4 text-center">{errorMessage}</p>
-        )}
-
-        <button
-        type="submit"
-        className="w-full bg-blue-600 text-white py-2 px-4 rounded-md font-semibold  hover:bg-blue-700 transition-colors duration-300"
-        style={{ backgroundColor: '#625d99' }}
-        >
-        Subscribe
-        </button>
-    </form>
-    </div>
+            disabled={loading}
+          />
+          <button
+            type="submit"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors"
+            style={{ backgroundColor: '#625d99' }}
+            disabled={loading}
+          >
+            {loading ? 'Subscribing...' : 'Subscribe'}
+          </button>
+        </form>
+      </div>
     </section>
   );
 }
-
-export default SubscribeBox;

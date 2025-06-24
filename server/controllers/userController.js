@@ -158,3 +158,20 @@ exports.toggleSavedCampaign = async (req, res) => {
       res.status(500).json({ message: 'Failed to update saved campaigns.', error: err.message });
     }
 };
+
+// New function to fetch the email of a user with the 'admin' role
+exports.getAdminEmail = async (req, res) => {
+    try {
+        // Find a user with the role 'admin' and select only their email
+        const adminUser = await User.findOne({ role: 'admin' }).select('email -_id'); // -_id to exclude the ID
+
+        if (!adminUser) {
+            return res.status(404).json({ message: 'Admin user not found.' });
+        }
+
+        res.status(200).json({ adminEmail: adminUser.email });
+    } catch (err) {
+        console.error('Error fetching admin email:', err);
+        res.status(500).json({ message: 'Server error while fetching admin email.', error: err.message });
+    }
+};

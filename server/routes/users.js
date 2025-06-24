@@ -1,3 +1,4 @@
+// server/routes/users.js
 const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
@@ -60,8 +61,6 @@ router.get('/profile', authMiddleware(), async (req, res) => {
     // Calling the controller function
     await userController.getProfile(req, res);
   } catch (err) {
-    // This catch block might not be strictly necessary if controller handles all responses,
-    // but kept for robustness.
     console.error('Error fetching user profile in route:', err);
     res.status(500).json({ message: 'Failed to fetch user profile', error: err.message });
   }
@@ -97,7 +96,6 @@ router.put('/profile-picture', authMiddleware(), upload.single('profilePicture')
     ).select('-password -verificationCode');
 
     if (!updatedUser) {
-      // Agar user na mile, uploaded file ko delete karein takay storage waste na ho
       fs.unlink(req.file.path, (err) => {
         if (err) console.error('Error deleting newly uploaded file after user not found:', req.file.path, err);
       });
@@ -139,5 +137,8 @@ router.delete('/profile-picture', authMiddleware(), async (req, res) => {
 
 // New route to toggle saved campaigns
 router.post('/saved-campaigns', authMiddleware(), userController.toggleSavedCampaign);
+
+// New route to fetch admin email (requires authentication for now, can be adjusted)
+router.get('/admin-email', authMiddleware(), userController.getAdminEmail);
 
 module.exports = router;

@@ -1,7 +1,9 @@
+// src/Pages/PasswordReset/EmailVerification.jsx
 import React, { useState, useRef, useEffect } from "react";
 import SideLayout from "../Layout/SideLayout";
 import { IoChevronBackOutline } from "react-icons/io5";
 import { useNavigate, useLocation } from "react-router-dom";
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // Import toast functions
 
 const EmailVerification = () => {
   const navigate = useNavigate();
@@ -9,7 +11,6 @@ const EmailVerification = () => {
   const [otp, setOtp] = useState(new Array(6).fill(""));
   const inputRefs = useRef([]);
   const [timeLeft, setTimeLeft] = useState(5 * 60);
-  //const [code, setCode] = useState("");
   const [loading, setLoading] = useState(false);
   const [resendLoading, setResendLoading] = useState(false);
 
@@ -70,14 +71,14 @@ const EmailVerification = () => {
       const data = await res.json();
 
       if (res.ok) {
-        alert("Email verified successfully!");
+        showSuccessMessage("Email verified successfully!"); // Replaced alert
         navigate("/password-reset", { state: { email } });
       } else {
-        alert(data.message || "Verification failed.");
+        showErrorMessage(data.message || "Verification failed."); // Replaced alert
       }
     } catch (error) {
       console.error("Verification error:", error);
-      alert("Something went wrong.");
+      showErrorMessage("Something went wrong."); // Replaced alert
     }finally {
       setLoading(false);
     }
@@ -100,13 +101,13 @@ const EmailVerification = () => {
 
       const data = await res.json();
       if (res.ok) {
-        alert("Verification code resent to your email.");
+        showSuccessMessage("Verification code resent to your email."); // Replaced alert
       } else {
-        alert(data.message || "Failed to resend code.");
+        showErrorMessage(data.message || "Failed to resend code."); // Replaced alert
       }
     } catch (error) {
       console.error("Resend error:", error);
-      alert("Something went wrong.");
+      showErrorMessage("Something went wrong."); // Replaced alert
     } finally {
       setResendLoading(false);
     }
@@ -242,7 +243,7 @@ const EmailVerification = () => {
         }
 
         .form-btn:hover:not(:disabled) { /* Hover effect for enabled button */
-          background-color: #008080; /* Darker teal on hover */
+          background-color: #3A4433; /* Darker teal on hover */
           box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
         }
 

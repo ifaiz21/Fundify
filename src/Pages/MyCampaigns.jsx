@@ -230,26 +230,26 @@ function MyCampaigns({ showToast }) {
               <table className="min-w-full divide-y divide-gray-200">
                 <thead className="bg-gray-50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Campaign Title
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Status
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Funds Raised
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Total Backers
                     </th>
                     {/* New header for Progress */}
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Progress
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Created Date
                     </th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider font-bold">
+                    <th scope="col" className="px-6 py-3 text-left text-xs  text-gray-500 uppercase tracking-wider font-bold">
                       Actions
                     </th>
                   </tr>

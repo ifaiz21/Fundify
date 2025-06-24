@@ -89,7 +89,7 @@ router.post('/', authMiddleware(), (req, res) => {
         title,
         description,
         mediaUrls: mediaUrls,
-        content,
+        story: content,
         status: 'Pending Review', // Default status for new submissions
       });
 
