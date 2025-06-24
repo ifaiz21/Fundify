@@ -1,4 +1,3 @@
-// src/Pages/Project_View.jsx
 "use client"
 
 import { useState, useEffect } from "react"
@@ -10,12 +9,12 @@ import { useUser } from '../context/UserContext'; // Import useUser for saved ca
 import { Heart } from 'lucide-react'; // Import Heart icon
 import { showSuccessMessage, showErrorMessage } from "../utils/toast" // Import toast functions directly
 
-function ProjectView() { // Removed showToast from props
+function ProjectView() {
   const [activeTab, setActiveTab] = useState("campaign")
   const [campaignData, setCampaignData] = useState(null)
   const [campaignUpdates, setCampaignUpdates] = useState([])
-  const [recentDonors, setRecentDonors] = useState([]) // New state for recent donors
-  const [totalBackersCount, setTotalBackersCount] = useState(0) // New state for total backers count
+  const [recentDonors, setRecentDonors] = useState([]) // State for recent donors
+  const [totalBackersCount, setTotalBackersCount] = useState(0) // State for total backers count
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
   const location = useLocation()
@@ -55,7 +54,6 @@ function ProjectView() { // Removed showToast from props
         }
       }
 
-      // NEW: Fetch recent donors and total backers
       const fetchRecentDonors = async () => {
         try {
           const response = await axios.get(`http://localhost:5000/api/donations/campaign/${campaignId}/recent?limit=3`) // Fetch top 3 recent donors
@@ -78,6 +76,7 @@ function ProjectView() { // Removed showToast from props
     }
   }, [campaignId, location.search])
 
+  // Formats currency to PKR
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -85,19 +84,20 @@ function ProjectView() { // Removed showToast from props
       maximumFractionDigits: 0,
     })
       .format(amount)
-      .replace("₹", "")
+      .replace("₹", "") // Removes the default Rupee symbol
   }
 
+  // Calculates campaign progress percentage
   const progress = campaignData ? Math.min(Math.round((campaignData.raised / campaignData.goalAmount) * 100), 100) : 0
 
-  // handleToggleSave function for saving/unsaving campaigns
+  // Handles saving/unsaving campaigns to user profile
   const handleToggleSave = async () => {
     if (!userProfile.isAuthenticated) {
-      showErrorMessage('Please log in to save campaigns.'); // Replaced showToast
+      showErrorMessage('Please log in to save campaigns.');
       return;
     }
     if (!campaignId) {
-        showErrorMessage('Campaign ID is missing. Cannot save.'); // Replaced showToast
+        showErrorMessage('Campaign ID is missing. Cannot save.');
         return;
     }
 
@@ -115,29 +115,29 @@ function ProjectView() { // Removed showToast from props
       if (response.ok) {
         const result = await response.json();
         if (result.saved) {
-          showSuccessMessage('Campaign saved successfully!'); // Replaced showToast
+          showSuccessMessage('Campaign saved successfully!');
           setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaignId] }));
         } else {
-          showSuccessMessage('Campaign unsaved.'); // Replaced showToast
+          showSuccessMessage('Campaign unsaved.');
           setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaignId) }));
         }
       } else {
         const errorData = await response.json();
-        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`); // Replaced showToast
+        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Error toggling saved campaign:', error);
-      showErrorMessage('An error occurred while saving/unsaving the campaign.'); // Replaced showToast
+      showErrorMessage('An error occurred while saving/unsaving the campaign.');
     }
   };
 
-
-  // DonorsSidebar component
+  // DonorsSidebar component (nested for readability, could be moved to separate file)
   const DonorsSidebar = () => (
     <div className="donors-sidebar">
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col items-center mb-4">
           <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+            {/* User icon SVG */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="32"
@@ -154,6 +154,7 @@ function ProjectView() { // Removed showToast from props
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
+          {/* Placeholder for organizer name */}
           <h3 className="text-lg font-bold">{campaignData ? campaignData.name : "Organizer Name"}</h3>
           <p className="text-sm text-gray-600">Project Founder</p>
         </div>
@@ -161,6 +162,7 @@ function ProjectView() { // Removed showToast from props
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex items-center mb-4">
+          {/* Users group icon SVG */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -186,7 +188,7 @@ function ProjectView() { // Removed showToast from props
           {recentDonors.length > 0 ? (
             recentDonors.map((donor, index) => (
               <div key={index} className="flex justify-between items-center">
-                <div className="font-medium text-lg">Rs</div>
+                <div className="font-medium text-lg">Rs</div> {/* Display "Rs" for Pakistani Rupees */}
                 <div className="text-right">
                   <div className="font-medium text-lg">{formatCurrency(donor.amount)}</div>
                   <div className="text-sm text-gray-500">{donor.name}</div>
@@ -200,7 +202,7 @@ function ProjectView() { // Removed showToast from props
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
-            onClick={() => showErrorMessage("Showing all donors for this project (functionality to be implemented).")} // Replaced alert
+            onClick={() => showErrorMessage("Showing all donors for this project (functionality to be implemented).")}
             className="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
             See all
           </button>
@@ -214,26 +216,30 @@ function ProjectView() { // Removed showToast from props
     </div>
   )
 
+  // Handles navigation to donation screen
   const handleBackThisProject = () => {
     if (campaignData && campaignData._id) {
       navigate("/donate", { state: { campaignId: campaignData._id } });
     } else {
-      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.") // Replaced showToast
+      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.")
     }
   };
 
+  // Handles sharing campaign link (copies to clipboard)
   const handleShare = () => {
     const campaignUrl = window.location.href;
-    navigator.clipboard.writeText(campaignUrl)
-      .then(() => {
-        showSuccessMessage("Campaign link copied to clipboard!"); // Use showSuccessMessage
-      })
-      .catch((err) => {
-        console.error("Failed to copy link:", err);
-        showErrorMessage("Failed to copy link. Please try again manually."); // Use showErrorMessage
-      });
+    // Using document.execCommand('copy') for better cross-browser support in some sandbox environments
+    const el = document.createElement('textarea');
+    el.value = campaignUrl;
+    document.body.appendChild(el);
+    el.select();
+    document.execCommand('copy');
+    document.body.removeChild(el);
+    showSuccessMessage("Campaign link copied to clipboard!");
   };
 
+
+  // Loading state UI
   if (loading) {
     return (
       <>
@@ -246,6 +252,7 @@ function ProjectView() { // Removed showToast from props
     )
   }
 
+  // Error state UI
   if (error) {
     return (
       <>
@@ -259,6 +266,7 @@ function ProjectView() { // Removed showToast from props
     )
   }
 
+  // No campaign data found UI
   if (!campaignData) {
     return (
       <>
@@ -271,27 +279,33 @@ function ProjectView() { // Removed showToast from props
     )
   }
 
+  // Main component rendering
   return (
     <>
       <HeaderLayout />
 
       <div className="project-view container mx-auto px-4 py-6">
+        {/* Campaign Title and Description */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">{campaignData.title}</h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
             <div className="lg:col-span-2">
+              {/* Main Campaign Image */}
               <img
-                src={campaignData.mediaUrls && campaignData.mediaUrls.length > 0 ? `http://localhost:5000${campaignData.mediaUrls[0]}` : "/placeholder.svg"}
+                src={campaignData.mediaUrls && campaignData.mediaUrls.length > 0 ? `http://localhost:5000${campaignData.mediaUrls[0]}` : "https://placehold.co/800x400/CCCCCC/333333?text=No+Image"}
                 alt={campaignData.title}
                 className="w-full h-auto rounded-md shadow-md mb-6"
+                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800x400/CCCCCC/333333?text=No+Image'; }} // Fallback image on error
               />
 
               <p className="text-gray-700 mb-4">{campaignData.description}</p>
 
+              {/* Campaign Meta Info */}
               <div className="flex items-center text-sm text-gray-600 mb-6">
                 <span>Created {new Date(campaignData.createdAt).toLocaleDateString()}</span>
                 <span className="mx-2">•</span>
                 <span className="flex items-center">
+                  {/* Location icon SVG */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     width="16"
@@ -312,6 +326,7 @@ function ProjectView() { // Removed showToast from props
               </div>
             </div>
 
+            {/* Campaign Summary Sidebar */}
             <div>
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="mb-4">
@@ -323,27 +338,31 @@ function ProjectView() { // Removed showToast from props
                   </div>
                 </div>
 
+                {/* Progress Bar */}
                 <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
                   <div className="bg-green-600 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
                 </div>
 
+                {/* Backers and Days Left */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
                     <div className="text-2xl font-bold">{totalBackersCount}</div> {/* Dynamic backers count */}
                     <div className="text-sm text-gray-600">backers</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">--</div> {/* Placeholder for days left */}
+                    <div className="text-2xl font-bold">--</div> {/* Placeholder for days left (not implemented in backend) */}
                     <div className="text-sm text-gray-600">days to go</div>
                   </div>
                 </div>
 
+                {/* Predicted Status */}
                 <div className="text-right mb-4">
                   <span className="text-sm">
                     Predicted Status: <span className="font-medium text-green-600">{campaignData.status}</span>
                   </span>
                 </div>
 
+                {/* Action Buttons */}
                 <button
                   onClick={handleBackThisProject}
                   className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200">
@@ -356,7 +375,7 @@ function ProjectView() { // Removed showToast from props
                   Share
                 </button>
 
-                {/* Add Save/Unsave Button */}
+                {/* Save/Unsave Button with Heart icon */}
                 <button
                   onClick={handleToggleSave}
                   className={`w-full mt-3 p-3 rounded-md flex items-center justify-center ${isCampaignSaved ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'} hover:opacity-80 transition-colors`}
@@ -369,7 +388,7 @@ function ProjectView() { // Removed showToast from props
             </div>
           </div>
 
-        {/* Campaign Tabs */}
+        {/* Campaign Tabs (Campaign and Updates) */}
         <div className="campaign-tabs bg-white rounded-md shadow-sm">
           <div className="border-b border-gray-200">
             <nav className="flex">
@@ -400,15 +419,20 @@ function ProjectView() { // Removed showToast from props
             {activeTab === "campaign" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  {/* Story Section */}
+                  {/* Story Section - Conditional Rendering */}
                   <div className="story-section">
                     <h2 className="text-xl font-bold mb-4">Story</h2>
-
-                    {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
-                        <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
+                    {campaignData.story ? ( // Check if story content exists
+                      <>
+                        {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
+                            <img src={`http://localhost:5000${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
+                        )}
+                        <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.story }}>
+                        </div>
+                      </>
+                    ) : (
+                      <p className="text-gray-500 italic">No story available for this campaign yet.</p> // Fallback message
                     )}
-                    <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.story }}>
-                    </div>
                   </div>
                 </div>
 
@@ -433,6 +457,7 @@ function ProjectView() { // Removed showToast from props
 
                           <div className="flex items-center mb-4">
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                              {/* User icon SVG for update author */}
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="20"
@@ -450,7 +475,7 @@ function ProjectView() { // Removed showToast from props
                               </svg>
                             </div>
                             <div>
-                              <div className="font-medium">{campaignData.name}</div>
+                              <div className="font-medium">{campaignData.name}</div> {/* Assuming campaignData.name is the creator of updates */}
                               <div className="text-xs text-gray-500">
                                 {new Date(update.createdAt).toLocaleDateString()}
                               </div>
