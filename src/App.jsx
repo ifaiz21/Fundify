@@ -50,6 +50,9 @@ import MyCampaigns from './Pages/MyCampaigns';
 //import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
+import KYCLivenessVerification from './Pages/KYC/KYCLivenessVerification'; // Already imported
+import KYCFormPage from './Pages/KYC/KYCFormPage'; // NEW Import
+import KYCDocumentUpload from './Pages/KYC/KYCDocumentUpload'; // NEW Import
 
 
 function App() {
@@ -122,6 +125,11 @@ function App() {
           <Route path="/campaign-update" element={<CampaignUpdate showSuccess={showSuccess} showError={showError} />} />
           <Route path="/user-profile" element={<UserProfileSettings showSuccess={showSuccess} showError={showError} />} />
           <Route path="/my-campaigns" element={<MyCampaigns showSuccess={showSuccess} showError={showError} />} />
+
+          {/* NEW KYC Routes */}
+          <Route path="/kyc-form" element={<KYCFormPage showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/kyc-document-upload" element={<KYCDocumentUpload showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/kyc-liveness-verification" element={<KYCLivenessVerification showSuccess={showSuccess} showError={showError} />} />
 
           {/* Admin Pages */}
           <Route path="/admin-dashboard" element={<AdminDashboard showSuccess={showSuccess} showError={showError} />} />

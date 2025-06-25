@@ -161,8 +161,9 @@ exports.getAllCampaigns = async (req, res) => {
             query.status = { $in: ['Active', 'Approved'] };
         }
 
-        // Find campaigns based on the constructed query
-        const campaigns = await Campaign.find(query);
+        // Find campaigns based on the constructed query and populate the creator's name
+        const campaigns = await Campaign.find(query)
+                                        .populate('creator', 'name'); // Populate 'creator' field and select only 'name'
 
         // Calculate and fetch overall campaign statistics (these are for the pie chart and stats section)
         const stats = await calculateCampaignStats();

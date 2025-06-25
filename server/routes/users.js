@@ -8,8 +8,8 @@ const path = require('path');
 const fs = require('fs');
 const userController = require('../controllers/userController'); // Import userController
 
-// --- Multer Storage Setup ---
-const storage = multer.diskStorage({
+// --- Multer Storage Setup for Profile Pictures ---
+const profilePicStorage = multer.diskStorage({
   destination: (req, file, cb) => {
     const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'profile_pictures');
     fs.mkdirSync(uploadPath, { recursive: true });
@@ -20,17 +20,17 @@ const storage = multer.diskStorage({
   }
 });
 
-const fileFilter = (req, file, cb) => {
+const profilePicFileFilter = (req, file, cb) => {
   if (file.mimetype.startsWith('image/')) {
     cb(null, true);
   } else {
-    cb(new Error('Only image files are allowed!'), false);
+    cb(new Error('Only image files are allowed for profile pictures!'), false);
   }
 };
 
-const upload = multer({
-  storage: storage,
-  fileFilter: fileFilter,
+const uploadProfilePicture = multer({
+  storage: profilePicStorage,
+  fileFilter: profilePicFileFilter,
   limits: { fileSize: 5 * 1024 * 1024 } // 5MB limit
 });
 
@@ -55,6 +55,36 @@ const deleteOldProfilePicture = async (userId) => {
   }
 };
 
+// --- Multer Storage Setup for KYC Documents ---
+const kycDocumentStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const uploadPath = path.join(__dirname, '..', 'public', 'uploads', 'kyc_documents');
+    fs.mkdirSync(uploadPath, { recursive: true });
+    cb(null, uploadPath);
+  },
+  filename: (req, file, cb) => {
+    // Prefix with user ID to categorize documents per user
+    cb(null, `kyc-${req.user.id}-${Date.now()}-${file.originalname}`);
+  }
+});
+
+const kycDocumentFileFilter = (req, file, cb) => {
+  // Allow images (JPEG, PNG) and PDFs for KYC documents
+  if (file.mimetype.startsWith('image/') || file.mimetype === 'application/pdf') {
+    cb(null, true);
+  } else {
+    cb(new Error('Only image (JPG/PNG) or PDF files are allowed for KYC documents!'), false);
+  }
+};
+
+// Use .array() for multiple files (e.g., ID front/back, proof of address)
+// Adjust field names as per your frontend's FormData append calls
+const uploadKYCDocuments = multer({
+  storage: kycDocumentStorage,
+  fileFilter: kycDocumentFileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB limit per file for documents
+}).array('kycDocuments', 5); // 'kycDocuments' is the field name, allow up to 5 files
+
 // GET /api/users/profile - Authenticated user ki profile fetch karna
 router.get('/profile', authMiddleware(), async (req, res) => {
   try {
@@ -78,7 +108,7 @@ router.put('/profile', authMiddleware(), async (req, res) => {
 });
 
 // PUT /api/users/profile-picture - Authenticated user ki profile picture update karna
-router.put('/profile-picture', authMiddleware(), upload.single('profilePicture'), async (req, res) => {
+router.put('/profile-picture', authMiddleware(), uploadProfilePicture.single('profilePicture'), async (req, res) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No profile picture file provided.' });
@@ -133,6 +163,34 @@ router.delete('/profile-picture', authMiddleware(), async (req, res) => {
     console.error('Error removing user profile picture:', err);
     res.status(500).json({ message: 'Failed to remove profile picture', error: err.message });
   }
+});
+
+// --- NEW KYC Document Submission Route ---
+router.post('/kyc/submit-documents', authMiddleware(), (req, res, next) => {
+  uploadKYCDocuments(req, res, async (err) => {
+    if (err instanceof multer.MulterError) {
+      // A Multer error occurred when uploading.
+      return res.status(400).json({ message: `File upload error: ${err.message}` });
+    } else if (err) {
+      // An unknown error occurred when uploading.
+      return res.status(500).json({ message: `An unexpected error occurred during file upload: ${err.message}` });
+    }
+    // Files are uploaded, now call the controller
+    try {
+      await userController.submitKYCDocuments(req, res);
+    } catch (controllerErr) {
+      console.error('Error in userController.submitKYCDocuments:', controllerErr);
+      // Clean up uploaded files if controller fails
+      if (req.files && Array.isArray(req.files)) {
+        req.files.forEach(file => {
+          fs.unlink(file.path, (unlinkErr) => {
+            if (unlinkErr) console.error('Error cleaning up file:', file.path, unlinkErr);
+          });
+        });
+      }
+      res.status(500).json({ message: 'Failed to process KYC submission', error: controllerErr.message });
+    }
+  });
 });
 
 // New route to toggle saved campaigns

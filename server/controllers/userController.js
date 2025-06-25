@@ -3,7 +3,8 @@ const User = require('../models/User');
 const Campaign = require('../models/Campaign'); // Import Campaign model
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken'); // Assuming JWT might be needed for some profile operations or if token is generated here
-// const upload = require('../middleware/multer'); // Agar Multer yahan use hota hai, warna route mein handle hoga
+const fs = require('fs'); // For file system operations, e.g., deleting failed uploads
+const path = require('path'); // For path operations
 
 // Get all users (Admin only)
 exports.getAllUsers = async (req, res) => {
@@ -173,5 +174,60 @@ exports.getAdminEmail = async (req, res) => {
     } catch (err) {
         console.error('Error fetching admin email:', err);
         res.status(500).json({ message: 'Server error while fetching admin email.', error: err.message });
+    }
+};
+
+// --- NEW FUNCTION: Submit KYC Documents ---
+exports.submitKYCDocuments = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const user = await User.findById(userId);
+
+        if (!user) {
+            // If user not found, delete uploaded files to prevent junk data
+            if (req.files && Array.isArray(req.files)) {
+                req.files.forEach(file => {
+                    fs.unlink(file.path, (err) => {
+                        if (err) console.error('Error cleaning up file for unfound user:', file.path, err);
+                    });
+                });
+            }
+            return res.status(404).json({ message: 'User not found.' });
+        }
+
+        if (!req.files || req.files.length === 0) {
+            return res.status(400).json({ message: 'No KYC documents provided.' });
+        }
+
+        // Extract paths of uploaded files
+        const documentPaths = req.files.map(file => `/uploads/kyc_documents/${file.filename}`);
+
+        // In a real application, you might want to store these paths in the User model
+        // For example, by adding a new field like 'kycDocuments': [{ path: String, uploadedAt: Date }]
+        // user.kycDocuments = user.kycDocuments.concat(documentPaths.map(p => ({ path: p, uploadedAt: new Date() })));
+        // For now, we are just updating the kycStatus.
+
+        // Update KYC status to 'Pending Review'
+        user.kycStatus = 'Pending Review';
+        await user.save();
+
+        res.status(200).json({
+            message: 'KYC documents submitted successfully. Your status is now Pending Review.',
+            kycStatus: user.kycStatus,
+            // You might return documentPaths here for confirmation, but avoid sensitive data
+            // uploadedDocuments: documentPaths
+        });
+
+    } catch (err) {
+        console.error('Error submitting KYC documents:', err);
+        // If an error occurs during processing, clean up uploaded files
+        if (req.files && Array.isArray(req.files)) {
+            req.files.forEach(file => {
+                fs.unlink(file.path, (unlinkErr) => {
+                    if (unlinkErr) console.error('Error cleaning up file after KYC submission failure:', file.path, unlinkErr);
+                });
+            });
+        }
+        res.status(500).json({ message: 'Failed to submit KYC documents.', error: err.message });
     }
 };

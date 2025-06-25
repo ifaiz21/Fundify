@@ -5,6 +5,7 @@ import { useState, useEffect } from "react"
 import Sidebar from "./SideBar"
 import { Search, ChevronLeft, ChevronRight, ChevronDown } from "lucide-react"
 import axios from "axios"
+import { useNavigate } from "react-router-dom"; // Import useNavigate
 
 const VerificationPage = () => {
   const [campaigns, setCampaigns] = useState([]) // State for fetched campaigns (pending)
@@ -20,6 +21,7 @@ const VerificationPage = () => {
   const [currentPage, setCurrentPage] = useState(1)
   const [selectedMonth, setSelectedMonth] = useState("All")
   const itemsPerPage = 8
+  const navigate = useNavigate(); // Initialize useNavigate
 
   // Function to fetch campaigns and stats
   const fetchCampaignsAndStats = async () => {
@@ -41,17 +43,10 @@ const VerificationPage = () => {
       
       const fetchedCampaigns = response.data?.campaigns || [];
 
-      // Optionally, fetch overall stats from another endpoint if available,
-      // or calculate them from the fetched campaigns.
-      // For now, let's calculate stats from the fetched pending campaigns and assume total/approved/rejected come from a separate source
-      // if the backend doesn't provide them with this specific endpoint.
-      // Assuming for now that the backend endpoint for 'Pending Review' *only* returns pending campaigns.
-      // If `response.data` contains `stats`, we'll use it, otherwise, we'll make a more comprehensive call for stats.
-      
       // A more robust approach might be to have a dedicated endpoint for overall stats.
       // For this implementation, we will mock the stats based on the pending campaigns count,
       // as the provided code did not detail the source of `response.data?.stats` for this endpoint.
-      // If the backend `campaigns?status=Pending Review` also returns all stats, this part can be simplified.
+      // If the backend `campaigns?status=Pending Review` also returns full stats, this part can be simplified.
       // Let's assume the backend also sends full stats with this request, as per the original code's assumption.
       const fetchedStats = response.data?.stats || { 
           total: fetchedCampaigns.length, // Placeholder, ideally from backend for total campaigns
@@ -131,11 +126,18 @@ const VerificationPage = () => {
     }
   };
 
+  // Handler for "View Campaign" button
+  const handleViewCampaign = (campaignId) => {
+    navigate(`/ProjectView?id=${campaignId}`);
+  };
+
 
   // Filtering logic
   const filteredVerifications = campaigns.filter((campaign) => {
+    // Ensure campaign.creator and campaign.creator.name exist before accessing
+    const organizerName = campaign.creator?.name || ''; 
     const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                          campaign.name.toLowerCase().includes(searchQuery.toLowerCase());
+                          organizerName.toLowerCase().includes(searchQuery.toLowerCase());
     
     // Filter by month if selectedMonth is not "All"
     const campaignMonth = new Date(campaign.createdAt).toLocaleString('default', { month: 'long' });
@@ -375,7 +377,7 @@ const VerificationPage = () => {
                     <th className="px-6 py-3 font-bold">Description</th>
                     <th className="px-6 py-3 font-bold">Submission Date</th>
                     <th className="px-10 py-3 font-bold">Status</th>
-                    <th className="px-20 py-3 font-bold">Action</th>
+                    <th className="px-20 py-3 text-center font-bold">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
@@ -383,7 +385,8 @@ const VerificationPage = () => {
                     currentVerifications.map((campaign) => (
                       <tr key={campaign._id} className="hover:bg-gray-50 transition-colors">
                         <td className="px-6 py-4 text-sm font-medium text-gray-900">{campaign.title}</td>
-                        <td className="px-6 py-4 text-sm text-gray-700">{campaign.name}</td>
+                        {/* Changed campaign.name to campaign.creator.name */}
+                        <td className="px-6 py-4 text-sm text-gray-700">{campaign.creator?.name || 'N/A'}</td> 
                         <td className="px-6 py-4 text-sm text-gray-700 max-w-xs overflow-hidden text-ellipsis whitespace-nowrap" title={campaign.description}>{campaign.description}</td> {/* Added title attribute */}
                         <td className="px-6 py-4 text-sm text-gray-700">{new Date(campaign.createdAt).toLocaleDateString()}</td>
                         <td className="px-6 py-4">
@@ -393,18 +396,25 @@ const VerificationPage = () => {
                             {campaign.status}
                           </span>
                         </td>
-                        <td className="px-6 py-4">
+                        <td className="px-2 py-0.5">
                           {campaign.status === "Pending Review" ? (
                             <div className="flex space-x-2">
+                              {/* New View Campaign Button */}
+                              <button
+                                onClick={() => handleViewCampaign(campaign._id)}
+                                className="px-2 py-0.5 text-xs rounded-full bg-blue-500 text-white hover:bg-blue-600 transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-blue-400 focus:ring-opacity-75 shadow-sm"
+                              >
+                                View Campaign
+                              </button>
                               <button
                                 onClick={() => handleApproveReject(campaign._id, "approve")}
-                                className="px-4 py-2 text-sm rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 shadow-sm"
+                                className="px-2 py-0.5 text-xs rounded-full bg-green-500 text-white hover:bg-green-600 transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-green-400 focus:ring-opacity-75 shadow-sm"
                               >
                                 Approve
                               </button>
                               <button
                                 onClick={() => handleApproveReject(campaign._id, "reject")}
-                                className="px-4 py-2 text-sm rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 shadow-sm"
+                                className="px-2 py-0.5 text-xs rounded-full bg-red-500 text-white hover:bg-red-600 transition-colors transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-red-400 focus:ring-opacity-75 shadow-sm"
                               >
                                 Reject
                               </button>
