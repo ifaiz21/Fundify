@@ -1,6 +1,6 @@
 // src/Pages/CampaignsCreation/CampUpdate.jsx
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react"
 import { useLocation, useNavigate } from "react-router-dom"
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
@@ -11,7 +11,9 @@ const CampaignUpdate = () => {
 
   // Get the full campaign data passed from CampCreation05.jsx
   // It should be in location.state.campaign
-  const initialCampaignData = location.state?.campaign || {};
+  const initialCampaignData = useMemo(() => {
+    return location.state?.campaign || {};
+  }, [location.state?.campaign]); // Dependency for useMemo: Only re-create if location.state.campaign changes
 
   // Initialize local state with existing campaign data
   const [title, setTitle] = useState(initialCampaignData.campaignTitle || initialCampaignData.title || "");
