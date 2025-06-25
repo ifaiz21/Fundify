@@ -1,9 +1,7 @@
-// src/Pages/KYCLivenessVerification.jsx
+// src/Pages/KYC/KYCLivenessVerification.jsx
 "use client";
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-// import HeaderLayout from './Layout/HeaderLayout'; // Removed
-// import FooterLayout from './Layout/FooterLayout'; // Removed
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 
 function KYCLivenessVerification() {
@@ -67,27 +65,38 @@ function KYCLivenessVerification() {
     }
 
     setLoading(true);
-    // In a real application, you would send the `capturedImage` data (base64 string)
-    // to your backend for liveness detection and KYC verification.
-    // This is a placeholder for the API call.
+
+    // --- START OF CHANGES ---
+    const token = localStorage.getItem('token'); // Retrieve the authentication token
+    if (!token) {
+      showErrorMessage("Authentication required. Please log in.");
+      navigate("/login"); // Redirect to login if no token is found
+      setLoading(false);
+      return;
+    }
+    // --- END OF CHANGES ---
+
     try {
-      // Example: Convert base64 to Blob for FormData if needed, or send as is
       const blob = await fetch(capturedImage).then(res => res.blob());
       const formData = new FormData();
       formData.append('livenessImage', blob, 'liveness.jpeg');
-      formData.append('userId', 'USER_ID_HERE'); // You'll need to get the actual user ID
+      // The backend uses req.user.id from the token, so you don't need to append userId here.
+      // If your backend specifically expects a userId field on formData, you would get it from a user context or similar.
+      // formData.append('userId', 'USER_ID_HERE');
 
-      // Replace with your actual backend endpoint for KYC submission
       const response = await fetch('http://localhost:5000/api/users/kyc/submit-liveness', {
         method: 'POST',
-        // No 'Content-Type' header needed for FormData; browser sets it
+        // --- START OF CHANGES ---
+        headers: {
+          'Authorization': `Bearer ${token}`, // Add the Authorization header
+        },
+        // --- END OF CHANGES ---
         body: formData,
       });
 
       if (response.ok) {
         showSuccessMessage("Liveness image submitted for verification!");
-        // Update user's KYC status to 'Pending Review' in frontend context or re-fetch profile
-        // navigate('/user-profile', { state: { kycStatusUpdated: true } });
+        navigate('/user-profile'); // Navigate to user profile or a success page
       } else {
         const errorData = await response.json();
         showErrorMessage(`Verification failed: ${errorData.message || 'Unknown error'}`);

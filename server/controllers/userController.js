@@ -231,3 +231,50 @@ exports.submitKYCDocuments = async (req, res) => {
         res.status(500).json({ message: 'Failed to submit KYC documents.', error: err.message });
     }
 };
+
+// --- START OF NEW CODE FOR LIVENESS VERIFICATION CONTROLLER ---
+exports.submitKYCLiveness = async (req, res) => {
+  try {
+    const userId = req.user.id; // User ID from authMiddleware
+    // Multer places the single file on req.file
+    if (!req.file) {
+      return res.status(400).json({ message: 'No liveness image file provided.' });
+    }
+
+    const livenessImagePath = `/uploads/kyc_liveness/${req.file.filename}`;
+
+    // Find the user and update their KYC details
+    const updatedUser = await User.findByIdAndUpdate(
+      userId,
+      {
+        $set: {
+          'kyc.livenessImagePath': livenessImagePath, // Store the path to the liveness image
+          'kyc.status': 'Pending Review' // Update KYC status
+        }
+      },
+      { new: true, runValidators: true } // Return the updated document and run schema validators
+    ).select('-password -verificationCode'); // Exclude sensitive info from the response
+
+    if (!updatedUser) {
+      // If user not found, delete the uploaded file to prevent junk data
+      fs.unlink(req.file.path, (err) => {
+        if (err) console.error('Error deleting liveness image after user not found:', req.file.path, err);
+      });
+      return res.status(404).json({ message: 'User not found for liveness verification update.' });
+    }
+
+    res.status(200).json({
+      message: 'Liveness image submitted successfully for verification!',
+      user: updatedUser // Return updated user object
+    });
+  } catch (error) {
+    console.error('Error in submitKYCLiveness controller:', error);
+    // If an error occurs during processing or DB update, clean up the uploaded file
+    if (req.file) {
+      fs.unlink(req.file.path, (unlinkErr) => {
+        if (unlinkErr) console.error('Error cleaning up file after controller error:', req.file.path, unlinkErr);
+      });
+    }
+    res.status(500).json({ message: 'Failed to process KYC liveness submission', error: error.message });
+  }
+};

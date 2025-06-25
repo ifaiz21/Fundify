@@ -71,8 +71,8 @@ const KYCDocumentUpload = () => {
 
     setLoading(true);
     const formData = new FormData();
-    formData.append('frontId', frontIdFile);
-    formData.append('backId', backIdFile);
+    formData.append('kycDocuments', frontIdFile);
+    formData.append('kycDocuments', backIdFile);
     formData.append('kycStatus', 'Pending Review'); // Update KYC status on submission
 
     const token = localStorage.getItem('token');
@@ -86,7 +86,7 @@ const KYCDocumentUpload = () => {
     try {
       // This endpoint needs to be created on the backend to handle file uploads
       // and update the user's KYC details with document paths.
-      const response = await axios.put("http://localhost:5000/api/users/kyc-documents", formData, {
+      const response = await axios.post("http://localhost:5000/api/users/kyc/submit-documents", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,
