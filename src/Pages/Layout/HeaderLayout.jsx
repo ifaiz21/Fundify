@@ -8,7 +8,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
   const [logoutMessage, setLogoutMessage] = useState("");
-  const [message, setMessage] = useState(""); // Assuming 'message' is for general notifications
+  const [message, ] = useState(""); // Assuming 'message' is for general notifications
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -85,7 +85,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
             <Link to="/" className="hover:text-[#485842] transition duration-300">Home</Link>
             {!hideDonate && (
               // Modified Donate Link to use onClick handler
-              <a href="#" onClick={handleDonateClick} className="hover:underline">Donate</a>
+              <a href="/explore" onClick={handleDonateClick} className="hover:underline">Donate</a>
             )}
             {!hideAboutUs && (
               <Link to="/about" className="hover:underline">About Us</Link>

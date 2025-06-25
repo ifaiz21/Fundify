@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import Sidebar from "./SideBar"
-import { Users, DollarSign, Flag, Bell, Upload, Download } from "lucide-react"
+import { Users, DollarSign, Flag, Bell, Download } from "lucide-react"
 import axios from 'axios';
 
 const AdminDashboard = () => {

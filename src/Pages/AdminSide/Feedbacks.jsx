@@ -108,7 +108,7 @@ const FeedbacksPage = () => {
   }, []); // Empty dependency array means this runs once on mount and cleans up on unmount
 
 
-  const totalItems = allFeedbacks.length; // Use the dynamically fetched feedbacks
+ // const totalItems = allFeedbacks.length; // Use the dynamically fetched feedbacks
   // Filter feedbacks based on search query
   const filteredFeedbacks = allFeedbacks.filter(
     (feedback) =>

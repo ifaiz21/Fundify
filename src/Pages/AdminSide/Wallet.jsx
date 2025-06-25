@@ -1,6 +1,7 @@
 "use client"
+// rc\Pages\AdminSide\Wallet.jsx
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo } from "react" // <-- Make sure to import useMemo
 import Sidebar from "./SideBar"
 import { Search, X } from "lucide-react"
 
@@ -16,8 +17,10 @@ const WalletPage = () => {
     campaignsFailed: "3",
   }
 
-  // Sample transaction data
-  const allTransactions = [
+  // Sample transaction data - CORRECTED
+  // Wrap this array in useMemo because it's a fixed data set.
+  // The empty dependency array `[]` means it's created only once.
+  const allTransactions = useMemo(() => [
     {
       id: 1,
       transactionId: "#9328792374",
@@ -116,7 +119,7 @@ const WalletPage = () => {
       amount: "10,000 Pkr",
       status: "Complete",
     },
-  ]
+  ], []); // Empty dependency array for useMemo as this data is static.
 
   // State for transactions and filters
   const [transactions, setTransactions] = useState(allTransactions)
@@ -149,7 +152,7 @@ const WalletPage = () => {
     }
 
     setTransactions(filtered)
-  }, [timeFilter, searchQuery])
+  }, [allTransactions, timeFilter, searchQuery])
 
   const handleSearch = (e) => {
     setSearchQuery(e.target.value)

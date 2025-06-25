@@ -3,7 +3,7 @@ import { GoogleLogin } from '@react-oauth/google';
 
 const GoogleSignUpButton = ({ onGoogleSuccess, buttonText = "Sign up with Google" }) => {
 
-  const [loadingGoogleAuth, setLoadingGoogleAuth] = useState(false);
+  const [, setLoadingGoogleAuth] = useState(false);
   const [error, setError] = useState(null);
 
   const handleGoogleSuccess = async (credentialResponse) => {

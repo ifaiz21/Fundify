@@ -81,24 +81,12 @@ const CampaignsPage = () => {
     setCampaigns(transformedCampaigns)
   }
 
-  // Campaign statistics (Backend data ke mutabiq calculate karein)
-  const campaignStats = campaigns.reduce((acc, campaign) => {
-    acc.total += 1;
-    if (campaign.status === 'Active' || campaign.status === 'Approved') {
-      acc.approved += 1;
-    } else if (campaign.status === 'Rejected' || campaign.status === 'Unactive' || campaign.status === 'Inactive') {
-      acc.rejected += 1;
-    } else if (campaign.status === 'Pending Review' || campaign.status === 'Pending' || campaign.status === 'Draft') {
-      acc.pending += 1;
-    }
-    return acc;
-  }, { total: 0, approved: 0, rejected: 0, pending: 0 });
 
   useEffect(() => {
     fetchCampaigns()
     const interval = setInterval(() => fetchCampaigns(true), 30000)
     return () => clearInterval(interval)
-  }, [])
+  }, )
 
   const filteredCampaigns = campaigns.filter(
     (campaign) =>

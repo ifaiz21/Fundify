@@ -51,7 +51,7 @@ const DonationHistory = () => {
 
   const itemsPerPage = 8;
   const totalItems = filteredDonations.length;
-  const totalPages = Math.ceil(totalItems / itemsPerPage);
+ // const totalPages = Math.ceil(totalItems / itemsPerPage);
   const startIndex = (currentPage - 1) * itemsPerPage;
   const endIndex = startIndex + itemsPerPage;
   const currentDonations = filteredDonations.slice(startIndex, endIndex);

@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from '../../context/UserContext';
-import { ToastNotification } from "../..//components/ToastNotification"; // Assuming ToastNotification is available globally or can be imported here
+// import { ToastNotification } from "../..//components/ToastNotification"; // Assuming ToastNotification is available globally or can be imported here
 
 export default function Header({ hideHome }) {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -83,7 +83,7 @@ const dropdownRef = useRef(null);
               <a href="/" className="text-white hover:text-gray-300">Home</a>
             )}
             {/* Modified Donate Link */}
-            <a href="#" onClick={handleDonateClick} className="text-white hover:text-gray-300">Donate</a>
+            <a href="/explore" onClick={handleDonateClick} className="text-white hover:text-gray-300">Donate</a>
             <a href="/about" className="text-white hover:text-gray-300">About Us</a>
           </nav>
         </div>

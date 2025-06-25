@@ -4,11 +4,11 @@
 import { useState } from "react"
 import Header from "../Layout/HeaderLayout" // This will now receive profile pic from context
 import Footer from "../Layout/FooterLayout"
-import { useNavigate } from "react-router-dom"
+//import { useNavigate } from "react-router-dom"
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // Import toast functions
 
 const ContactUsPage = () => { // Removed showToast prop
-  const navigate = useNavigate()
+  //const navigate = useNavigate()
   const [showSubmitConfirmation, setShowSubmitConfirmation] = useState(false)
   const [formData, setFormData] = useState({
     name: "",

@@ -9,7 +9,7 @@ import { io } from 'socket.io-client'; // This import is correct for a package
 
 
 const UserManagement = () => {
-    const [allUsers, setAllUsers] = useState([]);
+    const [, setAllUsers] = useState([]);
     const [campaignCreators, setCampaignCreators] = useState([]);
     const [backers, setBackers] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -174,13 +174,13 @@ const UserManagement = () => {
     }
 
     const totalItemsCreators = filteredCreators.length
-    const totalPagesCreators = Math.ceil(totalItemsCreators / itemsPerPage)
+    //const totalPagesCreators = Math.ceil(totalItemsCreators / itemsPerPage)
     const startIndexCreators = (creatorsPage - 1) * itemsPerPage
     const endIndexCreators = Math.min(startIndexCreators + itemsPerPage, totalItemsCreators)
     const currentCreators = filteredCreators.slice(startIndexCreators, endIndexCreators)
 
     const totalItemsBackers = filteredBackers.length
-    const totalPagesBackers = Math.ceil(totalItemsBackers / itemsPerPage)
+    //const totalPagesBackers = Math.ceil(totalItemsBackers / itemsPerPage)
     const startIndexBackers = (backersPage - 1) * itemsPerPage
     const endIndexBackers = Math.min(startIndexBackers + itemsPerPage, totalItemsBackers)
     const currentBackers = filteredBackers.slice(startIndexBackers, endIndexBackers)
