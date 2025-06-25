@@ -370,12 +370,12 @@ const VerificationPage = () => {
               <table className="min-w-full divide-y divide-gray-200"> {/* Added min-w-full and divide-y */}
                 <thead className="bg-gray-50">
                   <tr className="text-left text-xs text-gray-500 uppercase tracking-wider"> {/* Adjusted text size and styling */}
-                    <th className="px-6 py-3 font-medium">Campaign Title</th>
-                    <th className="px-6 py-3 font-medium">Organizer Name</th>
-                    <th className="px-6 py-3 font-medium">Description</th>
-                    <th className="px-6 py-3 font-medium">Submission Date</th>
-                    <th className="px-6 py-3 font-medium">Status</th>
-                    <th className="px-6 py-3 font-medium">Action</th>
+                    <th className="px-6 py-3 font-bold">Campaign Title</th>
+                    <th className="px-6 py-3 font-bold">Organizer Name</th>
+                    <th className="px-6 py-3 font-bold">Description</th>
+                    <th className="px-6 py-3 font-bold">Submission Date</th>
+                    <th className="px-10 py-3 font-bold">Status</th>
+                    <th className="px-20 py-3 font-bold">Action</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">

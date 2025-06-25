@@ -25,7 +25,9 @@ function ConditionalChatWrapper() {
     '/admin/campaigns',
     '/admin/verifications',
     '/admin/feedbacks',
-    '/billing' // Add billing if you want to exclude it too
+    '/billing', // Add billing if you want to exclude it too
+    '/campaign-submission',
+    '/campaign-deletion'
   ];
 
   // Check if the current path is in the excluded list

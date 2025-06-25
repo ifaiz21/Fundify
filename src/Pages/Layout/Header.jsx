@@ -100,7 +100,7 @@ const dropdownRef = useRef(null);
               {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full flex items-center justify-center"
+                className="w-10 h-10 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300"
               >
                 {loadingUserContext ? (
                   <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
@@ -119,7 +119,7 @@ const dropdownRef = useRef(null);
 
                   {showDropdown && (
                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
-                      <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-gray-100 hover:text-[#4A5D45] transition-colors duration-200">
+                      <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200">
                         My Profile
                       </a>
                       <button

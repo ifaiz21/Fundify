@@ -249,7 +249,7 @@ export default function ExploreCampaigns() { // Removed showToast prop
     <main>
       <HeaderLayout />
       <div className="max-w-7xl mx-auto px-4 py-12 mt-2">
-        <h2 className="text-4xl font-bold mb-6 mt-2 text-[#4A5D45] text-center">Explore Campaigns</h2>
+        <h2 className="text-5xl font-bold mb-6 mt-2 text-[#4A5D45] text-center">Explore Campaigns</h2>
 
         {/* Message for donation selection mode */}
         {isSelectForDonationMode && (
