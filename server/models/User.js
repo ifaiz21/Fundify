@@ -2,13 +2,15 @@
 const mongoose = require('mongoose');
 
 const userSchema = new mongoose.Schema({
-  name: { type: String, required: true},
-  email: { type: String, required: true, unique: true},
-  password: { type: String, required: function() {
-    return this.registrationMethod === 'email' || (!this.googleId && !this.registrationMethod);
-  },
-  minlength: [6, 'Password must be at least 6 characters long'],
-  select: false // Do not return password by default on queries
+  name: { type: String, required: true },
+  email: { type: String, required: true, unique: true },
+  password: {
+    type: String,
+    required: function() {
+      return this.registrationMethod === 'email' || (!this.googleId && !this.registrationMethod);
+    },
+    minlength: [6, 'Password must be at least 6 characters long'],
+    select: false // Do not return password by default on queries
   },
   role: { type: String, default: 'user' },
   verified: { type: Boolean, default: false },
@@ -16,8 +18,7 @@ const userSchema = new mongoose.Schema({
 
   // --- New fields for Google Sign-in ---
   googleId: { type: String, unique: true, sparse: true },
-  registrationMethod: { type: String, enum: ['email', 'google'], default: 'email' }, 
-
+  registrationMethod: { type: String, enum: ['email', 'google'], default: 'email' },
 
   contactNo: { type: String, default: '' },
   additionalEmails: [{ type: String }],
@@ -36,6 +37,16 @@ const userSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'Campaign'
   }],
+
+  // --- New fields for KYC Verification Status ---
+  kycSubmitted: { // Indicates if a KYC application has been submitted
+    type: Boolean,
+    default: false
+  },
+  kycVerified: { // Indicates if the user's KYC has been approved
+    type: Boolean,
+    default: false
+  },
 
   // Added lastLogin and createdAt for better user tracking
   createdAt: { type: Date, default: Date.now },

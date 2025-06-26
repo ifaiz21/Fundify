@@ -1,33 +1,55 @@
 // server/index.js
-require('dotenv').config(); // <-- MOVE THIS TO THE VERY TOP
+require('dotenv').config(); // Load environment variables at the very top
+
 const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
-const dns = require('dns');
 const path = require('path');
+const multer = require('multer'); // Import multer
+const fs = require('fs'); // Import file system module to create upload directory
 
 // Import routes
 const adminRoutes = require('./routes/admin');
 const authRoutes = require('./routes/auth');
-const campaignRoutes = require('./routes/campaigns');
+const campaignRoutes = require('./routes/campaigns'); // Main campaign routes
 const userRoutes = require('./routes/users');
 const contactusRoutes = require('./routes/contactus');
 const donationsRoutes = require('./routes/donations');
-const campaignUpdatesRoutes = require('./routes/campaignUpdates');
-const newsletterRoutes = require('./routes/newsletter'); // Import newsletter routes
-
-dns.setDefaultResultOrder('ipv4first');
+const campaignUpdatesRoutes = require('./routes/campaignUpdates'); // Campaign updates specific
+const newsletterRoutes = require('./routes/newsletter');
+const kycRoutes = require('./routes/kycRoutes'); // Import KYC routes
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
 // Middleware
-app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// Use more permissive CORS for development. For production, specify your frontend domain.
+app.use(cors({ origin: '*', credentials: true }));
+app.use(express.json()); // Parses incoming JSON requests
+app.use(express.urlencoded({ extended: true })); // Parses URL-encoded data
 
-// Serve static files from the 'public' directory
+// --- Multer Configuration for File Uploads (for KYC documents and liveness images) ---
+const uploadDir = 'uploads';
+if (!fs.existsSync(uploadDir)) {
+    fs.mkdirSync(uploadDir);
+}
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, uploadDir); // Files will be saved in the 'uploads' directory
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname); // Unique filename
+  }
+});
+
+const upload = multer({ storage: storage });
+// Expose the 'uploads' directory as a static resource
+app.use('/uploads', express.static(path.join(__dirname, uploadDir)));
+
+// Serve static files from the 'public' directory (if your frontend build goes here)
 app.use(express.static(path.join(__dirname, 'public')));
+
 
 // Connect MongoDB
 mongoose.connect(process.env.MONGO_URI, {
@@ -47,8 +69,17 @@ app.use('/api/campaigns', campaignRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/contactus', contactusRoutes);
 app.use('/api/donations', donationsRoutes);
-app.use('/api/campaigns', campaignUpdatesRoutes);
+app.use('/api/campaign-updates', campaignUpdatesRoutes); // Distinct path for campaign updates
 app.use('/api/newsletter', newsletterRoutes);
+// KYC Routes - **Crucial for the frontend to connect**
+// Note: If 'submitKYCApplication' route also requires file uploads,
+// you need to use the 'upload' middleware before that controller.
+app.use('/api/kyc', upload.fields([
+    { name: 'documentFront', maxCount: 1 },
+    { name: 'documentBack', maxCount: 1 },
+    { name: 'livenessImage', maxCount: 1 }
+]), kycRoutes); // Apply multer middleware globally for /api/kyc routes that need it
+
 
 // Catch-all for undefined routes
 app.use((req, res, next) => {

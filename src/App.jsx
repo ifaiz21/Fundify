@@ -50,9 +50,13 @@ import MyCampaigns from './Pages/MyCampaigns';
 //import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
+
+
+//KYC
 import KYCLivenessVerification from './Pages/KYC/KYCLivenessVerification'; // Already imported
 import KYCFormPage from './Pages/KYC/KYCFormPage'; // NEW Import
 import KYCDocumentUpload from './Pages/KYC/KYCDocumentUpload'; // NEW Import
+import KYCSuccessPage from './Pages/KYC/KYCSuccessPage'; // Import the new KYCSuccessPage
 
 
 function App() {
@@ -130,6 +134,7 @@ function App() {
           <Route path="/kyc-form" element={<KYCFormPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/kyc-document-upload" element={<KYCDocumentUpload showSuccess={showSuccess} showError={showError} />} />
           <Route path="/kyc-liveness-verification" element={<KYCLivenessVerification showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/kyc-success" element={<KYCSuccessPage />} /> {/* New Route for KYC Success Page */}
 
           {/* Admin Pages */}
           <Route path="/admin-dashboard" element={<AdminDashboard showSuccess={showSuccess} showError={showError} />} />

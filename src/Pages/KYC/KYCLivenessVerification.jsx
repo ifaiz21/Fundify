@@ -1,6 +1,6 @@
 // src/Pages/KYC/KYCLivenessVerification.jsx
 "use client";
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react'; // Import useCallback
 import { useNavigate } from 'react-router-dom';
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 
@@ -13,27 +13,38 @@ function KYCLivenessVerification() {
   const [isCameraActive, setIsCameraActive] = useState(false);
   const [loading, setLoading] = useState(false);
 
+  // Memoize stopCamera
+  const stopCamera = useCallback(() => {
+    if (stream) {
+      console.log("Stopping camera stream.");
+      stream.getTracks().forEach(track => track.stop());
+      setStream(null);
+    }
+    setIsCameraActive(false);
+  }, [stream]); // stopCamera depends on 'stream'
+
   const startCamera = async () => {
-    setCapturedImage(null); // Clear any previous image
+    setCapturedImage(null);
+    setIsCameraActive(false);
+    setStream(null);
+
     try {
       const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true });
       if (videoRef.current) {
         videoRef.current.srcObject = mediaStream;
         setStream(mediaStream);
-        setIsCameraActive(true);
+
+        videoRef.current.oncanplay = () => {
+          setIsCameraActive(true);
+          console.log("Camera confirmed active and isCameraActive set to true.");
+          videoRef.current.oncanplay = null;
+        };
       }
     } catch (err) {
       console.error("Error accessing camera:", err);
       showErrorMessage("Failed to access camera. Please ensure camera permissions are granted.");
+      setIsCameraActive(false);
     }
-  };
-
-  const stopCamera = () => {
-    if (stream) {
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-    setIsCameraActive(false);
   };
 
   const captureImage = () => {
@@ -42,20 +53,19 @@ function KYCLivenessVerification() {
       const canvas = canvasRef.current;
       const context = canvas.getContext('2d');
 
-      // Set canvas dimensions to match video dimensions
       canvas.width = video.videoWidth;
       canvas.height = video.videoHeight;
 
       context.drawImage(video, 0, 0, canvas.width, canvas.height);
-      const imageDataUrl = canvas.toDataURL('image/jpeg'); // Capture as JPEG
+      const imageDataUrl = canvas.toDataURL('image/jpeg');
       setCapturedImage(imageDataUrl);
-      stopCamera(); // Stop camera after capturing
+      stopCamera();
     }
   };
 
   const retakeImage = () => {
     setCapturedImage(null);
-    startCamera(); // Restart camera for retake
+    startCamera();
   };
 
   const handleSubmitForVerification = async () => {
@@ -66,37 +76,30 @@ function KYCLivenessVerification() {
 
     setLoading(true);
 
-    // --- START OF CHANGES ---
-    const token = localStorage.getItem('token'); // Retrieve the authentication token
+    const token = localStorage.getItem('token');
     if (!token) {
       showErrorMessage("Authentication required. Please log in.");
-      navigate("/login"); // Redirect to login if no token is found
+      navigate("/login");
       setLoading(false);
       return;
     }
-    // --- END OF CHANGES ---
 
     try {
       const blob = await fetch(capturedImage).then(res => res.blob());
       const formData = new FormData();
       formData.append('livenessImage', blob, 'liveness.jpeg');
-      // The backend uses req.user.id from the token, so you don't need to append userId here.
-      // If your backend specifically expects a userId field on formData, you would get it from a user context or similar.
-      // formData.append('userId', 'USER_ID_HERE');
 
       const response = await fetch('http://localhost:5000/api/users/kyc/submit-liveness', {
         method: 'POST',
-        // --- START OF CHANGES ---
         headers: {
-          'Authorization': `Bearer ${token}`, // Add the Authorization header
+          'Authorization': `Bearer ${token}`,
         },
-        // --- END OF CHANGES ---
         body: formData,
       });
 
       if (response.ok) {
         showSuccessMessage("Liveness image submitted for verification!");
-        navigate('/user-profile'); // Navigate to user profile or a success page
+        navigate('/kyc-success'); // Changed navigation to the new success page
       } else {
         const errorData = await response.json();
         showErrorMessage(`Verification failed: ${errorData.message || 'Unknown error'}`);
@@ -109,17 +112,15 @@ function KYCLivenessVerification() {
     }
   };
 
-  // Stop camera stream when component unmounts
+  // The useEffect hook now depends on the memoized stopCamera
   useEffect(() => {
     return () => {
       stopCamera();
     };
-  }, []);
+  }, [stopCamera]); // Dependency array now includes 'stopCamera'
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* <HeaderLayout hideProfile={true} /> Removed */}
-
       <main className="flex-grow container mx-auto px-4 py-6">
         <div className="bg-white rounded-lg shadow-md p-6 mb-6">
           <h1 className="text-2xl font-bold mb-4 text-center">Liveness Image Verification</h1>
@@ -154,7 +155,7 @@ function KYCLivenessVerification() {
                   Capture Image
                 </button>
               )}
-              <canvas ref={canvasRef} style={{ display: 'none' }}></canvas> {/* Hidden canvas for image capture */}
+              <canvas ref={canvasRef} style={{ display: 'none' }}></canvas>
             </div>
 
             <div className="flex space-x-4">
@@ -179,8 +180,6 @@ function KYCLivenessVerification() {
           </div>
         </div>
       </main>
-
-      {/* <FooterLayout /> Removed */}
     </div>
   );
 }
