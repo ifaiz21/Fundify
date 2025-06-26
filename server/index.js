@@ -21,6 +21,10 @@ dns.setDefaultResultOrder('ipv4first');
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.get("/",(req,res)=>{
+  res.status(200).json({message:"working"})
+  })
+
 // Middleware
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(express.json());
