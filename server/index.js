@@ -22,6 +22,10 @@ const kycRoutes = require('./routes/kycRoutes'); // Import KYC routes
 const app = express();
 const PORT = process.env.PORT || 5000;
 
+app.get("/",(req,res)=>{
+  res.status(200).json({message:"working"})
+  })
+
 // Middleware
 // Use more permissive CORS for development. For production, specify your frontend domain.
 app.use(cors({ origin: '*', credentials: true }));
