@@ -117,7 +117,7 @@ function KYCLivenessVerification() {
     return () => {
       stopCamera();
     };
-  }, []);
+  },);
 
   return (
     <div className="flex flex-col min-h-screen">
