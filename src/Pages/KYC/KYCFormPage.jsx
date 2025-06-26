@@ -14,23 +14,21 @@ const KYCFormPage = () => {
     fullName: "",
     dateOfBirth: "",
     address: "",
-    idNumber: "",
+    idNumber: "", // Keep idNumber in formData state
     documentType: "",
-    contactEmail: "", // User's primary email might already be known, but collecting for form completeness
+    email: "",
     phoneNumber: "",
   });
 
   const [loading, setLoading] = useState(false);
 
-  // You might want to pre-populate some fields if the user is logged in
-  // For example, if UserProfileSettings passes current user email/name
   useEffect(() => {
     if (location.state && location.state.userProfile) {
       const user = location.state.userProfile;
       setFormData(prev => ({
         ...prev,
         fullName: user.fullName || user.name || "",
-        contactEmail: user.email || "",
+        email: user.email || "",
         phoneNumber: user.contactNo || "",
       }));
     }
@@ -57,23 +55,22 @@ const KYCFormPage = () => {
       return;
     }
 
+    console.log("Form Data to Send:", formData);
+
     try {
-      // In a real application, you might use a dedicated KYC submission endpoint
-      // For now, we'll simulate by updating the user profile with KYC data
-      const response = await axios.put(
-        "http://localhost:5000/api/users/profile", // Using existing updateProfile endpoint
+      const response = await axios.post(
+        "http://localhost:5000/api/kyc/submit",
         {
-          // Map form data to user model fields
-          kycDetails: { // This would be a new sub-object in your User schema
-            fullName: formData.fullName,
-            dateOfBirth: formData.dateOfBirth,
-            address: formData.address,
-            idNumber: formData.idNumber,
-            documentType: formData.documentType,
-            contactEmail: formData.contactEmail,
-            phoneNumber: formData.phoneNumber,
-          },
-          kycStatus: "Pending Review", // Set status on submission
+          fullName: formData.fullName,
+          dateOfBirth: formData.dateOfBirth,
+          address: formData.address,
+          // IMPORTANT CHANGE: Send idNumber as documentNumber to match backend expectation
+          documentNumber: formData.idNumber,
+          documentType: formData.documentType,
+          email: formData.email,
+          phoneNumber: formData.phoneNumber,
+          // city and country are not provided by this form, and are optional on backend
+          // so no need to send them as undefined/empty strings explicitly if not collected.
         },
         {
           headers: {
@@ -82,11 +79,9 @@ const KYCFormPage = () => {
         }
       );
 
-      if (response.status === 200) {
+      if (response.status === 201) {
         showSuccessMessage("KYC information submitted! Redirecting to document upload.");
-        // Navigate to the next step: document upload
-        // Pass relevant data, e.g., user ID
-        navigate("/kyc-document-upload", { state: { userId: response.data.user._id } });
+        navigate("/kyc-document-upload");
       } else {
         const errorData = response.data;
         showErrorMessage(`Submission failed: ${errorData.message || "Unknown error"}`);
@@ -100,7 +95,7 @@ const KYCFormPage = () => {
   };
 
   return (
-    <> {/* Added React Fragment */}
+    <>
       <div className="flex flex-col min-h-screen bg-[#F0FFF0] font-Inter">
         <div className="absolute p-4">
           <button onClick={() => navigate("/user-profile")} className="text-lg text-[#91ac8f] hover:text-[#667964] transition duration-300 mb-4 flex items-center font-semibold">
@@ -116,11 +111,12 @@ const KYCFormPage = () => {
               {/* Personal Information */}
               <h3 className="text-lg font-semibold text-gray-700 mb-2">Personal Information</h3>
               <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Full Name" className="input" required />
-              <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="input" required /> {/* Removed placeholder for date input as it's not standard */}
+              <input type="date" name="dateOfBirth" value={formData.dateOfBirth} onChange={handleChange} className="input" required />
               <input type="text" name="address" value={formData.address} onChange={handleChange} placeholder="Address" className="input" required />
 
               {/* Identification Details */}
               <h3 className="text-lg font-semibold text-gray-700 mt-4 mb-2">Identification Details</h3>
+              {/* IMPORTANT: Name of this input is now idNumber, but it is mapped to documentNumber in handleSubmit */}
               <input type="text" name="idNumber" value={formData.idNumber} onChange={handleChange} placeholder="ID Number" className="input" required />
               <select name="documentType" value={formData.documentType} onChange={handleChange} className="input" required>
                 <option value="">Select document type</option>
@@ -131,7 +127,7 @@ const KYCFormPage = () => {
 
               {/* Contact Information */}
               <h3 className="text-lg font-semibold text-gray-700 mt-4 mb-2">Contact Information</h3>
-              <input type="email" name="contactEmail" value={formData.contactEmail} onChange={handleChange} placeholder="Email" className="input" required />
+              <input type="email" name="email" value={formData.email} onChange={handleChange} placeholder="Email" className="input" required />
               <input type="text" name="phoneNumber" value={formData.phoneNumber} onChange={handleChange} placeholder="Phone Number" className="input" required />
 
               <button type="submit" className="form-btn mt-6" disabled={loading}>
@@ -149,8 +145,8 @@ const KYCFormPage = () => {
           padding: 20px 30px;
           display: flex;
           flex-direction: column;
-          gap: 15px; /* Adjust gap between elements */
-          max-width: 500px; /* Limit width */
+          gap: 15px;
+          max-width: 500px;
         }
         .title {
           text-align: center;
@@ -161,15 +157,15 @@ const KYCFormPage = () => {
         .form {
           display: flex;
           flex-direction: column;
-          gap: 10px; /* Adjust gap between form fields */
+          gap: 10px;
         }
         .input {
-          border-radius: 8px; /* Slightly rounded corners */
+          border-radius: 8px;
           border: 1px solid #c0c0c0;
           outline: none;
           padding: 10px 12px;
           width: 100%;
-          box-sizing: border-box; /* Include padding in width */
+          box-sizing: border-box;
         }
         .input:focus {
           border-color: #4B5842;
@@ -195,7 +191,7 @@ const KYCFormPage = () => {
           cursor: not-allowed;
         }
       `}</style>
-    </> // Added React Fragment closing tag
+    </>
   );
 };
 

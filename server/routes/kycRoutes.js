@@ -1,11 +1,11 @@
-// server/routes/kycRoutes.js
 const express = require('express');
 const authMiddleware = require('../middleware/auth'); // Import the single authMiddleware
 const {
-  getKYCApplications,
-  approveKYCApplication,
-  rejectKYCApplication,
-  submitKYCApplication
+    getKYCApplications,
+    approveKYCApplication,
+    rejectKYCApplication,
+    submitKYCApplication,
+    getMyKYCApplication // <-- NEW: Import the new function
 } = require('../controllers/kycController');
 
 const router = express.Router();
@@ -21,7 +21,9 @@ router.route('/:userId/approve').put(authMiddleware(['admin']), approveKYCApplic
 router.route('/:userId/reject').put(authMiddleware(['admin']), rejectKYCApplication);
 
 // Route for user to submit KYC application
-// This path needs the multer middleware from server/index.js if you want to use req.files
-router.route('/submit').post(authMiddleware(), submitKYCApplication); // Assuming 'protect' logic is handled by authMiddleware() without specific roles for user submission
+router.route('/submit').post(authMiddleware(), submitKYCApplication);
+
+// NEW ROUTE: Get authenticated user's own KYC application details
+router.route('/my-application').get(authMiddleware(), getMyKYCApplication); // Protect this route for authenticated users
 
 module.exports = router;

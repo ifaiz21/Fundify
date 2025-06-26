@@ -1,10 +1,17 @@
-// server/controllers/userController.js
 const User = require('../models/User');
-const Campaign = require('../models/Campaign'); // Import Campaign model
+const KYCApplication = require('../models/KYCApplication'); // Import KYCApplication model
+const Campaign = require('../models/Campaign');
 const bcrypt = require('bcryptjs');
-const jwt = require('jsonwebtoken'); // Assuming JWT might be needed for some profile operations or if token is generated here
+const jwt = require('jsonwebtoken');
 const fs = require('fs'); // For file system operations, e.g., deleting failed uploads
 const path = require('path'); // For path operations
+
+// Helper function to send errors, mimicking the behavior if errorHandler was present
+const sendErrorResponse = (res, statusCode, message, errorDetails) => {
+    console.error(message, errorDetails); // Log the error for debugging
+    res.status(statusCode).json({ message, error: errorDetails ? errorDetails.message : 'Unknown error' });
+};
+
 
 // Get all users (Admin only)
 exports.getAllUsers = async (req, res) => {
@@ -14,23 +21,24 @@ exports.getAllUsers = async (req, res) => {
         res.status(200).json(users);
     } catch (err) {
         console.error('Get all users error:', err);
-        res.status(500).json({ message: 'Failed to retrieve users', error: err.message });
+        sendErrorResponse(res, 500, 'Failed to retrieve users', err);
     }
 };
 
 // Get user profile
 exports.getProfile = async (req, res) => {
     try {
-        // req.user will be populated by the auth middleware
-        // Populate savedCampaigns to get full campaign objects for the user's saved list
-        const user = await User.findById(req.user.id).select('-password -verificationCode').populate('savedCampaigns');
+        const user = await User.findById(req.user.id)
+            .select('-password -verificationCode')
+            .populate('savedCampaigns'); // Populate savedCampaigns to get full campaign objects for the user's saved list
+
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return sendErrorResponse(res, 404, 'User not found');
         }
         res.json(user);
     } catch (err) {
         console.error('Get profile error:', err);
-        res.status(500).json({ message: 'Server error' });
+        sendErrorResponse(res, 500, 'Server error');
     }
 };
 
@@ -40,7 +48,7 @@ exports.updateProfile = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return sendErrorResponse(res, 404, 'User not found');
         }
 
         user.name = name || user.name;
@@ -48,13 +56,21 @@ exports.updateProfile = async (req, res) => {
         user.contactNo = contactNo || user.contactNo;
         user.accountNumber = accountNumber || user.accountNumber;
         user.accountType = accountType || user.accountType;
-        user.additionalEmails = additionalEmails || user.additionalEmails;
+        
+        // Ensure additionalEmails is handled correctly (it might come as a JSON string)
+        try {
+            user.additionalEmails = additionalEmails ? JSON.parse(additionalEmails) : user.additionalEmails;
+        } catch (parseError) {
+            console.warn("Could not parse additionalEmails as JSON, using raw value if it's an array directly.", parseError);
+            user.additionalEmails = additionalEmails; // Assume it's already an array if parsing fails
+        }
+
 
         await user.save();
         res.json({ message: 'Profile updated successfully', user });
     } catch (err) {
         console.error('Update profile error:', err);
-        res.status(500).json({ message: 'Server error' });
+        sendErrorResponse(res, 500, 'Server error');
     }
 };
 
@@ -64,12 +80,12 @@ exports.updatePassword = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return sendErrorResponse(res, 404, 'User not found');
         }
 
         const isMatch = await bcrypt.compare(currentPassword, user.password);
         if (!isMatch) {
-            return res.status(400).json({ message: 'Current password incorrect' });
+            return sendErrorResponse(res, 400, 'Current password incorrect');
         }
 
         const salt = await bcrypt.genSalt(10);
@@ -79,7 +95,7 @@ exports.updatePassword = async (req, res) => {
         res.json({ message: 'Password updated successfully' });
     } catch (err) {
         console.error('Update password error:', err);
-        res.status(500).json({ message: 'Server error' });
+        sendErrorResponse(res, 500, 'Server error');
     }
 };
 
@@ -88,19 +104,38 @@ exports.uploadProfilePicture = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            // If user not found, delete the uploaded file
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error('Error deleting profile picture for unfound user:', req.file.path, err);
+                });
+            }
+            return sendErrorResponse(res, 404, 'User not found');
         }
 
         if (req.file) {
+            // Delete old profile picture if it exists and is not the default
+            if (user.profilePictureUrl && user.profilePictureUrl !== '/Images/default-avatar.png') {
+                const oldPath = path.join(__dirname, '../..', user.profilePictureUrl);
+                fs.unlink(oldPath, (err) => {
+                    if (err) console.error('Error deleting old profile picture:', oldPath, err);
+                });
+            }
             user.profilePictureUrl = `/uploads/profile_pictures/${req.file.filename}`;
             await user.save();
-            res.json({ message: 'Profile picture uploaded successfully', profilePictureUrl: user.profilePictureUrl });
+            res.json({ message: 'Profile picture uploaded successfully', user }); // Return user object as well for consistency
         } else {
-            res.status(400).json({ message: 'No file uploaded' });
+            sendErrorResponse(res, 400, 'No file uploaded');
         }
     } catch (err) {
         console.error('Upload profile picture error:', err);
-        res.status(500).json({ message: 'Server error' });
+        // If an error occurs, clean up the uploaded file
+        if (req.file) {
+            fs.unlink(req.file.path, (unlinkErr) => {
+                if (unlinkErr) console.error('Error cleaning up file after profile picture upload failure:', req.file.path, unlinkErr);
+            });
+        }
+        sendErrorResponse(res, 500, 'Server error');
     }
 };
 
@@ -109,54 +144,60 @@ exports.removeProfilePicture = async (req, res) => {
     try {
         const user = await User.findById(req.user.id);
         if (!user) {
-            return res.status(404).json({ message: 'User not found' });
+            return sendErrorResponse(res, 404, 'User not found');
         }
 
-        user.profilePictureUrl = null; // Ya default image URL
+        // Delete the actual file if it's not the default and exists
+        if (user.profilePictureUrl && user.profilePictureUrl !== '/Images/default-avatar.png') {
+            const filePath = path.join(__dirname, '../..', user.profilePictureUrl);
+            fs.unlink(filePath, (err) => {
+                if (err) console.error('Error deleting file:', filePath, err);
+            });
+        }
+
+        user.profilePictureUrl = null; // Set to null or a default image path
         await user.save();
-        res.json({ message: 'Profile picture removed successfully' });
+        res.json({ message: 'Profile picture removed successfully', user }); // Return user object
     } catch (err) {
         console.error('Remove profile picture error:', err);
-        res.status(500).json({ message: 'Server error' });
+        sendErrorResponse(res, 500, 'Server error');
     }
 };
 
 // Toggle saving a campaign (add/remove from savedCampaigns array)
 exports.toggleSavedCampaign = async (req, res) => {
     try {
-      const userId = req.user.id; // From authMiddleware
-      const { campaignId } = req.body;
+        const userId = req.user.id; // From authMiddleware
+        const { campaignId } = req.body;
 
-      if (!campaignId) {
-        return res.status(400).json({ message: 'Campaign ID is required.' });
-      }
+        if (!campaignId) {
+            return sendErrorResponse(res, 400, 'Campaign ID is required.');
+        }
 
-      const user = await User.findById(userId);
-      if (!user) {
-        return res.status(404).json({ message: 'User not found.' });
-      }
+        const user = await User.findById(userId);
+        if (!user) {
+            return sendErrorResponse(res, 404, 'User not found.');
+        }
 
-      const campaignExists = await Campaign.findById(campaignId);
-      if (!campaignExists) {
-          return res.status(404).json({ message: 'Campaign not found.' });
-      }
+        const campaignExists = await Campaign.findById(campaignId);
+        if (!campaignExists) {
+            return sendErrorResponse(res, 404, 'Campaign not found.');
+        }
 
-      const isSaved = user.savedCampaigns.includes(campaignId);
+        const isSaved = user.savedCampaigns.includes(campaignId);
 
-      if (isSaved) {
-        // Remove from saved campaigns
-        user.savedCampaigns.pull(campaignId);
-        await user.save();
-        res.status(200).json({ message: 'Campaign removed from saved.', saved: false });
-      } else {
-        // Add to saved campaigns
-        user.savedCampaigns.push(campaignId);
-        await user.save();
-        res.status(200).json({ message: 'Campaign added to saved.', saved: true });
-      }
+        if (isSaved) {
+            user.savedCampaigns.pull(campaignId);
+            await user.save();
+            res.status(200).json({ message: 'Campaign removed from saved.', saved: false });
+        } else {
+            user.savedCampaigns.push(campaignId);
+            await user.save();
+            res.status(200).json({ message: 'Campaign added to saved.', saved: true });
+        }
     } catch (err) {
-      console.error('Error toggling saved campaign:', err);
-      res.status(500).json({ message: 'Failed to update saved campaigns.', error: err.message });
+        console.error('Error toggling saved campaign:', err);
+        sendErrorResponse(res, 500, 'Failed to update saved campaigns.', err);
     }
 };
 
@@ -167,55 +208,58 @@ exports.getAdminEmail = async (req, res) => {
         const adminUser = await User.findOne({ role: 'admin' }).select('email -_id'); // -_id to exclude the ID
 
         if (!adminUser) {
-            return res.status(404).json({ message: 'Admin user not found.' });
+            return sendErrorResponse(res, 404, 'Admin user not found.');
         }
 
         res.status(200).json({ adminEmail: adminUser.email });
     } catch (err) {
         console.error('Error fetching admin email:', err);
-        res.status(500).json({ message: 'Server error while fetching admin email.', error: err.message });
+        sendErrorResponse(res, 500, 'Server error while fetching admin email.', err);
     }
 };
 
-// --- NEW FUNCTION: Submit KYC Documents ---
+// --- MODIFIED FUNCTION: Submit KYC Documents ---
 exports.submitKYCDocuments = async (req, res) => {
     try {
         const userId = req.user.id;
-        const user = await User.findById(userId);
 
-        if (!user) {
-            // If user not found, delete uploaded files to prevent junk data
+        // Find the user's KYC application
+        const kycApplication = await KYCApplication.findOne({ userId: userId });
+
+        if (!kycApplication) {
+            // If no KYC application exists, it means the initial form wasn't submitted first.
+            // Delete uploaded files to prevent junk data.
             if (req.files && Array.isArray(req.files)) {
                 req.files.forEach(file => {
                     fs.unlink(file.path, (err) => {
-                        if (err) console.error('Error cleaning up file for unfound user:', file.path, err);
+                        if (err) console.error('Error cleaning up file for missing KYC application:', file.path, err);
                     });
                 });
             }
-            return res.status(404).json({ message: 'User not found.' });
+            return sendErrorResponse(res, 404, 'KYC application not found. Please submit the KYC form first.');
         }
 
-        if (!req.files || req.files.length === 0) {
-            return res.status(400).json({ message: 'No KYC documents provided.' });
+        if (!req.files || req.files.length < 2) { // Expecting at least two files (front and back of ID)
+            return sendErrorResponse(res, 400, 'Both front and back ID documents are required.');
         }
 
-        // Extract paths of uploaded files
-        const documentPaths = req.files.map(file => `/uploads/kyc_documents/${file.filename}`);
+        // Get file paths. Assuming req.files is an array from Multer's .array() or .fields()
+        // If using .fields(), filenames will be accessible via req.files['fieldName'][0].filename
+        // For .array(), you'd typically have specific names or infer order.
+        // Let's assume order: first file is front, second is back.
+        const documentFrontUrl = `/uploads/kyc_documents/${req.files[0].filename}`;
+        const documentBackUrl = `/uploads/kyc_documents/${req.files[1].filename}`;
 
-        // In a real application, you might want to store these paths in the User model
-        // For example, by adding a new field like 'kycDocuments': [{ path: String, uploadedAt: Date }]
-        // user.kycDocuments = user.kycDocuments.concat(documentPaths.map(p => ({ path: p, uploadedAt: new Date() })));
-        // For now, we are just updating the kycStatus.
+        // Update the KYCApplication document with the file URLs
+        kycApplication.documentFrontUrl = documentFrontUrl;
+        kycApplication.documentBackUrl = documentBackUrl;
+        // The status remains 'Pending Review' as it was set in submitKYCApplication
 
-        // Update KYC status to 'Pending Review'
-        user.kycStatus = 'Pending Review';
-        await user.save();
+        await kycApplication.save();
 
         res.status(200).json({
-            message: 'KYC documents submitted successfully. Your status is now Pending Review.',
-            kycStatus: user.kycStatus,
-            // You might return documentPaths here for confirmation, but avoid sensitive data
-            // uploadedDocuments: documentPaths
+            message: 'KYC documents submitted successfully to your application. Proceed to liveness verification.',
+            kycApplication: kycApplication
         });
 
     } catch (err) {
@@ -224,57 +268,57 @@ exports.submitKYCDocuments = async (req, res) => {
         if (req.files && Array.isArray(req.files)) {
             req.files.forEach(file => {
                 fs.unlink(file.path, (unlinkErr) => {
-                    if (unlinkErr) console.error('Error cleaning up file after KYC submission failure:', file.path, unlinkErr);
+                    if (unlinkErr) console.error('Error cleaning up file after KYC document submission failure:', file.path, unlinkErr);
                 });
             });
         }
-        res.status(500).json({ message: 'Failed to submit KYC documents.', error: err.message });
+        sendErrorResponse(res, 500, 'Failed to submit KYC documents.', err);
     }
 };
 
-// --- START OF NEW CODE FOR LIVENESS VERIFICATION CONTROLLER ---
+// --- MODIFIED FUNCTION: Submit KYC Liveness ---
 exports.submitKYCLiveness = async (req, res) => {
-  try {
-    const userId = req.user.id; // User ID from authMiddleware
-    // Multer places the single file on req.file
-    if (!req.file) {
-      return res.status(400).json({ message: 'No liveness image file provided.' });
-    }
+    try {
+        const userId = req.user.id;
 
-    const livenessImagePath = `/uploads/kyc_liveness/${req.file.filename}`;
+        // Find the user's KYC application
+        const kycApplication = await KYCApplication.findOne({ userId: userId });
 
-    // Find the user and update their KYC details
-    const updatedUser = await User.findByIdAndUpdate(
-      userId,
-      {
-        $set: {
-          'kyc.livenessImagePath': livenessImagePath, // Store the path to the liveness image
-          'kyc.status': 'Pending Review' // Update KYC status
+        if (!kycApplication) {
+            // If no KYC application exists, delete uploaded file
+            if (req.file) {
+                fs.unlink(req.file.path, (err) => {
+                    if (err) console.error('Error cleaning up liveness file for missing KYC application:', req.file.path, err);
+                });
+            }
+            return sendErrorResponse(res, 404, 'KYC application not found. Please submit the KYC form and documents first.');
         }
-      },
-      { new: true, runValidators: true } // Return the updated document and run schema validators
-    ).select('-password -verificationCode'); // Exclude sensitive info from the response
 
-    if (!updatedUser) {
-      // If user not found, delete the uploaded file to prevent junk data
-      fs.unlink(req.file.path, (err) => {
-        if (err) console.error('Error deleting liveness image after user not found:', req.file.path, err);
-      });
-      return res.status(404).json({ message: 'User not found for liveness verification update.' });
-    }
+        // Multer places the single file on req.file
+        if (!req.file) {
+            return sendErrorResponse(res, 400, 'No liveness image file provided.');
+        }
 
-    res.status(200).json({
-      message: 'Liveness image submitted successfully for verification!',
-      user: updatedUser // Return updated user object
-    });
-  } catch (error) {
-    console.error('Error in submitKYCLiveness controller:', error);
-    // If an error occurs during processing or DB update, clean up the uploaded file
-    if (req.file) {
-      fs.unlink(req.file.path, (unlinkErr) => {
-        if (unlinkErr) console.error('Error cleaning up file after controller error:', req.file.path, unlinkErr);
-      });
+        const livenessImageUrl = `/uploads/kyc_liveness/${req.file.filename}`;
+
+        // Update the KYCApplication document with the liveness image URL
+        kycApplication.livenessImageUrl = livenessImageUrl;
+        // The status remains 'Pending Review' as it was set in submitKYCApplication
+
+        await kycApplication.save();
+
+        res.status(200).json({
+            message: 'Liveness image submitted successfully to your KYC application!',
+            kycApplication: kycApplication
+        });
+    } catch (error) {
+        console.error('Error in submitKYCLiveness controller:', error);
+        // If an error occurs during processing or DB update, clean up the uploaded file
+        if (req.file) {
+            fs.unlink(req.file.path, (unlinkErr) => {
+                if (unlinkErr) console.error('Error cleaning up file after KYC liveness submission failure:', req.file.path, unlinkErr);
+            });
+        }
+        sendErrorResponse(res, 500, 'Failed to process KYC liveness submission', error);
     }
-    res.status(500).json({ message: 'Failed to process KYC liveness submission', error: error.message });
-  }
 };

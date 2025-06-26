@@ -1,6 +1,6 @@
 // src/Pages/KYC/KYCLivenessVerification.jsx
 "use client";
-import React, { useState, useRef, useEffect, useCallback } from 'react'; // Import useCallback
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 
@@ -112,12 +112,12 @@ function KYCLivenessVerification() {
     }
   };
 
-  // The useEffect hook now depends on the memoized stopCamera
+  // The useEffect hook now correctly depends on the memoized stopCamera
   useEffect(() => {
     return () => {
       stopCamera();
     };
-  },);
+  }, [stopCamera]); // Added stopCamera to the dependency array
 
   return (
     <div className="flex flex-col min-h-screen">
