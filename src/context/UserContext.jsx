@@ -24,7 +24,7 @@ export const UserProvider = ({ children }) => {
       }
 
       try {
-        const response = await fetch('http://localhost:5000/api/users/profile', {
+        const response = await fetch('https://server-fundify.up.railway.app/api/users/profile', {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -37,8 +37,9 @@ export const UserProvider = ({ children }) => {
           setUserProfile(prev => ({
             ...prev,
             profilePictureUrl: data.profilePictureUrl ? `http://localhost:5000${data.profilePictureUrl}` : null,
-            isAuthenticated: true,
-            id: data._id,
+            isAuthenticated: true, // User is authenticated
+            id: data._id, // ADDED: Store the user's ID here
+            // Populate saved campaigns: map to IDs for consistency with includes() checks
             savedCampaigns: data.savedCampaigns ? data.savedCampaigns.map(campaign => campaign._id) : [],
             kycStatus: data.kycStatus || 'Not Submitted', // ADDED: Retrieve kycStatus from backend data
           }));

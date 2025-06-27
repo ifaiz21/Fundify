@@ -20,7 +20,7 @@ function FundifyImpact() {
         const fetchBackendStats = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get('http://localhost:5000/api/campaigns'); // Fetch from backend
+                const response = await axios.get('https://server-fundify.up.railway.app/api/campaigns'); // Fetch from backend
                 const { stats } = response.data; // Destructure the stats object
 
                 setStatsData(prevStats => ({

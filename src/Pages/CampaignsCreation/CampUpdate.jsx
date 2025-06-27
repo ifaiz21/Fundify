@@ -71,7 +71,7 @@ const CampaignUpdate = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/campaigns/${campaignId}`, {
+      const response = await fetch(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

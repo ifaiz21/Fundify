@@ -57,7 +57,7 @@ function UserProfileSettings() {
             }
 
             // --- 1. Fetch main user profile ---
-            const userProfileResponse = await fetch('http://localhost:5000/api/users/profile', {
+            const userProfileResponse = await fetch('https://server-fundify.up.railway.app/api/users/profile', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -79,7 +79,7 @@ function UserProfileSettings() {
             console.log("Fetched initial user profile data:", userData);
 
             // --- 2. Fetch user's KYC application details ---
-            const kycAppResponse = await fetch('http://localhost:5000/api/kyc/my-application', {
+            const kycAppResponse = await fetch('https://server-fundify.up.railway.app/api/kyc/my-application', {
                 method: 'GET',
                 headers: {
                     'Content-Type': 'application/json',
@@ -185,7 +185,7 @@ function UserProfileSettings() {
             }
             formDataToSend.append('profilePicture', selectedProfileImage);
 
-            const response = await fetch('http://localhost:5000/api/users/profile-picture', {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/profile-picture', {
                 method: 'PUT',
                 headers: {
                     'Authorization': `Bearer ${token}`,
@@ -240,7 +240,7 @@ function UserProfileSettings() {
                 return;
             }
 
-            const response = await fetch('http://localhost:5000/api/users/profile-picture', {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/profile-picture', {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json',
@@ -304,7 +304,7 @@ function UserProfileSettings() {
 
             console.log("Data to send for profile details update:", dataToUpdate);
 
-            const response = await fetch('http://localhost:5000/api/users/profile', {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/profile', {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',

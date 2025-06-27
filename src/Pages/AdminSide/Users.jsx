@@ -30,7 +30,7 @@ const UserManagement = () => {
                 throw new Error("Authentication token missing. Please log in as admin.");
             }
 
-            const response = await axios.get('http://localhost:5000/api/admin/users', {
+            const response = await axios.get('https://server-fundify.up.railway.app/api/admin/users', {
                 headers: {
                     Authorization: `Bearer ${token}`
                 }
@@ -97,7 +97,7 @@ const UserManagement = () => {
 
         // --- Socket.IO Integration for Real-time Update ---
         // Ensure this URL matches your backend Socket.IO server URL
-        const socket = io('http://localhost:5000'); 
+        const socket = io('https://server-fundify.up.railway.app/'); 
 
         socket.on('connect', () => {
             console.log('UserManagement: Connected to Socket.IO server');
@@ -152,7 +152,7 @@ const UserManagement = () => {
         if (window.confirm(`Are you sure you want to delete this ${type} with ID: ${id}?`)) {
             try {
                 const token = localStorage.getItem('token');
-                await axios.delete(`http://localhost:5000/api/admin/users/${id}`, {
+                await axios.delete(`https://server-fundify.up.railway.app/api/admin/users/${id}`, {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

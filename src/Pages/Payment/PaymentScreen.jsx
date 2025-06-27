@@ -84,7 +84,7 @@ const PaymentPage = () => {
 
     try {
         // Call backend to update donation status to 'completed'
-        const response = await fetch(`http://localhost:5000/api/donations/${donationId}/status`, {
+        const response = await fetch(`https://server-fundify.up.railway.app/api/donations/${donationId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',

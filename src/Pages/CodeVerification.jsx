@@ -83,7 +83,7 @@ const CodeVerificationPage = () => {
             console.log("Sending verification:", { email, code });
 
             // Using axios for API call
-            const response = await axios.post("http://localhost:5000/api/auth/code-verification", {
+            const response = await axios.post("https://server-fundify.up.railway.app//api/auth/code-verification", {
                 email,
                 code,
             });
@@ -119,7 +119,7 @@ const CodeVerificationPage = () => {
             setError(""); // Clear any errors
 
             // Using axios for API call
-            const response = await axios.post("http://localhost:5000/api/auth/resend-code", {
+            const response = await axios.post("https://server-fundify.up.railway.app//api/auth/resend-code", {
                 email,
             });
 

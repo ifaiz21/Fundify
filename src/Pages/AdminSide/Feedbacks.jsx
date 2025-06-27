@@ -29,7 +29,7 @@ const FeedbacksPage = () => {
         throw new Error("Authentication token missing. Please log in as admin.");
       }
 
-      const response = await axios.get("http://localhost:5000/api/admin/feedbacks", {
+      const response = await axios.get("https://server-fundify.up.railway.app/api/admin/feedbacks", {
         headers: {
           Authorization: `Bearer ${token}` // Include token in headers
         }
@@ -68,7 +68,7 @@ const FeedbacksPage = () => {
     fetchFeedbacks(); // Initial fetch when component mounts
 
     // --- Socket.IO Integration for Real-time Updates ---
-    const socket = io('http://localhost:5000'); // Connect to your backend Socket.IO server
+    const socket = io('https://server-fundify.up.railway.app/'); // Connect to your backend Socket.IO server
 
     socket.on('connect', () => {
       console.log('FeedbacksPage: Connected to Socket.IO server');

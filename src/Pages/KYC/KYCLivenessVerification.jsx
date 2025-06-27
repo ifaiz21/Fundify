@@ -89,7 +89,7 @@ function KYCLivenessVerification() {
       const formData = new FormData();
       formData.append('livenessImage', blob, 'liveness.jpeg');
 
-      const response = await fetch('http://localhost:5000/api/users/kyc/submit-liveness', {
+      const response = await fetch('https://server-fundify.up.railway.app/api/users/kyc/submit-liveness', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
