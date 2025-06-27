@@ -44,7 +44,7 @@ const SetPasswordPage = () => {
     }
 
     try {
-      const response = await axios.post("http://localhost:5000/api/auth/set-password", {
+      const response = await axios.post("https://server-fundify.up.railway.app/api/auth/set-password", {
         email,
         newPassword,
       });

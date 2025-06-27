@@ -59,7 +59,7 @@ const KYCFormPage = () => {
 
     try {
       const response = await axios.post(
-        "http://localhost:5000/api/kyc/submit",
+        "https://server-fundify.up.railway.app/api/kyc/submit",
         {
           fullName: formData.fullName,
           dateOfBirth: formData.dateOfBirth,

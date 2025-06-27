@@ -31,7 +31,7 @@ const AdminDashboard = () => {
                 }
 
                 // Fetch Total Users
-                const usersRes = await axios.get('http://localhost:5000/api/admin/users', {
+                const usersRes = await axios.get('https://server-fundify.up.railway.app//api/admin/users', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -45,7 +45,7 @@ const AdminDashboard = () => {
                 }
 
                 // Fetch Total Campaigns
-                const campaignsRes = await axios.get('http://localhost:5000/api/admin/campaigns', {
+                const campaignsRes = await axios.get('https://server-fundify.up.railway.app//api/admin/campaigns', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -59,7 +59,7 @@ const AdminDashboard = () => {
                 }
 
                 // Fetch Total Donations and Recent Activities
-                const donationsRes = await axios.get('http://localhost:5000/api/admin/donations', {
+                const donationsRes = await axios.get('https://server-fundify.up.railway.app//api/admin/donations', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }
@@ -108,7 +108,7 @@ const AdminDashboard = () => {
                 }
 
                 // NEW: Fetch Notifications (Feedbacks)
-                const feedbacksRes = await axios.get('http://localhost:5000/api/admin/feedbacks', {
+                const feedbacksRes = await axios.get('https://server-fundify.up.railway.app//api/admin/feedbacks', {
                     headers: {
                         Authorization: `Bearer ${token}`
                     }

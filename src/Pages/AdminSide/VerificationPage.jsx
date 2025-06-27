@@ -54,7 +54,7 @@ const VerificationPage = () => {
                 return;
             }
 
-            const response = await axios.get("http://localhost:5000/api/campaigns?status=Pending Review", {
+            const response = await axios.get("https://server-fundify.up.railway.app/api/campaigns?status=Pending Review", {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -95,7 +95,7 @@ const VerificationPage = () => {
                 return;
             }
 
-            const response = await axios.get("http://localhost:5000/api/kyc?status=Pending Review", {
+            const response = await axios.get("https://server-fundify.up.railway.app/api/kyc?status=Pending Review", {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
@@ -153,7 +153,7 @@ const VerificationPage = () => {
                 return;
             }
 
-            const endpoint = `http://localhost:5000/api/campaigns/${campaignId}/${status.toLowerCase()}`;
+            const endpoint = `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/${status.toLowerCase()}`;
             const response = await axios.put(endpoint, {}, {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -195,7 +195,7 @@ const VerificationPage = () => {
                 }
             }
 
-            const endpoint = `http://localhost:5000/api/kyc/${userId}/${status.toLowerCase()}`;
+            const endpoint = `https://server-fundify.up.railway.app/api/kyc/${userId}/${status.toLowerCase()}`;
             const response = await axios.put(endpoint, payload, { // Pass payload here
                 headers: { 'Authorization': `Bearer ${token}` }
             });
@@ -807,26 +807,26 @@ const VerificationPage = () => {
                                 <div className="mt-2">
                                     <p className="text-gray-600 mb-1"><strong>Document Front:</strong></p>
                                     <img
-                                        src={`http://localhost:5000${selectedKYCApplication.documentFrontUrl}`} // Prepend base URL
+                                        src={`https://server-fundify.up.railway.app/${selectedKYCApplication.documentFrontUrl}`} // Prepend base URL
                                         alt="Document Front"
                                         className="max-w-full h-auto rounded-md shadow-md border border-gray-200 object-contain"
                                         style={{ maxHeight: '200px' }} // Limit height
                                         onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/200x150/e0e0e0/000000?text=Image+Not+Available"; }}
                                     />
-                                    <a href={`http://localhost:5000${selectedKYCApplication.documentFrontUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">View Full Size</a>
+                                    <a href={`https://server-fundify.up.railway.app/${selectedKYCApplication.documentFrontUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">View Full Size</a>
                                 </div>
                             )}
                             {selectedKYCApplication.documentBackUrl && (
                                 <div className="mt-2">
                                     <p className="text-gray-600 mb-1"><strong>Document Back:</strong></p>
                                     <img
-                                        src={`http://localhost:5000${selectedKYCApplication.documentBackUrl}`} // Prepend base URL
+                                        src={`https://server-fundify.up.railway.app/${selectedKYCApplication.documentBackUrl}`} // Prepend base URL
                                         alt="Document Back"
                                         className="max-w-full h-auto rounded-md shadow-md border border-gray-200 object-contain"
                                         style={{ maxHeight: '200px' }}
                                         onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/200x150/e0e0e0/000000?text=Image+Not+Available"; }}
                                     />
-                                    <a href={`http://localhost:5000${selectedKYCApplication.documentBackUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">View Full Size</a>
+                                    <a href={`https://server-fundify.up.railway.app/${selectedKYCApplication.documentBackUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">View Full Size</a>
                                 </div>
                             )}
 
@@ -835,13 +835,13 @@ const VerificationPage = () => {
                                 <div className="mt-2">
                                     <p className="text-gray-600 mb-1"><strong>Liveness Image:</strong></p>
                                     <img
-                                        src={`http://localhost:5000${selectedKYCApplication.livenessImageUrl}`} // Prepend base URL
+                                        src={`https://server-fundify.up.railway.app/${selectedKYCApplication.livenessImageUrl}`} // Prepend base URL
                                         alt="Liveness"
                                         className="max-w-full h-auto rounded-md shadow-md border border-gray-200 object-contain"
                                         style={{ maxHeight: '200px' }}
                                         onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/200x150/e0e0e0/000000?text=Image+Not+Available"; }}
                                     />
-                                    <a href={`http://localhost:5000${selectedKYCApplication.livenessImageUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">View Full Size</a>
+                                    <a href={`https://server-fundify.up.railway.app/${selectedKYCApplication.livenessImageUrl}`} target="_blank" rel="noopener noreferrer" className="text-blue-500 text-sm hover:underline">View Full Size</a>
                                 </div>
                             )}
                             {!selectedKYCApplication.livenessImageUrl && <p className="text-gray-600">No liveness image provided.</p>}

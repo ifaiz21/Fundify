@@ -53,7 +53,7 @@ function CampaignCard({ campaign, onSelectForDonation }) { // Removed showToast 
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('http://localhost:5000/api/users/saved-campaigns', {
+      const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -92,7 +92,7 @@ function CampaignCard({ campaign, onSelectForDonation }) { // Removed showToast 
   return (
     <div className="bg-white rounded-lg overflow-hidden shadow-sm flex flex-col cursor-pointer" onClick={handleCardClick}>
       <img
-        src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `http://localhost:5000${campaign.mediaUrls[0]}` : "/placeholder.svg"}
+        src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `https://server-fundify.up.railway.app${campaign.mediaUrls[0]}` : "/placeholder.svg"}
         alt={campaign.title}
         className="w-full h-48 object-cover"
         onError={(e) => { e.target.onerror = null; e.target.src="/placeholder.svg" }}
@@ -169,7 +169,7 @@ export default function ExploreCampaigns() { // Removed showToast prop
     const fetchCampaigns = async () => {
       try {
         setLoading(true);
-        const response = await axios.get("http://localhost:5000/api/campaigns");
+        const response = await axios.get("https://server-fundify.up.railway.app/api/campaigns");
 
         const fetchedCampaigns = response.data.campaigns || [];
 

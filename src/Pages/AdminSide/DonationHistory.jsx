@@ -25,7 +25,7 @@ const DonationHistory = () => {
             return;
         }
 
-        const response = await axios.get("http://localhost:5000/api/donations", {
+        const response = await axios.get("https://server-fundify.up.railway.app/api/donations", {
           headers: {
             'Authorization': `Bearer ${token}`
           }

@@ -53,7 +53,7 @@ const SignupPage = () => {
 
     try {
       // API call for manual email/password signup
-      const response = await axios.post("http://localhost:5000/api/auth/sign-up", {
+      const response = await axios.post("https://server-fundify.up.railway.app/api/auth/sign-up", {
         name: formData.fullName,
         email: formData.email,
         password: formData.password,
@@ -86,7 +86,7 @@ const SignupPage = () => {
     try {
       // Make API call to your backend's *Google Sign-up with Verification* endpoint
       const response = await axios.post(
-        "http://localhost:5000/api/auth/google-signup-verify-email",
+        "https://server-fundify.up.railway.app/api/auth/google-signup-verify-email",
         {}, // Body can be empty as the Google ID token is in the Authorization header
         {
           headers: {

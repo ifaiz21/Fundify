@@ -31,7 +31,7 @@ const CampaignsPage = () => {
         return;
       }
 
-      const response = await axios.get("http://localhost:5000/api/campaigns", {
+      const response = await axios.get("https://server-fundify.up.railway.app/api/campaigns", {
         headers: {
           Accept: "application/json",
           "Cache-Control": "no-cache",

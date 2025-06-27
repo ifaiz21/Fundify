@@ -82,7 +82,7 @@ const CampaignCreation05 = () => {
     }
 
     try {
-      const response = await fetch(`http://localhost:5000/api/campaigns/${fullCampaignData._id}`, {
+      const response = await fetch(`https://server-fundify.up.railway.app/api/campaigns/${fullCampaignData._id}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -148,7 +148,7 @@ const CampaignCreation05 = () => {
     console.log("CampaignCreation05 - Submitting campaign data (FormData):", formDataToSend);
 
     try {
-      const response = await fetch('http://localhost:5000/api/campaigns', {
+      const response = await fetch('https://server-fundify.up.railway.app/api/campaigns', {
         method: 'POST',
         headers: {
           'Authorization': `Bearer ${token}`,
