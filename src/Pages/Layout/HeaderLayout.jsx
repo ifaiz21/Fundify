@@ -2,13 +2,16 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from '../../context/UserContext';
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // ADDED: Direct import of toast functions
 
-const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hideProfile }) => {
+const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hideProfile }) => { // REMOVED: showToast from props
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  const [logoutMessage, setLogoutMessage] = useState("");
-  const [message, ] = useState(""); // Assuming 'message' is for general notifications
+  // REMOVED: logoutMessage state as showToast will handle it
+  // const [logoutMessage, setLogoutMessage] = useState("");
+  // REMOVED: message state as showToast will handle it
+  // const [message, ] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -38,14 +41,12 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userProfile"); // Ensure userProfile is also cleared
     setIsLoggedIn(false);
     setShowConfirmLogout(false);
-    setLogoutMessage("Successfully logged out");
     navigate("/login");
-
-    setTimeout(() => {
-      setLogoutMessage("");
-    }, 3000);
+    // UPDATED: Use showSuccessMessage for logout
+    showSuccessMessage("You have been logged out successfully!");
   };
 
   // New handler for the Donate button
@@ -54,19 +55,42 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
     navigate("/explore", { state: { purpose: "select-for-donation" } });
   };
 
+  // ADDED: New handler for "Create Campaign" button with KYC logic
+  const handleCreateCampaignClick = (e) => {
+    e.preventDefault(); // Prevent default link behavior for Link component
+
+    if (loadingUserContext) {
+      showErrorMessage('Loading user data, please wait...'); // Use showErrorMessage
+      return;
+    }
+
+    const kycStatus = userProfile.kycStatus;
+    console.log("HeaderLayout Create Campaign Click - KYC Status:", kycStatus); // Debugging
+
+    if (kycStatus === 'Approved') {
+      navigate("/create-campaign");
+    } else if (kycStatus === 'Rejected') {
+      showErrorMessage('You are not a verified user by FUNDIFY. Please complete your KYC first.'); // Use showErrorMessage
+    } else if (kycStatus === 'Pending Review') {
+      showErrorMessage('Please wait for verification by FUNDIFY.'); // Use showErrorMessage
+    } else { // Covers cases like undefined, null, or any other status indicating not submitted
+      showErrorMessage('Please submit your KYC first.'); // Use showErrorMessage
+    }
+  };
+
   return (
     <>
-      {message && (
+      {/* REMOVED: Local message and logoutMessage display JSX */}
+      {/* {message && (
         <div className="bg-[#4A5D45] text-white text-center py-2">
           {message}
         </div>
       )}
-      {/* Logout success message */}
       {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
         </div>
-      )}
+      )} */}
 
       <header className="flex items-center justify-between px-6 py-4 bg-white shadow-md">
         {/* Left Side - Logo & Navigation */}
@@ -76,7 +100,8 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
             <img
               src="./images/fundify-transparent-logo.png"
               alt="Fundify Logo"
-              className="w-12 h-12 mr-2"
+              className="w-12 h-12 mr-2 cursor-pointer"
+              onClick={() => navigate('/')} // Navigate to homepage on logo click
             />
           </div>
 
@@ -96,7 +121,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
         {/* Right Side - Extra Links */}
         <div className="flex items-center space-x-6">
           {!hideCreate && (
-            <Link to="/create-campaign" className="hover:underline">
+            <Link to="/create-campaign" className="hover:underline" onClick={handleCreateCampaignClick}> {/* MODIFIED: Use new handler */}
               Create Campaign
             </Link>
           )}
@@ -130,9 +155,9 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               {showDropdown && (
                 <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
                   {!hideProfile && (
-                    <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200">
+                    <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" onClick={() => setShowDropdown(false)}>
                       My Profile
-                    </a>
+                    </Link>
                   )}
                   <button
                     onClick={() => setShowConfirmLogout(true)}
@@ -144,7 +169,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               )}
             </div>
           ) : (
-            <a href="/login" className="hover:underline">Login / Sign Up</a>
+            <Link to="/login" className="hover:underline">Login / Sign Up</Link>
           )}
         </div>
       </header>

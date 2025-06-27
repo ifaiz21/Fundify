@@ -47,6 +47,12 @@ const userSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
+  // ADDED: Centralized kycStatus in User model for frontend to consume directly
+  kycStatus: {
+    type: String,
+    enum: ['Not Submitted', 'Pending Review', 'Approved', 'Rejected'],
+    default: 'Not Submitted'
+  },
 
   // Added lastLogin and createdAt for better user tracking
   createdAt: { type: Date, default: Date.now },

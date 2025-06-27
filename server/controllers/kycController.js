@@ -1,3 +1,4 @@
+// server/controllers/kycController.js
 const KYCApplication = require('../models/KYCApplication');
 const User = require('../models/User'); // Assuming you have a User model
 
@@ -62,8 +63,8 @@ const approveKYCApplication = async (req, res) => {
             return sendErrorResponse(res, 404, 'Pending KYC application not found for this user, or already processed.');
         }
 
-        // Update the user's KYC status in the User model to verified
-        await User.findByIdAndUpdate(userId, { kycVerified: true, kycSubmitted: true });
+        // UPDATED: Update the user's KYC status in the User model to verified and set kycStatus to 'Approved'
+        await User.findByIdAndUpdate(userId, { kycVerified: true, kycSubmitted: true, kycStatus: 'Approved' });
 
         res.status(200).json({ message: 'KYC application approved successfully.', kycApplication });
     } catch (error) {
@@ -98,8 +99,8 @@ const rejectKYCApplication = async (req, res) => {
             return sendErrorResponse(res, 404, 'Pending KYC application not found for this user, or already processed.');
         }
 
-        // Update the user's KYC status to submitted:true, verified:false on rejection
-        await User.findByIdAndUpdate(userId, { kycVerified: false, kycSubmitted: true });
+        // UPDATED: Update the user's KYC status to submitted:true, verified:false, and set kycStatus to 'Rejected' on rejection
+        await User.findByIdAndUpdate(userId, { kycVerified: false, kycSubmitted: true, kycStatus: 'Rejected' });
 
         res.status(200).json({ message: 'KYC application rejected successfully.', kycApplication });
     } catch (error) {
@@ -180,7 +181,8 @@ const submitKYCApplication = async (req, res) => {
             await kycApplication.save();
         }
 
-        await User.findByIdAndUpdate(userId, { kycSubmitted: true, kycVerified: false });
+        // UPDATED: Also update kycStatus in User model when KYC is submitted
+        await User.findByIdAndUpdate(userId, { kycSubmitted: true, kycVerified: false, kycStatus: 'Pending Review' });
 
         res.status(201).json({ message: 'KYC application initial data submitted successfully. Proceed to document upload.', kycApplication });
 
@@ -207,11 +209,41 @@ const getMyKYCApplication = async (req, res) => {
     }
 };
 
+// NEW FUNCTION: Delete a KYC application (Admin action, also resets user's KYC status)
+const deleteKYCApplication = async (req, res) => {
+    try {
+        // Only allow admins to perform this action
+        if (req.user.role !== 'admin') {
+            return sendErrorResponse(res, 403, 'Access forbidden: Only administrators can delete KYC applications.');
+        }
+
+        const { userId } = req.params; // Get userId from params
+
+        const kycApplication = await KYCApplication.findOneAndDelete({ userId: userId });
+
+        if (!kycApplication) {
+            return sendErrorResponse(res, 404, 'KYC application not found for this user.');
+        }
+
+        // IMPORTANT: Reset the user's KYC status fields in the User model
+        await User.findByIdAndUpdate(userId, {
+            kycSubmitted: false,
+            kycVerified: false,
+            kycStatus: 'Not Submitted'
+        });
+
+        res.status(200).json({ message: 'KYC application deleted successfully and user KYC status reset.' });
+    } catch (error) {
+        sendErrorResponse(res, 500, 'Failed to delete KYC application.', error);
+    }
+};
+
 
 module.exports = {
     getKYCApplications,
     approveKYCApplication,
     rejectKYCApplication,
     submitKYCApplication,
-    getMyKYCApplication // <-- Export the new function
+    getMyKYCApplication,
+    deleteKYCApplication // <-- Export the new function
 };

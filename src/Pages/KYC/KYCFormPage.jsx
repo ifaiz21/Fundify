@@ -1,14 +1,15 @@
 // src/Pages/KYC/KYCFormPage.jsx
 "use client";
 import React, { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate } from "react-router-dom"; // Removed useLocation
 import { IoChevronBackOutline } from "react-icons/io5";
 import axios from "axios";
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
+import { useUser } from '../../context/UserContext'; // ADDED: Import useUser
 
 const KYCFormPage = () => {
   const navigate = useNavigate();
-  const location = useLocation(); // To potentially get user info if passed from UserProfileSettings
+  const { userProfile, loadingUserContext } = useUser(); // ADDED: Access userProfile from context
 
   const [formData, setFormData] = useState({
     fullName: "",
@@ -22,17 +23,17 @@ const KYCFormPage = () => {
 
   const [loading, setLoading] = useState(false);
 
+  // MODIFIED: Use userProfile from context to populate initial form data
   useEffect(() => {
-    if (location.state && location.state.userProfile) {
-      const user = location.state.userProfile;
+    if (!loadingUserContext && userProfile) {
       setFormData(prev => ({
         ...prev,
-        fullName: user.fullName || user.name || "",
-        email: user.email || "",
-        phoneNumber: user.contactNo || "",
+        fullName: userProfile.name || "", // Assuming 'name' from userProfile
+        email: userProfile.email || "",
+        phoneNumber: userProfile.contactNo || "",
       }));
     }
-  }, [location.state]);
+  }, [userProfile, loadingUserContext]); // Re-run when userProfile or loading status changes
 
 
   const handleChange = (e) => {
@@ -94,6 +95,82 @@ const KYCFormPage = () => {
     }
   };
 
+  if (loadingUserContext) {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#F0FFF0] font-Inter items-center justify-center">
+        <p className="text-[#4b5849] text-xl">Loading user data...</p>
+      </div>
+    );
+  }
+
+  // ADDED: Conditional rendering based on kycStatus
+  if (userProfile.kycStatus === 'Pending Review' || userProfile.kycStatus === 'Approved') {
+    return (
+      <div className="flex flex-col min-h-screen bg-[#F0FFF0] font-Inter items-center justify-center text-center px-4">
+        <div className="absolute p-4 top-0 left-0">
+          <button onClick={() => navigate("/user-profile")} className="text-lg text-[#91ac8f] hover:text-[#667964] transition duration-300 mb-4 flex items-center font-semibold">
+            <IoChevronBackOutline size={20} /> Back to Profile
+          </button>
+        </div>
+        <div className="form-container w-full max-w-md mx-auto p-6">
+          {userProfile.kycStatus === 'Pending Review' && (
+            <p className="title text-[#4b5849] text-xl font-bold">
+              Please wait, your KYC verification is under review. You've already submitted.
+            </p>
+          )}
+          {userProfile.kycStatus === 'Approved' && (
+            <p className="title text-[#4b5849] text-xl font-bold">
+              Your KYC has been approved!
+            </p>
+          )}
+          <p className="mt-4 text-gray-700">
+            You can return to your profile or campaigns.
+          </p>
+          <button
+            onClick={() => navigate("/user-profile")}
+            className="form-btn mt-6"
+          >
+            Go to Profile
+          </button>
+        </div>
+        <style jsx>{`
+          .form-container {
+            background-color: #fff;
+            box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
+            border-radius: 10px;
+            padding: 20px 30px;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            max-width: 500px;
+          }
+          .title {
+            text-align: center;
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 20px;
+          }
+          .form-btn {
+            padding: 12px 20px;
+            border-radius: 20px;
+            border: none;
+            outline: none;
+            background: #4B5842;
+            color: white;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: 600;
+            transition: background-color 0.3s ease;
+          }
+          .form-btn:hover:not(:disabled) {
+            background-color: #3A4433;
+          }
+        `}</style>
+      </div>
+    );
+  }
+
+  // Original form rendering for other statuses (e.g., 'Not Submitted', 'Rejected')
   return (
     <>
       <div className="flex flex-col min-h-screen bg-[#F0FFF0] font-Inter">

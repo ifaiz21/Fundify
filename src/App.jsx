@@ -128,7 +128,7 @@ function App() {
           <Route path="/ProjectView" element={<ProjectView showSuccess={showSuccess} showError={showError} />} />
           <Route path="/campaign-update" element={<CampaignUpdate showSuccess={showSuccess} showError={showError} />} />
           <Route path="/user-profile" element={<UserProfileSettings showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/my-campaigns" element={<MyCampaigns showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/my-campaigns" element={<MyCampaigns showToast={showSuccess} />} />
 
           {/* NEW KYC Routes */}
           <Route path="/kyc-form" element={<KYCFormPage showSuccess={showSuccess} showError={showError} />} />
@@ -147,10 +147,12 @@ function App() {
           
           <Route path="/billing" element={<Billing showSuccess={showSuccess} showError={showError} />} />
 
-          {/* Fallback for other routes */}
+          {/* Fallback for other routes which also uses HeaderLayout. 
+              Removed passing showToast here as HeaderLayout now imports it directly. */}
           <Route path="*" element={
             <div className="flex flex-col min-h-screen items-center justify-center">
-              <HeaderLayout />
+              {/* HeaderLayout here would be for the 404 page itself, not the main app */}
+              <HeaderLayout /> {/* NO showToast prop here */}
               <h1 className="text-4xl font-bold text-gray-800">404 - Page Not Found</h1>
               <p className="text-gray-600 mt-4">The page you are looking for does not exist.</p>
             </div>

@@ -2,35 +2,34 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useUser } from '../../context/UserContext';
-// import { ToastNotification } from "../..//components/ToastNotification"; // Assuming ToastNotification is available globally or can be imported here
+import { toast } from 'react-toastify'; // ADDED: Import toast for messages
 
-export default function Header({ hideHome }) {
+export default function Header({ hideHome }) { // No showToast prop needed as toast is imported directly
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  const [logoutMessage, setLogoutMessage] = useState("");
+  // Removed local logoutMessage state as we'll use react-toastify
+  // const [logoutMessage, setLogoutMessage] = useState("");
   const navigate = useNavigate();
   const location = useLocation();
 
-const { userProfile, loadingUserContext } = useUser();
-const dropdownRef = useRef(null);
-
+  const { userProfile, loadingUserContext } = useUser();
+  const dropdownRef = useRef(null);
 
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
   // Close dropdown when clicking outside
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          setShowDropdown(false);
-        }
-      };
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, []);
-
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -39,17 +38,20 @@ const dropdownRef = useRef(null);
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("userProfile"); // Ensure userProfile is also cleared
     setIsLoggedIn(false);
     setShowConfirmLogout(false);
-    setLogoutMessage("Successfully logged out");
     navigate("/login");
-
-    setTimeout(() => {
-      setLogoutMessage("");
-      // You might want to refresh the user context here as well if it's not automatically
-      // being updated after logout (e.g., set isAuthenticated to false in context).
-      // This might involve calling setUserProfile in the context.
-    }, 3000);
+    // Use toast for logout message
+    toast.success("Successfully logged out", {
+      position: "top-right",
+      autoClose: 3000,
+      hideProgressBar: false,
+      closeOnClick: true,
+      pauseOnHover: true,
+      draggable: true,
+      progress: undefined,
+    });
   };
 
   const handleDonateClick = (e) => {
@@ -59,13 +61,46 @@ const dropdownRef = useRef(null);
     navigate("/explore", { state: { purpose: "select-for-donation" } });
   };
 
+  // ADDED: New handler for "Create Campaign" button with KYC logic
+  const handleCreateCampaignClick = (e) => {
+    e.preventDefault(); // Prevent default link behavior for Link/a component
+
+    if (loadingUserContext) {
+      toast.info('Loading user data, please wait...', {
+        position: "top-right", autoClose: 3000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined,
+      });
+      return;
+    }
+
+    const kycStatus = userProfile.kycStatus;
+    console.log("Header Create Campaign Click - KYC Status:", kycStatus); // Debugging
+
+    if (kycStatus === 'Approved') {
+      navigate("/create-campaign");
+    } else if (kycStatus === 'Rejected') {
+      toast.error('You are not a verified user by FUNDIFY. Please complete your KYC first.', {
+        position: "top-right", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined,
+      });
+    } else if (kycStatus === 'Pending Review') {
+      toast.info('Please wait for verification by FUNDIFY.', {
+        position: "top-right", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined,
+      });
+    } else { // Covers cases like undefined, null, or any other status indicating not submitted
+      toast.info('Please submit your KYC first.', {
+        position: "top-right", autoClose: 5000, hideProgressBar: false, closeOnClick: true, pauseOnHover: true, draggable: true, progress: undefined,
+      });
+    }
+  };
+
+
   return (
     <>
-      {logoutMessage && (
+      {/* Removed local logoutMessage display div */}
+      {/* {logoutMessage && (
         <div className="bg-[#B2C9AD] text-white text-center py-2">
           {logoutMessage}
         </div>
-      )}
+      )} */}
 
       <header className="flex items-center justify-between px-6 py-4 bg-transparent z-50 relative">
         {/* Left Side - Logo & Navigation */}
@@ -74,7 +109,8 @@ const dropdownRef = useRef(null);
           <img
             src="/Images/logo.png"
             alt="Fundify Logo"
-            className="w-12 h-12"
+            className="w-12 h-12 cursor-pointer" // Made logo clickable
+            onClick={() => navigate('/')} // Navigate to homepage on logo click
           />
 
           {/* Desktop Navigation */}
@@ -89,7 +125,7 @@ const dropdownRef = useRef(null);
         </div>
 
         <div className="flex space-x-6 items-center">
-          <a href="/create-campaign" className="text-white hover:text-gray-300">
+          <a href="/create-campaign" className="text-white hover:text-gray-300" onClick={handleCreateCampaignClick}> {/* MODIFIED: Use new handler */}
             Create Campaign
           </a>
           <a href="/contact" className="text-white hover:text-gray-300">Contact Us</a>
@@ -117,26 +153,26 @@ const dropdownRef = useRef(null);
                 )}
               </button>
 
-                  {showDropdown && (
-                    <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
-                      <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200">
-                        My Profile
-                      </a>
-                      <button
-                        onClick={() => setShowConfirmLogout(true)}
-                        className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
-                      >
-                        Logout
-                      </button>
-                    </div>
-                  )}
-              </div>
-              ) : (
-                <a href="/login" className="text-white hover:text-gray-300">
-                  Login / Sign Up
-                </a>
-              )}   
-          </div>
+              {showDropdown && (
+                <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
+                  <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" onClick={() => setShowDropdown(false)}>
+                    My Profile
+                  </a>
+                  <button
+                    onClick={() => setShowConfirmLogout(true)}
+                    className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
+                  >
+                    Logout
+                  </button>
+                </div>
+              )}
+            </div>
+          ) : (
+            <a href="/login" className="text-white hover:text-gray-300">
+              Login / Sign Up
+            </a>
+          )}
+        </div>
       </header>
 
       {/* Logout Confirmation Modal */}

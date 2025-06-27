@@ -152,6 +152,20 @@ function MyCampaigns({ showToast }) {
     }
   };
 
+  const handleCreateNewCampaign = () => {
+    const kycStatus = userProfile.kycStatus;
+    console.log("KYC Status:", kycStatus); // Debugging line
+
+    if (kycStatus === 'Approved') {
+      navigate("/create-campaign");
+    } else if (kycStatus === 'Rejected') {
+      showToast('You are not a verified user by FUNDIFY. Please complete your KYC first.', 'error');
+    } else if (kycStatus === 'Pending Review') {
+      showToast('Please wait for verification by FUNDIFY.', 'info');
+    } else { // Covers cases like undefined, null, or any other status indicating not submitted
+      showToast('Please submit your KYC first.', 'info');
+    }
+  };
 
   if (loading || loadingUserContext) {
     return (
@@ -189,8 +203,11 @@ function MyCampaigns({ showToast }) {
         <main className="flex-grow container mx-auto px-4 py-6">
           <div className="flex justify-between items-center mb-6">
             <h1 className="text-2xl font-bold">My Campaigns</h1>
-            <button className="bg-[#4A5D45] text-white py-2 px-4 rounded-md text-sm whitespace-nowrap" onClick={() => navigate("/create-campaign")}>
-              Create New Campaign 
+            <button
+              className="bg-[#4A5D45] text-white py-2 px-4 rounded-md text-sm whitespace-nowrap"
+              onClick={handleCreateNewCampaign} // This line needs to be updated
+            >
+              Create New Campaign
             </button>
           </div>
 
