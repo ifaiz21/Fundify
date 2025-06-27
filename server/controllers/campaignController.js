@@ -1,6 +1,6 @@
 // server/controllers/campaignController.js
 const Campaign = require('../models/Campaign');
-const User = require('../models/User'); // Ensure User model is required
+//const User = require('../models/User'); // Ensure User model is required
 
 // Helper function to calculate overall campaign statistics
 const calculateCampaignStats = async () => {
