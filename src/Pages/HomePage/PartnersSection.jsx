@@ -4,10 +4,10 @@ function PartnersSection() {
     // If you don't have a logo for a company, you can set logoUrl to null or an empty string,
     // and its name will be displayed instead.
     const partnerCompanies = [
-      { name: "Jellop", logoUrl: "/images/jellop.jpeg" },    // Example path
-      { name: "ShipBob", logoUrl: "/images/shipbob.png" },  // Example path
-      { name: "Pledgebox", logoUrl: "/images/pledgebox.png" }, // Example path
-      { name: "BlackBox", logoUrl: "/images/blackbox.jpg" },  // Example path
+      { name: "Jellop", logoUrl: "/Images/jellop.jpeg" },    // Example path
+      { name: "ShipBob", logoUrl: "/Images/shipbob.png" },  // Example path
+      { name: "Pledgebox", logoUrl: "/Images/pledgebox.png" }, // Example path
+      { name: "BlackBox", logoUrl: "/Images/blackbox.jpg" },  // Example path
       // Add more companies here if needed, with their respective logoUrls
     ];
 
@@ -75,7 +75,7 @@ function PartnersSection() {
             {/* Add a max-h-XX class here */}
             <div className="md:w-1/2 relative max-h-96 md:h-72 lg:h-80"> {/* Adjust max-h value */}
               <img
-                src="./images/contacting-person.png"
+                src="./Images/contacting-person.png"
                 alt="Person using Fundify app"
                 className="w-full h-full object-cover object-center"
               />

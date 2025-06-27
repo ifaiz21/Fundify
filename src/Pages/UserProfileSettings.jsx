@@ -258,7 +258,7 @@ function UserProfileSettings() {
 
             const updatedBackendUser = updatedData.user;
             const newPicPath = updatedBackendUser.profilePictureUrl;
-            const newPicUrl = newPicPath ? `http://localhost:5000${newPicPath}` : null;
+            const newPicUrl = newPicPath ? `https://server-fundify.up.railway.app${newPicPath}` : null;
 
             setProfileData(prev => ({
                 ...prev,

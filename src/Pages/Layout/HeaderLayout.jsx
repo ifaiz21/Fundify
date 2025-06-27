@@ -98,7 +98,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
           {/* Logo */}
           <div className="flex items-center">
             <img
-              src="./images/fundify-transparent-logo.png"
+              src="./Images/fundify-transparent-logo.png"
               alt="Fundify Logo"
               className="w-12 h-12 mr-2 cursor-pointer"
               onClick={() => navigate('/')} // Navigate to homepage on logo click

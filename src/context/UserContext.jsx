@@ -36,7 +36,7 @@ export const UserProvider = ({ children }) => {
           const data = await response.json();
           setUserProfile(prev => ({
             ...prev,
-            profilePictureUrl: data.profilePictureUrl ? `http://localhost:5000${data.profilePictureUrl}` : null,
+            profilePictureUrl: data.profilePictureUrl ? `https://server-fundify.up.railway.app${data.profilePictureUrl}` : null,
             isAuthenticated: true, // User is authenticated
             id: data._id, // ADDED: Store the user's ID here
             // Populate saved campaigns: map to IDs for consistency with includes() checks

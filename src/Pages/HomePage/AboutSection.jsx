@@ -29,7 +29,7 @@ function AboutSection() {
           <div className="flex flex-col lg:flex-row gap-10 items-center">
             <div className="lg:w-1/2">
               <img
-                src="/images/funding-illustration.png"
+                src="/Images/funding-illustration.png"
                 alt="People funding ideas"
                 className="w-full max-w-md mx-auto rounded-lg shadow-xl"
               />

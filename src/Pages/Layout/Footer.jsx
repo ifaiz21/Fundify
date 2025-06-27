@@ -6,7 +6,7 @@ function Footer() {
             {/* Logo Column */}
             <div className="flex flex-col items-center justify-center self-center">
               <img
-                src="/images/logo.png"
+                src="/Images/logo.png"
                 alt="Fundify Logo"
                 className="h-20 w-20 mb-2"
               />

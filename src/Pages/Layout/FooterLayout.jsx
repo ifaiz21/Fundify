@@ -11,7 +11,7 @@ const FooterLayout = () => {
             <Link to="/" className="mb-2">
               <div className="flex flex-col items-center">
                 {/*  (Line 13) Increased the logo size */} 
-                <img src="./images/logo.png" alt="Fundify" className="h-22 w-36 mb-0 mt-4" />
+                <img src="./Images/logo.png" alt="Fundify" className="h-22 w-36 mb-0 mt-4" />
               </div>
             </Link>
           </div> 
@@ -68,7 +68,7 @@ const FooterLayout = () => {
           </div>
         </div>
         <div className="text-center text-gray-400 text-sm mt-8 pt-4 border-t border-gray-700"> {/* Added a border-top for visual separation */}
-          <p>© 2024 Fundify. All rights reserved.</p>
+          <p>© 2025 Fundify. All rights reserved.</p>
         </div>
       </div>
     </footer>

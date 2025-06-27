@@ -12,14 +12,14 @@ export default function GetStartedPage() {
       description:
         "Chris, a passionate student with big dreams, launched a campaign to support their education and build a small library for underprivileged kids. With determination and a clear vision, they raised Rs. 210,000. The generous support not only funded their studies but also brought books and hope to an entire community.",
       amount: "Chris raised Rs. 210,000 to help fund their study & library needs.",
-      image: "/images/kids-studying.jpg",
+      image: "/Images/kids-studying.jpg",
     },
     {
       title: "Bringing Clean Water to Village",
       description:
         "Ayesha, inspired by her village’s lack of clean drinking water, started a fundraiser to install a water filtration plant. The campaign gained massive support, and she successfully raised Rs. 300,000. Now, hundreds of villagers enjoy access to safe water daily.",
       amount: "Ayesha raised Rs. 300,000 to provide clean water to her community.",
-      image: "/images/clean-water.jpg", 
+      image: "/Images/clean-water.jpg", 
     },
   ];
 

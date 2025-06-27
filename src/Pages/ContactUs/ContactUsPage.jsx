@@ -87,7 +87,7 @@ const ContactUsPage = () => { // Removed showToast prop
             {/* Left Column - Illustration and Contact Info */}
             <div>
               <div className="mb-6">
-                <img src="/images/contact-support.png" alt="Customer Support" className="max-w-full h-auto" />
+                <img src="/Images/contact-support.png" alt="Customer Support" className="max-w-full h-auto" />
               </div>
 
               <div className="bg-[#A9BEA2] p-4 rounded-md">
