@@ -2,30 +2,31 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useUser } from '../../context/UserContext';
-import { showSuccessMessage, showErrorMessage } from '../../utils/toast'; // ADDED: Direct import of toast functions
+import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'; // Import icons for hamburger menu
 
-const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hideProfile }) => { // REMOVED: showToast from props
+const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hideProfile }) => {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  // REMOVED: logoutMessage state as showToast will handle it
-  // const [logoutMessage, setLogoutMessage] = useState("");
-  // REMOVED: message state as showToast will handle it
-  // const [message, ] = useState("");
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // New state for mobile menu
   const navigate = useNavigate();
   const location = useLocation();
 
   const { userProfile, loadingUserContext } = useUser();
   const dropdownRef = useRef(null);
+  const mobileMenuRef = useRef(null); // Ref for mobile menu container
 
-  // Default avatar logic
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
-  // Close dropdown when clicking outside
+  // Close dropdown or mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
+      }
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+        setIsMobileMenuOpen(false);
       }
     };
     document.addEventListener("mousedown", handleClickOutside);
@@ -41,75 +42,61 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("userProfile"); // Ensure userProfile is also cleared
+    localStorage.removeItem("userProfile");
     setIsLoggedIn(false);
     setShowConfirmLogout(false);
     navigate("/login");
-    // UPDATED: Use showSuccessMessage for logout
     showSuccessMessage("You have been logged out successfully!");
   };
 
-  // New handler for the Donate button
   const handleDonateClick = (e) => {
-    e.preventDefault(); // Prevent default link behavior
+    e.preventDefault();
     navigate("/explore", { state: { purpose: "select-for-donation" } });
+    setIsMobileMenuOpen(false); // Close mobile menu after navigation
   };
 
-  // ADDED: New handler for "Create Campaign" button with KYC logic
   const handleCreateCampaignClick = (e) => {
-    e.preventDefault(); // Prevent default link behavior for Link component
+    e.preventDefault();
 
     if (loadingUserContext) {
-      showErrorMessage('Loading user data, please wait...'); // Use showErrorMessage
+      showErrorMessage('Loading user data, please wait...');
       return;
     }
 
     const kycStatus = userProfile.kycStatus;
-    console.log("HeaderLayout Create Campaign Click - KYC Status:", kycStatus); // Debugging
+    console.log("HeaderLayout Create Campaign Click - KYC Status:", kycStatus);
 
     if (kycStatus === 'Approved') {
       navigate("/create-campaign");
     } else if (kycStatus === 'Rejected') {
-      showErrorMessage('You are not a verified user by FUNDIFY. Please complete your KYC first.'); // Use showErrorMessage
+      showErrorMessage('You are not a verified user by FUNDIFY. Please complete your KYC first.');
     } else if (kycStatus === 'Pending Review') {
-      showErrorMessage('Please wait for verification by FUNDIFY.'); // Use showErrorMessage
-    } else { // Covers cases like undefined, null, or any other status indicating not submitted
-      showErrorMessage('Please submit your KYC first.'); // Use showErrorMessage
+      showErrorMessage('Please wait for verification by FUNDIFY.');
+    } else {
+      showErrorMessage('Please submit your KYC first.');
     }
+    setIsMobileMenuOpen(false); // Close mobile menu after navigation
   };
 
   return (
     <>
-      {/* REMOVED: Local message and logoutMessage display JSX */}
-      {/* {message && (
-        <div className="bg-[#4A5D45] text-white text-center py-2">
-          {message}
-        </div>
-      )}
-      {logoutMessage && (
-        <div className="bg-[#B2C9AD] text-white text-center py-2">
-          {logoutMessage}
-        </div>
-      )} */}
-
-      <header className="flex items-center justify-between px-6 py-4 bg-white shadow-md">
+      <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6"> {/* Adjusted padding for mobile */}
         {/* Left Side - Logo & Navigation */}
-        <div className="flex items-center space-x-6">
+        <div className="flex items-center space-x-4 md:space-x-6"> {/* Adjusted space-x for mobile */}
           {/* Logo */}
           <div className="flex items-center">
             <img
               src="./Images/fundify-transparent-logo.png"
               alt="Fundify Logo"
-              className="w-12 h-12 mr-2 cursor-pointer"
-              onClick={() => navigate('/')} // Navigate to homepage on logo click
+              className="w-10 h-10 mr-1 cursor-pointer md:w-12 md:h-12 md:mr-2" // Adjusted logo size and margin for mobile
+              onClick={() => navigate('/')}
             />
           </div>
 
-          {/* Navigation Links */}
-          <nav className="flex space-x-6 text-[#000000]">
+          {/* Desktop Navigation - Hidden on mobile, visible on medium screens and up */}
+          <nav className="hidden md:flex md:space-x-6 md:text-[#000000]">
             <Link to="/" className="hover:text-[#485842] transition duration-300">Home</Link>
             {!hideDonate && (
-              // Modified Donate Link to use onClick handler
               <a href="/explore" onClick={handleDonateClick} className="hover:underline">Donate</a>
             )}
             {!hideAboutUs && (
@@ -118,21 +105,21 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
           </nav>
         </div>
 
-        {/* Right Side - Extra Links */}
-        <div className="flex items-center space-x-6">
+        {/* Right Side - Actions & User */}
+        <div className="flex items-center space-x-4 md:space-x-6"> {/* Adjusted space-x for mobile */}
+          {/* Desktop "Create Campaign" and "Contact Us" - Hidden on mobile, visible on medium screens and up */}
           {!hideCreate && (
-            <Link to="/create-campaign" className="hover:underline" onClick={handleCreateCampaignClick}> {/* MODIFIED: Use new handler */}
+            <Link to="/create-campaign" className="hidden text-[#000000] hover:underline md:block" onClick={handleCreateCampaignClick}>
               Create Campaign
             </Link>
           )}
           {!hideContact && (
-            <Link to="/contact" className="hover:underline">Contact Us</Link>
+            <Link to="/contact" className="hidden text-[#000000] hover:underline md:block">Contact Us</Link>
           )}
 
           {/* User Account Icon with Login Check */}
           {isLoggedIn ? (
             <div className="relative" ref={dropdownRef}>
-              {/* Profile Picture Link */}
               <button
                 onClick={() => setShowDropdown(!showDropdown)}
                 className="w-10 h-10 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300"
@@ -155,12 +142,12 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               {showDropdown && (
                 <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
                   {!hideProfile && (
-                    <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" onClick={() => setShowDropdown(false)}>
+                    <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" onClick={() => { setShowDropdown(false); setIsMobileMenuOpen(false); }}>
                       My Profile
                     </Link>
                   )}
                   <button
-                    onClick={() => setShowConfirmLogout(true)}
+                    onClick={() => { setShowConfirmLogout(true); setShowDropdown(false); }}
                     className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
                   >
                     Logout
@@ -169,14 +156,62 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               )}
             </div>
           ) : (
-            <Link to="/login" className="hover:underline">Login / Sign Up</Link>
+            <Link to="/login" className="hidden text-[#000000] hover:underline md:block"> {/* Login/Signup also hidden on mobile, part of hamburger menu */}
+              Login / Sign Up
+            </Link>
           )}
+
+          {/* Hamburger Menu Button - Visible on mobile, hidden on medium screens and up */}
+          <div className="md:hidden">
+            <button
+              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+              className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+            >
+              {isMobileMenuOpen ? (
+                <XMarkIcon className="h-8 w-8" />
+              ) : (
+                <Bars3Icon className="h-8 w-8" />
+              )}
+            </button>
+          </div>
         </div>
       </header>
+
+      {/* Mobile Menu Overlay - hidden by default, slides in from top/side */}
+      {isMobileMenuOpen && (
+        <div
+          ref={mobileMenuRef}
+          className="fixed inset-0 bg-white bg-opacity-95 z-40 md:hidden animate-fade-in-down" // Using white background for consistency with HeaderLayout
+        >
+          <div className="flex flex-col items-center pt-20 pb-8 space-y-6 text-[#000000] text-xl"> {/* Text color adjusted to black */}
+            <Link to="/" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+            {!hideDonate && (
+              <a href="/explore" onClick={handleDonateClick} className="hover:text-[#485842]">Donate</a>
+            )}
+            {!hideAboutUs && (
+              <Link to="/about" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+            )}
+            {!hideCreate && (
+              <Link to="/create-campaign" onClick={handleCreateCampaignClick} className="hover:text-[#485842]">
+                Create Campaign
+              </Link>
+            )}
+            {!hideContact && (
+              <Link to="/contact" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+            )}
+            {!isLoggedIn && (
+              <Link to="/login" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>
+                Login / Sign Up
+              </Link>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Logout Confirmation Modal */}
       {showConfirmLogout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-80 text-center">
+          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm text-center"> {/* Adjusted width for mobile */}
             <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
             <p className="mb-6">Are you sure you want to log out?</p>
             <div className="flex justify-center space-x-4">
