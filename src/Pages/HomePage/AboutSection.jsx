@@ -89,7 +89,7 @@ function AboutSection() {
           <div className="flex flex-col lg:flex-row gap-10 items-center">
             <div className="lg:w-1/2">
               <img
-                src="/images/discussion-illustration.png"
+                src="/Images/discussion-illustration.png"
                 alt="People in discussion"
                 className="w-full max-w-md mx-auto rounded-lg shadow-xl"
               />
