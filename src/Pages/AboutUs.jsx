@@ -26,7 +26,7 @@ const AboutUsPage = () => {
       id: 3,
       name: "M. Ibraheem",
       role: "CFO",
-      image: "./Images/Ibraheem.jpg",
+      image: "/Images/Ibraheem.jpg",
       email: "qamaribrahim112@gmail.com",
       bio: "Ibraheem brings financial expertise with a tech twist. He integrates data analytics and automation in financial planning, ensuring that Fundify’s growth is sustainable and data-driven.",
     },

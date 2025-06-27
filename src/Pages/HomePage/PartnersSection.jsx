@@ -75,7 +75,7 @@ function PartnersSection() {
             {/* Add a max-h-XX class here */}
             <div className="md:w-1/2 relative max-h-96 md:h-72 lg:h-80"> {/* Adjust max-h value */}
               <img
-                src="/images/contacting-person.png"
+                src="./images/contacting-person.png"
                 alt="Person using Fundify app"
                 className="w-full h-full object-cover object-center"
               />
