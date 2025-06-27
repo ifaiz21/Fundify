@@ -1,6 +1,6 @@
 // src/Pages/UserProfileSettings.jsx
 "use client"
-import React, { useState, useEffect, useRef, useCallback } from "react" // Added useCallback here
+import React, { useState, useEffect, useRef, useCallback } from "react"
 import { useNavigate } from "react-router-dom"
 import HeaderLayout from "./Layout/HeaderLayout"
 import FooterLayout from "./Layout/FooterLayout"
@@ -22,7 +22,6 @@ function UserProfileSettings() {
         kycStatus: "Not Submitted", // Default status, will be updated from backend
     });
 
-    // New state to hold the detailed KYC application object for the current user
     const [userKYCApplication, setUserKYCApplication] = useState(null);
 
     const [additionalEmails, setAdditionalEmails] = useState([])
@@ -43,9 +42,8 @@ function UserProfileSettings() {
 
     const [activeMenuItem, setActiveMenuItem] = useState("Profile");
 
-    const navigate = useNavigate();
+    const navigate = useNavigate()
 
-    // Function to fetch user profile AND KYC application details
     const fetchAllUserDetails = useCallback(async () => {
         setLoading(true);
         setError(null);
@@ -78,7 +76,7 @@ function UserProfileSettings() {
                 throw new Error(errorData.message || 'Failed to fetch profile details');
             }
             const userData = await userProfileResponse.json();
-            console.log("Fetched initial profile data:", userData);
+            console.log("Fetched initial user profile data:", userData);
 
             // --- 2. Fetch user's KYC application details ---
             const kycAppResponse = await fetch('http://localhost:5000/api/kyc/my-application', {
@@ -96,17 +94,15 @@ function UserProfileSettings() {
             } else {
                 const errorData = await kycAppResponse.json();
                 console.error("Failed to fetch KYC application:", errorData.message);
-                // Set kycAppData to an empty object or handle specific error state if needed
                 kycAppData = { kycApplication: null };
             }
 
             let derivedKycStatus = "Not Submitted";
             if (kycAppData.kycApplication) {
-                // Use the actual status from the KYCApplication document
                 derivedKycStatus = kycAppData.kycApplication.status;
-                setUserKYCApplication(kycAppData.kycApplication); // Store the full KYC application object
+                setUserKYCApplication(kycAppData.kycApplication);
             } else {
-                setUserKYCApplication(null); // No KYC application found
+                setUserKYCApplication(null);
             }
 
             const fetchedProfile = {
@@ -117,7 +113,7 @@ function UserProfileSettings() {
                 createdCampaigns: userData.createdCampaigns || 0,
                 backedCampaigns: userData.backedCampaigns || 0,
                 profilePictureUrl: userData.profilePictureUrl || '',
-                kycStatus: derivedKycStatus, // Set derived status based on KYCApplication.status
+                kycStatus: derivedKycStatus,
             };
 
             setProfileData(fetchedProfile);
@@ -125,7 +121,6 @@ function UserProfileSettings() {
             setAdditionalEmails(userData.additionalEmails || []);
             setProfileImagePreview(userData.profilePictureUrl ? `http://localhost:5000${userData.profilePictureUrl}` : null);
 
-            // Initial edit mode check
             if (!userData.name || !userData.contactNo) {
                 setIsProfileEditMode(true);
             } else {
@@ -138,13 +133,13 @@ function UserProfileSettings() {
         } finally {
             setLoading(false);
         }
-    }, [navigate, setUserProfile]); // Dependencies for useCallback
+    }, [navigate, setUserProfile]);
 
     useEffect(() => {
         if (!loadingUserContext) {
-            fetchAllUserDetails(); // Call the combined fetch function when user context is ready
+            fetchAllUserDetails();
         }
-    }, [loadingUserContext, fetchAllUserDetails]); // Dependencies for useEffect
+    }, [loadingUserContext, fetchAllUserDetails]);
 
 
     const handleProfileEditChange = (e) => {
@@ -379,7 +374,6 @@ function UserProfileSettings() {
     };
 
     const handleKYC = () => {
-        // Navigate to the first step of the KYC process
         navigate("/kyc-form");
     }
 
@@ -536,15 +530,30 @@ function UserProfileSettings() {
                                 <div className="flex justify-between items-start mb-6">
                                     <h2 className="text-xl font-semibold">Profile Details</h2>
                                     <div className="space-y-2">
+                                        {/* Edit/Save/Cancel buttons */}
                                         {isProfileEditMode ? (
                                             <div className="flex space-x-2">
                                                 <button onClick={handleProfileDetailsSave} className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">Save</button>
                                                 <button onClick={toggleProfileEditMode} className="bg-gray-300 text-gray-700 py-2 px-4 rounded text-sm">Cancel</button>
                                             </div>
                                         ) : (
+                                            // This is the "Edit" button
                                             <button onClick={toggleProfileEditMode} className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">Edit</button>
                                         )}
-                                        <button onClick={handleKYC} className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm">KYC</button>
+
+                                        {/* Conditional rendering for KYC button - Always ensure it occupies space for consistent layout */}
+                                        {profileData.kycStatus === "Approved" ? (
+                                            // If Approved, render an invisible placeholder to maintain layout
+                                            <div className="w-full py-2 px-4 text-sm invisible"></div>
+                                        ) : (
+                                            // For other statuses (Pending Review, Rejected, Not Submitted), show the button
+                                            <button
+                                                onClick={handleKYC}
+                                                className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm"
+                                            >
+                                                {profileData.kycStatus === "Rejected" ? "Apply again for KYC" : "KYC"}
+                                            </button>
+                                        )}
                                     </div>
                                 </div>
 
@@ -592,7 +601,8 @@ function UserProfileSettings() {
                                         {profileData.kycStatus === "Pending Review" && (
                                             <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-yellow-100 text-yellow-800">
                                                 <svg className="h-4 w-4 mr-1" fill="currentColor" viewBox="0 0 20 20" xmlns="http://www.w3.org/2000/svg">
-                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.487 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
+                                                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.487 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1
+                                                    1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd"></path>
                                                 </svg>
                                                 {profileData.kycStatus}
                                             </span>
@@ -618,7 +628,7 @@ function UserProfileSettings() {
                                     </div>
                                     {profileData.kycStatus === "Rejected" && userKYCApplication?.adminComments && (
                                         <p className="text-red-600 text-sm mt-2">
-                                            **Reason for Rejection:** {userKYCApplication.adminComments}
+                                            Reason for Rejection: {userKYCApplication.adminComments}
                                         </p>
                                     )}
                                 </div>

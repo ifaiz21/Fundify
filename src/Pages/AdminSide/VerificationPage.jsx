@@ -795,8 +795,6 @@ const VerificationPage = () => {
                             <p className="text-gray-600"><strong>Phone Number:</strong> {selectedKYCApplication.phoneNumber || 'N/A'}</p>
                             <p className="text-gray-600"><strong>Date of Birth:</strong> {selectedKYCApplication.dateOfBirth ? new Date(selectedKYCApplication.dateOfBirth).toLocaleDateString() : 'N/A'}</p>
                             <p className="text-gray-600"><strong>Address:</strong> {selectedKYCApplication.address || 'N/A'}</p>
-                            <p className="text-gray-600"><strong>City:</strong> {selectedKYCApplication.city || 'N/A'}</p>
-                            <p className="text-gray-600"><strong>Country:</strong> {selectedKYCApplication.country || 'N/A'}</p>
 
                             <h4 className="text-lg font-bold text-gray-700 mt-6">Document Upload:</h4>
                             {selectedKYCApplication.documentType && selectedKYCApplication.documentNumber && (
