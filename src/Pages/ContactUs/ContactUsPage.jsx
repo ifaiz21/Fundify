@@ -76,26 +76,26 @@ const ContactUsPage = () => { // Removed showToast prop
   }
 
   return (
-    <div className="flex flex-col min-h-screen">
+    <div className="flex flex-col min-h-screen bg-[#F0FFF0]">
       <Header hideContact={true}/>
 
-      <main className="flex-1 py-12">
+      <main className="flex-1 py-8 md:py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <h1 className="text-2xl font-bold mb-8 text-center text-[#4A5D45]">Need Help? Contact Fundify Support</h1>
+          <h1 className="text-3xl md: text-4x1 font-bold mb-8 text-center text-[#4A5D45]">Need Help? Contact Fundify Support</h1>
 
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-12">
             {/* Left Column - Illustration and Contact Info */}
             <div>
               <div className="mb-6">
-                <img src="/Images/contact-support.png" alt="Customer Support" className="max-w-full h-auto" />
+                <img src="/Images/contact-support.png" alt="Customer Support" className="max-w-full h-auto shadow-md rounded-lg" />
               </div>
 
               <div className="bg-[#A9BEA2] p-4 rounded-md">
-                <h2 className="text-lg font-semibold mb-4">Fundify Support</h2>
+                <h2 className="text-lg font-semibold mb-4 text-[#4A5D45]">Fundify Support</h2>
 
                 <div className="space-y-4">
                   <div className="flex items-center">
-                    <div className="bg-gray-300 rounded-full p-2 mr-3">📧</div>
+                    <div className="bg-gray-300 rounded-full p-2 mr-4">📧</div>
                     <div>
                       <p className="text-sm text-[#4A5D45]">Support Email</p>
                       <p className="text-sm">support@fundify.com</p>
@@ -103,7 +103,7 @@ const ContactUsPage = () => { // Removed showToast prop
                   </div>
 
                   <div className="flex items-center">
-                    <div className="bg-gray-300 rounded-full p-2 mr-3">📞</div>
+                    <div className="bg-gray-300 rounded-full p-2 mr-4">📞</div>
                     <div>
                       <p className="text-sm text-[#4A5D45]">Helpline</p>
                       <p className="text-sm">+92 300 1234567</p>
@@ -115,7 +115,7 @@ const ContactUsPage = () => { // Removed showToast prop
 
             {/* Right Column - Contact Form */}
             <div className="bg-[#A9BEA2] p-6 rounded-md">
-              <h2 className="text-center font-semibold mb-4 text-[#000000]">CONTACT US</h2>
+              <h2 className="text-center font-bold mb-6 text-[#000000]">CONTACT US</h2>
 
               <form onSubmit={handleSubmitRequest}>
                 <div className="grid grid-cols-2 gap-4 mb-4">

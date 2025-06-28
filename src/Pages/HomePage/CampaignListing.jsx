@@ -13,9 +13,7 @@ export default function CampaignListing() {
   const [error, setError] = useState(null);
 
   const navigate = useNavigate();
-
-  // Pagination constants
-  const campaignsPerPage = 6; // Display 6 campaigns per page
+  const campaignsPerPage = 6;
 
   useEffect(() => {
     const fetchCampaigns = async () => {

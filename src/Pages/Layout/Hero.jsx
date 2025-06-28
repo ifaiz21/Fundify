@@ -20,7 +20,7 @@ export default function Hero() {
   
         {/* Content */}
         <div className="relative container mx-auto px-6 text-center mt-16">
-          <h1 className="text-4xl md:text-6xl font-bold text-white mb-4">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-bold text-white mb-4">
             <span className="block"><span className="text-[#B2C9AD]">Empower </span> 
                Dreams</span>
             <span className="block">
@@ -34,12 +34,12 @@ export default function Hero() {
   
           <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
             <a href="/create-campaign" className="w-full sm:w-auto">
-              <button class="btn">
+              <button class="btn w-full">
                 <i class="animation"></i>START A CAMPAIGN<i class="animation"></i>
               </button>
             </a>
             <a href="/explore" className="w-full sm:w-auto">
-              <button class="btn">
+              <button class="btn w-full">
                 <i class="animation"></i>EXPLORE CAMPAIGNS<i class="animation"></i>
               </button>
             </a>
@@ -67,6 +67,7 @@ export default function Hero() {
             text-transform: uppercase;
             overflow: hidden;
             cursor: pointer;
+            transition: opacity 0.3s;
           }
 
           .btn:hover {
