@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import SideLayout from "./Layout/SideLayout";
+import SideLayout from "./Layout/SideLayout"; 
 import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { useNavigate } from "react-router-dom";
@@ -20,7 +20,7 @@ const SignupPage = () => {
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [error, setError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
-  const [, setLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -76,37 +76,33 @@ const SignupPage = () => {
     }
   };
 
-  // This is the NEW and specific handler for Google Sign-Up on this page.
-  // It is called by the GoogleSignUpButton component after successful Google authentication.
+  // Handler for Google Sign-Up
   const handleGoogleSignupSuccess = async (idToken, googleAuthResponse) => {
-    setLoading(true); // Indicate overall process is loading
-    setError(""); // Clear previous errors
-    setSuccessMessage(""); // Clear previous success messages
+    setLoading(true); 
+    setError(""); 
+    setSuccessMessage("");
 
     try {
-      // Make API call to your backend's *Google Sign-up with Verification* endpoint
       const response = await axios.post(
         "https://server-fundify.up.railway.app/api/auth/google-signup-verify-email",
-        {}, // Body can be empty as the Google ID token is in the Authorization header
+        {},
         {
           headers: {
-            Authorization: `Bearer ${idToken}`, // Send the Google ID token to your backend
+            Authorization: `Bearer ${idToken}`, 
           },
         }
       );
 
-      setSuccessMessage(response.data.message); // Set success message from backend
-      // Navigate to the code verification page, passing the email AND registration method
+      setSuccessMessage(response.data.message); 
       navigate("/code-verification", {
         state: {
           email: response.data.email || googleAuthResponse.email,
-          registrationMethod: 'google' // 🚨 CRITICAL: Pass 'google' as the registration method
+          registrationMethod: 'google' 
         }
       });
 
     } catch (apiError) {
       console.error("Google signup with verification failed:", apiError.response?.data);
-      // Check for specific error message from backend
       if (apiError.response?.status === 400 && apiError.response?.data?.message?.includes('already exists using a different sign-in method')) {
           setError(
             <>
@@ -142,7 +138,9 @@ const SignupPage = () => {
           </button>
         </div>
 
-        <div className="flex h-full justify-center items-center mt-12">
+        {/* --- RESPONSIVE LAYOUT CHANGES --- */}
+        {/* Added padding (px-4) for mobile and vertical margin/padding (py-12) */}
+        <div className="flex h-full justify-center items-center py-12 px-4 mt-12 md:mt-0">
           <div className="form-container">
             <p className="title text-[#4b5849]">Sign Up</p>
 
@@ -205,20 +203,20 @@ const SignupPage = () => {
                 </span>
               </div>
               
-               {/* Display messages based on type */}   
-            {error && (
-              <p className="text-red-600 text-sm mt-2 text-center">
-                {error}
-              </p>
-               )}
-            {successMessage && (
-              <p className="text-green-600 text-sm mb-4">
-                {successMessage}
-              </p>
-              )}
+              {/* Display messages based on type */}   
+              {error && (
+                <p className="text-red-600 text-sm mt-2 text-center">
+                  {error}
+                </p>
+                )}
+              {successMessage && (
+                <p className="text-green-600 text-sm mb-4">
+                  {successMessage}
+                </p>
+                )}
 
-              <button className="form-btn" type="submit">
-                Sign up
+              <button className="form-btn" type="submit" disabled={loading}>
+                {loading ? 'Signing up...' : 'Sign up'}
               </button>
             </form>
 
@@ -230,22 +228,21 @@ const SignupPage = () => {
             </p>
 
             <div className="flex flex-col items-center mt-1 space-y-4">
-
               <div className="w-full flex justify-center mt-0">
                 <GoogleSignUpButton 
-                  onGoogleSuccess={handleGoogleSignupSuccess} 
-                  buttonText="Sign up with Google" 
+                    onGoogleSuccess={handleGoogleSignupSuccess} 
+                    buttonText="Sign up with Google" 
                 />
               </div>
             </div>
           </div>
         </div>
       </div>
-      {/* Embedded CSS for the form and buttons */}
+      {/* --- RESPONSIVE CSS CHANGES --- */}
       <style jsx>{`
         .form-container {
-          width: 350px;
-          min-height: 500px;
+          width: 100%; /* Fill container width */
+          max-width: 380px; /* But don't exceed 380px on larger screens */
           background-color: #fff;
           box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
           border-radius: 10px;
@@ -256,7 +253,7 @@ const SignupPage = () => {
         .title {
           text-align: center;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
           margin: 10px 0 30px 0;
           font-size: 28px;
           font-weight: 800;
@@ -276,33 +273,13 @@ const SignupPage = () => {
           outline: 0 !important;
           box-sizing: border-box;
           padding: 12px 15px;
-        }
-
-        .page-link {
-          text-decoration: underline;
-          margin: 0;
-          text-align: end;
-          color: #747474;
-          text-decoration-color: #747474;
-        }
-
-        .page-link-label {
-          cursor: pointer;
-          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-          font-size: 9px;
-          font-weight: 700;
-          text-decoration: none;
-        }
-
-        .page-link-label:hover {
-          color: #000;
+          width: 100%;
         }
 
         .form-btn {
           padding: 10px 15px;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
           border-radius: 20px;
           border: 0 !important;
           outline: 0 !important;
@@ -310,6 +287,12 @@ const SignupPage = () => {
           color: white;
           cursor: pointer;
           box-shadow: rgba(0, 0, 0, 0.24) 0px 3px 8px;
+          transition: background-color 0.3s, box-shadow 0.3s;
+        }
+        
+        .form-btn:disabled {
+            background-color: #9ca3af;
+            cursor: not-allowed;
         }
 
         .form-btn:active {
@@ -319,13 +302,14 @@ const SignupPage = () => {
         .sign-up-label {
           margin: 0;
           font-size: 10px;
+          text-align: center;
           color: #747474;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
         }
 
         .sign-up-link {
-          margin-left: 1px;
+          margin-left: 4px;
           font-size: 11px;
           text-decoration: underline;
           text-decoration-color: teal;
@@ -333,40 +317,18 @@ const SignupPage = () => {
           cursor: pointer;
           font-weight: 800;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-        }
-
-        .buttons-container {
-          width: 100%;
-          display: flex;
-          flex-direction: column;
-          justify-content: flex-start;
-          margin-top: 20px;
-          gap: 15px;
-        }
-
-        /* Removed .apple-login-button CSS rule */
-        .google-login-button { /* Keep this CSS rule, though not directly used by GoogleSignInButton */
-          border-radius: 20px;
-          box-sizing: border-box;
-          padding: 10px 15px;
-          box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
-              rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
-          cursor: pointer;
-          display: flex;
-          justify-content: center;
-          align-items: center;
-          font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-          font-size: 11px;
-          gap: 5px;
-          border: 2px solid #747474; /* Re-added border */
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
         }
         
-        /* Removed .apple-icon CSS rule */
-        .google-icon { /* Keep this CSS rule */
-          font-size: 18px;
-          margin-bottom: 1px;
+        /* --- MEDIA QUERY FOR MOBILE DEVICES --- */
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 20px;
+            }
+            .title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
         }
       `}</style>
     </SideLayout>
@@ -374,3 +336,4 @@ const SignupPage = () => {
 };
 
 export default SignupPage;
+

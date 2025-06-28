@@ -167,6 +167,7 @@ const SetPasswordPage = () => {
           outline: 0 !important;
           box-sizing: border-box;
           padding: 12px 15px;
+          width: 100%;
         }
 
         .form-btn {

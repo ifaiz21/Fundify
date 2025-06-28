@@ -66,8 +66,8 @@ const LoginPage = () => {
 
   return (
     <SideLayout>
-      <div className="h-screen bg-[#F0FFF0] overflow-y-hidden font-Inter">
-        <div className="absolute p-4">
+      <div className="min-h-screen bg-[#F0FFF0] font-Inter flex flex-col"> {/* Changed h-screen to min-h-screen and added flex-col */}
+        <div className="p-4 absolute"> {/* Added md:p-8 for more padding on larger screens */}
           <button
             onClick={() => navigate("/")}
             className="text-lg text-[#91ac8f] hover:text-[#667964] ease-in-out transition duration-300 mb-4 flex flex-row items-center font-semibold"
@@ -76,8 +76,9 @@ const LoginPage = () => {
           </button>
         </div>
 
-        <div className="flex h-full items-center justify-center">
-          <div className="form-container">
+        {/* Ensure the form container is centered and takes appropriate width */}
+        <div className="flex h-full justify-center items-center py-12 px-4 mt-12 md:mt-0"> {/* Added flex-grow and padding */}
+          <div className="form-container w-full max-w-sm mx-auto p-6 mt-2"> {/* Added Tailwind classes for responsiveness */}
             <p className="title text-[#4b5849]">Welcome back</p>
 
             <form className="form" onSubmit={handleContinue}>
@@ -91,7 +92,7 @@ const LoginPage = () => {
                 required
               />
 
-              <div className="relative">
+                <div className="relative">
                 <input
                   type={showPassword ? "text" : "password"}
                   className="input pr-12"
@@ -111,7 +112,7 @@ const LoginPage = () => {
 
               {message && <div className="text-green-600 mb-4 text-center">{message}</div>}
               {error && <p className="text-red-600 text-sm mt-2 text-center">{error}</p>}
-              
+
               <p className="page-link">
                 <a href="/forget-password" className="page-link-label">
                   Forgot Password?
@@ -130,11 +131,7 @@ const LoginPage = () => {
               </a>
             </p>
 
-            {/* Re-integrated original GoogleSignInButton */}
             <div className="buttons-container">
-              {/* Removed Apple Login Button */}
-              
-              {/* Original GoogleSignInButton component */}
               <GoogleSignInButton />
             </div>
           </div>
@@ -143,19 +140,30 @@ const LoginPage = () => {
       {/* Embedded CSS for the form and buttons */}
       <style jsx>{`
         .form-container {
-          width: 350px;
-          height: 500px;
+          /* Remove fixed width and height from here to make it responsive */
+          /* width: 350px; */
+          /* height: 500px; */
           background-color: #fff;
           box-shadow: rgba(0, 0, 0, 0.35) 0px 5px 15px;
           border-radius: 10px;
           box-sizing: border-box;
-          padding: 20px 30px;
+          /* Padding is now controlled by Tailwind class 'p-6' on the div above */
+          /* padding: 20px 30px; */
         }
+
+        /* Responsive adjustments for form-container using media query if needed,
+           but Tailwind classes should handle most of it now */
+        @media (max-width: 639px) { /* Tailwind's 'sm' breakpoint is 640px, so this applies to smaller screens */
+            .form-container {
+                padding: 1.5rem; /* Equivalent to p-6, ensuring consistent mobile padding */
+            }
+        }
+
 
         .title {
           text-align: center;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
           margin: 10px 0 30px 0;
           font-size: 28px;
           font-weight: 800;
@@ -175,6 +183,7 @@ const LoginPage = () => {
           outline: 0 !important;
           box-sizing: border-box;
           padding: 12px 15px;
+          width: 100%;
         }
 
         .page-link {
@@ -188,8 +197,8 @@ const LoginPage = () => {
         .page-link-label {
           cursor: pointer;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
-          font-size: 9px;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+          font-size: 9px; /* This font size might be too small on some phones. Consider increasing it slightly. */
           font-weight: 700;
           text-decoration: none;
         }
@@ -201,7 +210,7 @@ const LoginPage = () => {
         .form-btn {
           padding: 10px 15px;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
           border-radius: 20px;
           border: 0 !important;
           outline: 0 !important;
@@ -217,22 +226,22 @@ const LoginPage = () => {
 
         .sign-up-label {
           margin: 0;
-          font-size: 10px;
+          font-size: 10px; /* This font size might be too small on some phones. Consider increasing it slightly. */
           color: #747474;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
         }
 
         .sign-up-link {
           margin-left: 1px;
-          font-size: 11px;
+          font-size: 11px; /* This font size might be too small on some phones. Consider increasing it slightly. */
           text-decoration: underline;
           text-decoration-color: teal;
           color: teal;
           cursor: pointer;
           font-weight: 800;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
         }
 
         .buttons-container {
@@ -244,26 +253,24 @@ const LoginPage = () => {
           gap: 15px;
         }
 
-        /* Removed .apple-login-button CSS rule */
         .google-login-button { /* Keep this CSS rule, though not directly used by GoogleSignInButton */
           border-radius: 20px;
           box-sizing: border-box;
           padding: 10px 15px;
           box-shadow: rgba(0, 0, 0, 0.16) 0px 10px 36px 0px,
-              rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
+            rgba(0, 0, 0, 0.06) 0px 0px 0px 1px;
           cursor: pointer;
           display: flex;
           justify-content: center;
           align-items: center;
           font-family: "Lucida Sans", "Lucida Sans Regular", "Lucida Grande",
-              "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
+            "Lucida Sans Unicode", Geneva, Verdana, sans-serif;
           font-size: 11px;
           gap: 5px;
-          border: 2px solid #747474; /* Re-added border */
+          border: 2px solid #747474;
         }
-        
-        /* Removed .apple-icon CSS rule */
-        .google-icon { /* Keep this CSS rule */
+
+        .google-icon {
           font-size: 18px;
           margin-bottom: 1px;
         }
