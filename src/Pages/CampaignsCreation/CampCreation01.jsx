@@ -47,22 +47,36 @@ const CampaignCreation01 = () => {
     <div className="flex flex-col min-h-screen">
       <Header hideCreate={true} />
 
-      <main className="flex-1 py-12">
+      <main className="flex-1 py-8 sm:py-12">
         <div className="container mx-auto px-4 md:px-6">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+          {/* Use lg:grid-cols-2 to stack columns on mobile and tablets */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
+            
             {/* Left Column - Logo */}
-            <div className="flex flex-col items-center">
-              <div className="w-64 h-64 mb-6">
+            {/* Center content and adjust logo size for different breakpoints */}
+            <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
+            <div className="hidden md:block">
+              <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 mb-6 lg:mb-0">
                 <img 
-                src="/Images/fundify-white-bg-logo.png"
-                alt="Fundify Logo"
-                className="w-full h-full" />
+                  src="/Images/fundify-white-bg-logo.png"
+                  alt="Fundify Logo"
+                  className="w-full h-full object-contain" // Use object-contain to ensure logo isn't distorted
+                />
+              </div>
+            </div>  
+              {/* Optional: Add a heading and paragraph for better context on mobile */}
+              <div className="lg:hidden">
+                <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mt-4">Welcome to Fundify</h1>
+                <p className="text-gray-600 mt-2 max-w-md">
+                  Let's get you set up to start your fundraising journey. Just a few quick questions to begin.
+                </p>
               </div>
             </div>
 
             {/* Right Column - Get Started Form */}
-            <div className="flex justify-center">
-              <div className="bg-[#A9BEA2] rounded-md p-6 w-full max-w-md">
+            <div className="flex justify-center w-full">
+              {/* Adjust padding for different screen sizes */}
+              <div className="bg-[#A9BEA2] rounded-lg shadow-lg p-6 sm:p-8 w-full max-w-md">
                 <div className="mb-6">
                   <div className="flex items-center justify-between mb-4">
                     <div className="h-2 w-2 rounded-full bg-[#4B5842]"></div>
@@ -71,7 +85,8 @@ const CampaignCreation01 = () => {
                     <div className="h-0.5 flex-1 bg-white mx-2"></div>
                     <div className="h-2 w-2 rounded-full bg-white"></div>
                   </div>
-                  <h2 className="text-center text-lg font-medium">
+                  {/* Make heading larger for better visibility */}
+                  <h2 className="text-center text-xl sm:text-2xl font-medium text-[#4B5842]">
                     Let's Get <span className="font-bold">STARTED</span>
                   </h2>
                 </div>
@@ -88,7 +103,7 @@ const CampaignCreation01 = () => {
                         name="name"
                         value={formData.name}
                         onChange={handleChange}
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B5842] transition-shadow"
                         required
                       />
                     </div>
@@ -103,7 +118,7 @@ const CampaignCreation01 = () => {
                           name="location"
                           value={formData.location}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842] appearance-none bg-white"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B5842] appearance-none bg-white transition-shadow"
                           required
                         >
                           <option value="" disabled>
@@ -118,7 +133,7 @@ const CampaignCreation01 = () => {
                         </select>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                           <svg
-                            className="h-4 w-4 text-gray-500"
+                            className="h-5 w-5 text-gray-500" // Slightly larger icon
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20"
                             fill="currentColor"
@@ -143,7 +158,7 @@ const CampaignCreation01 = () => {
                           name="category"
                           value={formData.category}
                           onChange={handleChange}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842] appearance-none bg-white"
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#4B5842] appearance-none bg-white transition-shadow"
                           required
                         >
                           <option value="" disabled>
@@ -160,7 +175,7 @@ const CampaignCreation01 = () => {
                           <option value="Film & Video">Film & Video</option>
                           <option value="Food">Food</option>
                           <option value="Games">Games</option>
-                          <option value="Journalism">Journalism</option>          
+                          <option value="Journalism">Journalism</option>         
                           <option value="Medical">Medical</option>
                           <option value="Music">Music</option>
                           <option value="Nonprofit">Nonprofit</option>
@@ -172,7 +187,7 @@ const CampaignCreation01 = () => {
                         </select>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                           <svg
-                            className="h-4 w-4 text-gray-500"
+                            className="h-5 w-5 text-gray-500" // Slightly larger icon
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20"
                             fill="currentColor"
@@ -190,7 +205,7 @@ const CampaignCreation01 = () => {
                     <div className="pt-4">
                       <button
                         type="submit"
-                        className="w-full bg-[#4B5842] text-white py-2 rounded-md hover:bg-[#3A4433] transition-colors"
+                        className="w-full bg-[#4B5842] text-white py-3 rounded-md hover:bg-[#3A4433] transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-[#4B5842]"
                       >
                         Next
                       </button>

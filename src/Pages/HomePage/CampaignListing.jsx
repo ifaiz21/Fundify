@@ -116,16 +116,16 @@ export default function CampaignListing() {
     <div className="max-w-7xl mx-auto px-4 py-16 to-gray-50 rounded-xl shadow-lg bg-[#F0FFF0]">
       {/* Headings */}
       <div className="text-center mb-8">
-        <h1 className="text-4xl font-semibold text-[#4A5D45] mb-2 drop-shadow-md">
+        <h1 className="text-3xl md:text-4xl font-bold text-[#4A5D45] mb-2 drop-shadow-md">
           Compassion Unites!
         </h1>
-        <h2 className="text-2xl text-[#4A5D45] drop-shadow-sm">
+        <h2 className="text-xl md:text-2xl text-[#4A5D45] mt-2 drop-shadow-sm">
           Choose a Cause, Change a Life!
         </h2>
       </div>
 
       {/* Search Bar */}
-      <div className="relative max-w-2xl mx-auto mb-8">
+      <div className="relative max-w-2xl mx-auto mb-12">
         <input
           type="text"
           placeholder="Find campaigns..."
@@ -160,7 +160,7 @@ export default function CampaignListing() {
           currentCampaigns.map((campaign) => (
             <div
               key={campaign._id || campaign.id}
-              className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-xl transition-all duration-300 flex flex-col h-[450px] transform hover:scale-103" // Added hover:scale-103
+              className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col transform hover:-translate-y-2" // Added hover:scale-103
             >
               <img
                 src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `https://server-fundify.up.railway.app/${campaign.mediaUrls[0]}` : "/placeholder.svg"}
@@ -170,7 +170,7 @@ export default function CampaignListing() {
               <div className="p-6 flex flex-col flex-grow justify-between bg-[#ffffff]">
                 <p className="text-gray-500 text-sm mb-2">{new Date(campaign.createdAt).toLocaleDateString()}</p>
                 <h3 className="text-xl font-semibold mb-2 text-gray-800">{campaign.title}</h3>
-                <p className="text-gray-600 mb-4 line-clamp-3 h-20">
+                <p className="text-gray-600 mb-4 line-clamp-3 flex-grow h-20">
                   {campaign.description}
                 </p>
                 <div className="mt-auto">

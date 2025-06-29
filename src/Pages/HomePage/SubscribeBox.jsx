@@ -52,9 +52,9 @@ export default function SubscribeBox({ showToast }) { // Accepts showToast as a 
     // You can optionally show a brief success message or nothing at all
     if (message && message.type === 'success') {
       return (
-        <section className="py-12 px-4">
-          <div className="max-w-xl mx-auto p-8 rounded-lg shadow-xl bg-green-100 text-green-800 text-center">
-            <p className="text-xl font-semibold">{message.text}</p>
+        <section className="py-12 px-4 sm:px-6 lg:px-8">
+          <div className="max-w-xl mx-auto p-6 sm:p-8 rounded-lg shadow-xl bg-green-100 text-green-800 text-center">
+            <p className="text-lg sm:text-xl font-semibold">{message.text}</p>
           </div>
         </section>
       );
@@ -63,12 +63,12 @@ export default function SubscribeBox({ showToast }) { // Accepts showToast as a 
   }
 
   return (
-    <section className="py-12 px-4">
-      <div className="max-w-xl mx-auto p-8 rounded-lg shadow-xl" style={{ backgroundColor: '#4a5d45' }}>
-        <h2 className="text-3xl font-bold mb-4 text-white">
+    <section className="py-12 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-xl mx-auto p-6 sm:p-8 rounded-lg shadow-xl" style={{ backgroundColor: '#4a5d45' }}>
+        <h2 className="text-2xl sm:text-3xl font-bold mb-4 text-white text-center sm:text-left">
           Subscribe to our newsletter.
         </h2>
-        <p className="text-gray-200 mb-6 text-justify">
+        <p className="text-gray-200 mb-6 text-center sm:text-left text-base sm:text-lg">
           Stay updated with Fundify's latest campaigns, success stories, and community news. Get insights into impactful projects and discover new ways to make a difference.
         </p>
         
@@ -80,11 +80,11 @@ export default function SubscribeBox({ showToast }) { // Accepts showToast as a 
           </div>
         )}
 
-        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-4">
+        <form onSubmit={handleSubmit} className="flex flex-col sm:flex-row gap-3 sm:gap-4">
           <input
             type="email"
             placeholder="Enter your email"
-            className="flex-grow p-3 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+            className="flex-grow p-3 rounded-md border border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900 w-full"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -92,7 +92,7 @@ export default function SubscribeBox({ showToast }) { // Accepts showToast as a 
           />
           <button
             type="submit"
-            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors"
+            className="px-6 py-3 bg-blue-600 text-white font-semibold rounded-md hover:bg-blue-700 transition-colors w-full sm:w-auto"
             style={{ backgroundColor: '#625d99' }}
             disabled={loading}
           >

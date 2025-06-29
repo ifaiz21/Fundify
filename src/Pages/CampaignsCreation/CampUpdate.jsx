@@ -118,11 +118,13 @@ const CampaignUpdate = () => {
     <div className="flex flex-col min-h-screen">
       <Header />
 
-      <div className="bg-gray-100 py-2 px-4 text-gray-500 text-sm">Update campaign</div>
+      <div className="bg-[#A9BEA2] py-2 px-6 text-gray-500 font-bold text-center text-sm">Update campaign</div>
 
-      <div className="flex flex-1 px-20 py-12 gap-12">
+      <div className="flex flex-col lg:flex-row flex-1 px-4 sm:px-8 py-8 gap-8">
         {/* Logo */}
-        <div className="flex flex-col items-center justify-center w-1/2">
+        
+        <div className="flex flex-col items-center justify-center w-full w-1/2">
+         <div className="hidden md:block">
           <div className="w-64 h-64 mb-4">
             <img
               src="/Images/fundify-white-bg-logo.png"
@@ -130,11 +132,17 @@ const CampaignUpdate = () => {
               className="w-full h-full object-contain"
             />
           </div>
+         </div>
+         {/* Optional: Add text for context on mobile */}
+          <div className="text-center lg:hidden">
+              <h2 className="text-xl font-bold text-gray-800">Keep Your Backers Informed</h2>
+              <p className="text-gray-600 mt-1">Regular updates build trust and keep the momentum going.</p>
+          </div>
         </div>
 
         {/* Form */}
         <form onSubmit={handleUpdate} className="w-full max-w-xl bg-white border border-gray-300 rounded-md shadow">
-          <div className="border-b bg-gray-100 px-4 py-3 text-sm font-medium">Project Updates</div>
+          <div className="border-b bg-[#A9BEA2] px-4 py-3 text-sm font-bold text-center">Project Updates</div>
 
           <div className="px-4 py-3 border-b">
             <label className="block text-sm font-semibold mb-1">Campaign Title:</label>
@@ -234,4 +242,4 @@ const CampaignUpdate = () => {
   )
 }
 
-export default CampaignUpdate
+export default CampaignUpdate;
