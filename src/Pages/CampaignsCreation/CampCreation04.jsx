@@ -95,7 +95,7 @@ const CampaignCreation04 = () => {
             <div className="flex justify-center">
               <div className="bg-white rounded-md border border-gray-200 shadow-sm w-full max-w-md overflow-hidden">
                 {/* Editor Header */}
-                <div className="flex items-center justify-between border-b border-gray-200 px-4 py-2">
+                <div className="flex items-center justify-between border-b border-gray-200 bg-[#A9BEA2] px-4 py-2">
                   <h2 className="font-medium">Tell Your Story</h2>
                 </div>
 

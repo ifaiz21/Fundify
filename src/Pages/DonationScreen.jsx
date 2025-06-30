@@ -4,7 +4,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "./Layout/HeaderLayout";
-import Footer from "./Layout/Footer";
+import Footer from "./Layout/FooterLayout";
 import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Adjust path based on where you saved toast.js
 
 const DonationScreen = () => {
@@ -13,7 +13,7 @@ const DonationScreen = () => {
   const [donationAmount, setDonationAmount] = useState(25);
   const [isCustomAmount, setIsCustomAmount] = useState(false);
   const [donationFrequency, setDonationFrequency] = useState("one-time");
-  const [honorOf, setHonorOf] = useState("");
+  //const [honorOf, setHonorOf] = useState("");
   const [donationType, setDonationType] = useState("General donation");
   const [campaignId, setCampaignId] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -50,7 +50,7 @@ const DonationScreen = () => {
     const donationData = {
       amount: Number(donationAmount),
       frequency: donationFrequency,
-      honorOf: honorOf,
+      //honorOf: honorOf,
       donationType: donationType,
       campaignId: campaignId,
     };
@@ -86,173 +86,249 @@ const DonationScreen = () => {
   };
 
   return (
-    <div className="flex flex-col min-h-screen">
-      <Header hideDonate={true}/>
+    <div className="donation-page flex flex-col min-h-screen bg-gray-50">
+        <Header hideDonate={true} />
 
-      <main className="flex-1 py-8">
-        <div className="container mx-auto px-4 md:px-6">
-          <div className="flex items-start gap-4">
-            {/* Left Column - Hero Image */}
-            <div className="relative rounded-lg overflow-hidden top-20 h-300 w-2/4 ml-0">
-              <img
-                src="./Images/donation-screen-img.jpeg"
-                alt="We Can Save The Future"
-                className="w-full h-full object-cover"
-              />
-              {/* Green Overlay */}
-              <div className="absolute inset-0 bg-[#4A5D45] opacity-50"></div>
-              
-              <div className="absolute inset-0 bg-black bg-opacity-30 flex flex-col justify-center p-28">
-                <h2 className="text-white text-4xl font-roman font-bold leading-tight">
-                  We Can <br />
-                  Save The <br />
-                  Future
-                </h2>
-              </div>
+        <main className="flex-1 py-8 sm:py-12">
+            <div className="container mx-auto px-4 md:px-6">
+                <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
+
+                    {/* Left Column - Hero Image */}
+                    <div className="hero-column w-full lg:w-5/12">
+                        <div className="relative rounded-lg overflow-hidden shadow-lg">
+                            <img
+                                src="./Images/donation-screen-img.jpeg"
+                                alt="We Can Save The Future"
+                                className="w-full h-96 lg:h-full object-cover brightness-50"
+                            />
+                            <div className="absolute inset-0 bg-gradient-to-t from-[#4A5D45] via-transparent to-transparent opacity-80"></div>
+                            <div className="absolute bottom-0 left-0 p-6 sm:p-8">
+                                <h2 className="text-white text-4xl sm:text-5xl font-bold leading-tight">
+                                    We Can <br />
+                                    Save The <br />
+                                    Future
+                                </h2>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Right Column - Donation Form */}
+                    <div className="form-column w-full lg:w-7/12">
+                        <div className="bg-white p-6 sm:p-8 rounded-lg shadow-xl">
+                            <div className="text-center lg:text-left mb-6">
+                                <h3 className="text-2xl sm:text-3xl font-bold text-gray-800">Make a Donation</h3>
+                                <p className="text-gray-600 mt-1">Your support helps us create a better world. Every contribution is a blessing.</p>
+                            </div>
+
+                            <form className="space-y-6">
+                                <div>
+                                    <label className="form-label">Choose a donation type</label>
+                                    <select
+                                        className="form-input"
+                                        value={donationType}
+                                        onChange={(e) => setDonationType(e.target.value)}
+                                    >
+                                        <option>General Donation</option>
+                                        <option>Project Specific</option>
+                                        <option>Emergency Relief</option>
+                                        <option>Education Purpose</option>
+                                        <option>Flood Relief</option>
+                                        <option>Other</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label className="form-label">Choose a donation amount (PKR)</label>
+                                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                                        {[2500, 5000, 10000].map((amount) => (
+                                            <button
+                                                key={amount}
+                                                type="button"
+                                                onClick={() => {
+                                                    setDonationAmount(amount);
+                                                    setIsCustomAmount(false);
+                                                }}
+                                                className={`amount-button ${donationAmount === amount && !isCustomAmount ? "active" : ""}`}
+                                            >
+                                                {amount.toLocaleString()}
+                                            </button>
+                                        ))}
+                                        <button
+                                            type="button"
+                                            onClick={() => {
+                                                setIsCustomAmount(true);
+                                                setDonationAmount("");
+                                            }}
+                                            className={`amount-button ${isCustomAmount ? "active" : ""}`}
+                                        >
+                                            Other
+                                        </button>
+                                    </div>
+                                    {isCustomAmount && (
+                                        <input
+                                            type="number"
+                                            min="1"
+                                            value={donationAmount}
+                                            onChange={(e) => setDonationAmount(e.target.value === "" ? "" : parseInt(e.target.value))}
+                                            className="form-input mt-3"
+                                            placeholder="Enter your amount"
+                                            required
+                                        />
+                                    )}
+                                </div>
+
+                                <div>
+                                    <label className="form-label">Choose donation frequency</label>
+                                    <div className="frequency-toggle">
+                                        <label className={donationFrequency === 'one-time' ? 'active' : ''}>
+                                            <input type="radio" name="frequency" value="one-time" checked={donationFrequency === 'one-time'} onChange={() => setDonationFrequency('one-time')} />
+                                            One-time
+                                        </label>
+                                        <label className={donationFrequency === 'monthly' ? 'active' : ''}>
+                                            <input type="radio" name="frequency" value="monthly" checked={donationFrequency === 'monthly'} onChange={() => setDonationFrequency('monthly')} />
+                                            Monthly
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <div className="pt-4 flex flex-col sm:flex-row space-y-3 sm:space-y-0 sm:space-x-4">
+                                    <button onClick={() => navigate("/")} type="button" className="action-button cancel-button" disabled={isLoading}>
+                                        Cancel
+                                    </button>
+                                    <button onClick={handleDonate} type="button" className="action-button checkout-button" disabled={isLoading}>
+                                        {isLoading ? "Processing..." : "Go to Checkout"}
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
             </div>
+        </main>
 
-            {/* Right Column - Donation Form */}
-            <div className="bg-white p-6 rounded-md w-2/3">
-              <div className="flex items-center mb-4">
-              <span className="text-[#4B5842] font-bold">Fundify</span>
-              </div>
+        <Footer />
+        <style jsx global>{`
+            /* --- Google Font Import --- */
+            @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
-              <p className="text-gray-600 mb-6">
-                Welcome to fundify, please fill out the form below, Hopefully it is blessed.
-              </p>
+            /* --- General Styling & Variables --- */
+            .donation-page {
+                font-family: 'Poppins', sans-serif;
+                --fundify-green: #4B5842;
+                --fundify-light-green: #A9BEA2;
+                --shadow-color: rgba(75, 88, 66, 0.1);
+                --border-color: #d1d5db; /* gray-300 */
+            }
 
-              <div className="space-y-6">
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Choose a donation type</label>
-                  <select 
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
-                    value={donationType}
-                    onChange={(e) => setDonationType(e.target.value)}
-                  >
-                    <option value="General donation">General donation</option>
-                    <option value="Project specific">Project specific</option>
-                    <option value="Emergency relief">Emergency relief</option>
-                    <option value="Education Purpose">Education Purpose</option>
-                    <option value="Flood relief">Flood relief</option>
-                    <option value="Others">Others</option>
-                  </select>
-                </div>
+            .hero-column h2 {
+                text-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+            }
+            
+            .form-column h3, .form-column p {
+                letter-spacing: -0.01em;
+            }
+            
+            .form-label {
+                display: block;
+                font-size: 0.875rem; /* text-sm */
+                font-weight: 500; /* font-medium */
+                color: #374151; /* text-gray-700 */
+                margin-bottom: 0.5rem;
+            }
+            
+            .form-input {
+                width: 100%;
+                padding: 0.75rem 1rem;
+                border: 1px solid var(--border-color);
+                border-radius: 0.375rem; /* rounded-md */
+                transition: all 0.2s ease-in-out;
+            }
+            .form-input:focus {
+                outline: none;
+                border-color: var(--fundify-green);
+                box-shadow: 0 0 0 2px rgba(75, 88, 66, 0.2);
+            }
 
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Choose a donation amount</label>
-                  <div className="grid grid-cols-3 gap-3">
-                    {[25, 50, 100].map((amount) => (
-                      <button
-                        key={amount}
-                        type="button"
-                        onClick={() => {
-                            setDonationAmount(amount);
-                            setIsCustomAmount(false);
-                        }}
-                        className={`py-2 px-4 border ${
-                          donationAmount === amount && !isCustomAmount
-                            ? "bg-[#4B5842] text-white border-[#4B5842]"
-                            : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                        } rounded-md focus:outline-none`}
-                      >
-                        PKR {amount}
-                      </button>
-                    ))}
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setIsCustomAmount(true);
-                        setDonationAmount("");
-                      }}
-                      className={`py-2 px-4 border ${
-                        isCustomAmount
-                          ? "bg-[#4B5842] text-white border-[#4B5842]"
-                          : "bg-white text-gray-700 border-gray-300 hover:bg-gray-50"
-                      } rounded-md focus:outline-none`}
-                    >
-                      Other
-                    </button>
-                  </div>
+            /* --- Amount Buttons --- */
+            .amount-button {
+                padding: 0.75rem 1rem;
+                border: 1px solid var(--border-color);
+                border-radius: 0.375rem;
+                font-weight: 500;
+                transition: all 0.2s ease-in-out;
+            }
+            .amount-button:hover {
+                border-color: var(--fundify-light-green);
+                background-color: #f9fafb; /* bg-gray-50 */
+            }
+            .amount-button.active {
+                background-color: var(--fundify-green);
+                color: white;
+                border-color: var(--fundify-green);
+            }
 
-                  {isCustomAmount && (
-                    <input
-                      type="number"
-                      min="1"
-                      value={donationAmount}
-                      onChange={(e) => setDonationAmount(e.target.value === "" ? "" : parseInt(e.target.value))}
-                      className="mt-3 w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
-                      placeholder="Enter your amount"
-                      required
-                    />
-                  )}
-                    
-                </div>
+            /* --- Frequency Toggle --- */
+            .frequency-toggle {
+                display: flex;
+                border: 1px solid var(--border-color);
+                border-radius: 0.375rem;
+                overflow: hidden;
+            }
+            .frequency-toggle label {
+                flex: 1;
+                padding: 0.75rem;
+                text-align: center;
+                cursor: pointer;
+                background-color: white;
+                font-weight: 500;
+                color: #4b5563; /* text-gray-600 */
+                transition: background-color 0.2s ease-in-out;
+            }
+            .frequency-toggle label:not(:last-child) {
+                border-right: 1px solid var(--border-color);
+            }
+            .frequency-toggle label.active {
+                background-color: var(--fundify-light-green);
+                color: var(--fundify-green);
+            }
+            .frequency-toggle input[type="radio"] {
+                display: none; /* Hide the actual radio button */
+            }
+            
+            /* --- Action Buttons --- */
+            .action-button {
+                flex: 1;
+                padding: 0.875rem 1rem;
+                border-radius: 0.375rem;
+                font-weight: 600;
+                font-size: 1rem;
+                transition: all 0.3s ease;
+            }
+            .action-button:disabled {
+                opacity: 0.7;
+                cursor: not-allowed;
+            }
+            .cancel-button {
+                background-color: #e5e7eb; /* bg-gray-200 */
+                color: #4b5563; /* text-gray-600 */
+            }
+            .cancel-button:hover:not(:disabled) {
+                background-color: #d1d5db; /* bg-gray-300 */
+            }
+            .checkout-button {
+                background-color: var(--fundify-green);
+                color: white;
+                box-shadow: 0 4px 12px var(--shadow-color);
+            }
+            .checkout-button:hover:not(:disabled) {
+                background-color: #3A4433; /* Darker green */
+                transform: translateY(-2px);
+                box-shadow: 0 7px 15px var(--shadow-color);
+            }
 
-                <div>
-                  <label htmlFor="honorOf" className="block text-sm font-medium text-gray-700 mb-2">
-                    Make your donation in honor of
-                  </label>
-                  <input
-                    type="text"
-                    id="honorOf"
-                    value={honorOf}
-                    onChange={(e) => setHonorOf(e.target.value)}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
-                    placeholder="Optional"
-                  />
-                </div>
-
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Choose a donation frequency</label>
-                  <div className="flex space-x-4">
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="frequency"
-                        value="one-time"
-                        checked={donationFrequency === "one-time"}
-                        onChange={() => setDonationFrequency("one-time")}
-                        className="mr-2"
-                      />
-                      <span>One time</span>
-                    </label>
-                    <label className="flex items-center">
-                      <input
-                        type="radio"
-                        name="frequency"
-                        value="monthly"
-                        checked={donationFrequency === "monthly"}
-                        onChange={() => setDonationFrequency("monthly")}
-                        className="mr-2"
-                      />
-                      <span>Monthly</span>
-                    </label>
-                  </div>
-                </div>
-
-                <div className="flex space-x-4">
-                  <button onClick={() => navigate("/")}
-                    className="flex-1 bg-[#A9BEA2] text-[#000000] py-2 px-4 rounded-md hover:bg-[#97AB90] transition-colors"
-                    disabled={isLoading}
-                  >
-                    Cancel
-                  </button>
-                  <button onClick={handleDonate}
-                    className="flex-1 bg-[#4B5842] text-white py-2 px-4 rounded-md hover:bg-[#3A4433] transition-colors"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? "Processing..." : "Go to Checkout"}
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </main>
-
-      <Footer />
+        `}</style>
     </div>
-  )
+)
 }
 
 export default DonationScreen;
