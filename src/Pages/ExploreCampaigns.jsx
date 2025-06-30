@@ -5,16 +5,22 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Header from "./Layout/HeaderLayout";
 import Footer from "./Layout/FooterLayout";
 import axios from "axios";
+// In a real app, you would import your actual UserContext
+// import { useUser } from '../context/UserContext'; 
 import { Heart } from 'lucide-react';
-// Dummy hooks and components for a runnable example
-const useUser = () => ({
-  userProfile: { isAuthenticated: true, savedCampaigns: [] },
-  setUserProfile: () => {},
-});
 
+// Dummy hooks and components for a runnable example
+const useUser = () => {
+    // This state simulates a real user context
+    const [userProfile, setUserProfile] = useState({ 
+      isAuthenticated: true, 
+      savedCampaigns: ['dummy_id_1'] // Let's pretend one campaign is already saved
+    });
+    return { userProfile, setUserProfile };
+};
 
 const showSuccessMessage = (message) => console.log(`Success: ${message}`);
-//const showErrorMessage = (message) => console.error(`Error: ${message}`);
+const showErrorMessage = (message) => console.error(`Error: ${message}`);
 
 
 // --- CATEGORIES ---
@@ -36,13 +42,50 @@ function CampaignCard({ campaign, onSelectForDonation }) {
     const safeGoal = Number(campaign.goalAmount) || 1;
     const progressPercentage = Math.min((safeRaised / safeGoal) * 100, 100);
     const navigate = useNavigate();
-    const { userProfile,  } = useUser();
+    const { userProfile, setUserProfile } = useUser();
     const isCampaignSaved = userProfile.savedCampaigns?.includes(campaign._id);
 
+    // THIS IS THE CORRECTED FUNCTION
     const handleToggleSave = async (e) => {
         e.stopPropagation();
-        // ... (save logic remains the same)
-        showSuccessMessage("Toggled save status!");
+        if (!userProfile.isAuthenticated) {
+            showErrorMessage('Please log in to save campaigns.');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showErrorMessage('You must be logged in to perform this action.');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ campaignId: campaign._id }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.saved) {
+                    showSuccessMessage('Campaign saved successfully!');
+                    setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaign._id] }));
+                } else {
+                    showSuccessMessage('Campaign unsaved.');
+                    setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaign._id) }));
+                }
+            } else {
+                const errorData = await response.json();
+                showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error('Error toggling saved campaign:', error);
+            showErrorMessage('An error occurred while saving/unsaving the campaign.');
+        }
     };
 
     const handleCardClick = () => {
@@ -186,7 +229,7 @@ export default function ExploreCampaigns() {
                     <div className="search-bar relative max-w-xl mx-auto mb-8">
                         <input
                             type="text"
-                            placeholder="Find campaigns by title or description..."
+                            placeholder="Find campaigns by title..."
                             className="w-full px-5 py-3 rounded-full"
                             value={searchQuery}
                             onChange={(e) => setSearchQuery(e.target.value)}
@@ -408,4 +451,3 @@ export default function ExploreCampaigns() {
         </div>
     );
 }
-
