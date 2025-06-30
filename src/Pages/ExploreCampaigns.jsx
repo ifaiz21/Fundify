@@ -5,22 +5,9 @@ import { useNavigate, useLocation } from "react-router-dom";
 import Header from "./Layout/HeaderLayout";
 import Footer from "./Layout/FooterLayout";
 import axios from "axios";
-// In a real app, you would import your actual UserContext
-// import { useUser } from '../context/UserContext'; 
+import { useUser } from '../context/UserContext'; 
 import { Heart } from 'lucide-react';
-
-// Dummy hooks and components for a runnable example
-const useUser = () => {
-    // This state simulates a real user context
-    const [userProfile, setUserProfile] = useState({ 
-      isAuthenticated: true, 
-      savedCampaigns: ['dummy_id_1'] // Let's pretend one campaign is already saved
-    });
-    return { userProfile, setUserProfile };
-};
-
-const showSuccessMessage = (message) => console.log(`Success: ${message}`);
-const showErrorMessage = (message) => console.error(`Error: ${message}`);
+import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Import toast functions
 
 
 // --- CATEGORIES ---
@@ -169,6 +156,7 @@ export default function ExploreCampaigns() {
     const navigate = useNavigate();
     const location = useLocation();
     const isSelectForDonationMode = location.state?.purpose === "select-for-donation";
+    //const categories = allCategories;
 
     useEffect(() => {
         const fetchCampaigns = async () => {
