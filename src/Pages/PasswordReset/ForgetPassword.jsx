@@ -13,7 +13,7 @@ const ForgetPassword = () => {
     event.preventDefault();
   
     try {
-      const res = await fetch("https://server-fundify.up.railway.app/api/auth/send-verification-code-for-reset", {
+      const res = await fetch("https://fundify-server.vercel.app/api/auth/send-verification-code-for-reset", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

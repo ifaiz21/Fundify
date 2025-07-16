@@ -38,7 +38,7 @@ function MyCampaigns({ showToast }) {
           const token = localStorage.getItem('token');
 
           // Fetch campaigns created by the user
-          const myCampaignsResponse = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/my-campaigns`, {
+          const myCampaignsResponse = await axios.get(`https://fundify-server.vercel.app/api/campaigns/my-campaigns`, {
             headers: { 'Authorization': `Bearer ${token}` },
           });
           setCampaigns(myCampaignsResponse.data?.campaigns || []);
@@ -51,7 +51,7 @@ function MyCampaigns({ showToast }) {
             // to fetch multiple campaigns by their IDs to reduce API calls.
             for (const campaignId of userProfile.savedCampaigns) {
               try {
-                const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`);
+                const response = await axios.get(`https://fundify-server.vercel.app/api/campaigns/${campaignId}`);
                 fetchedSavedCampaignsDetails.push(response.data);
               } catch (fetchError) {
                 console.warn(`Failed to fetch saved campaign ${campaignId}:`, fetchError);
@@ -126,7 +126,7 @@ function MyCampaigns({ showToast }) {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
+      const response = await fetch('https://fundify-server.vercel.app/api/users/saved-campaigns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

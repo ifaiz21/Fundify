@@ -60,7 +60,7 @@ const EmailVerification = () => {
   setLoading(true);
 
     try {
-      const res = await fetch("https://server-fundify.up.railway.app/api/auth/verify-reset-code", {
+      const res = await fetch("https://fundify-server.vercel.app/api/auth/verify-reset-code", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
@@ -91,7 +91,7 @@ const EmailVerification = () => {
     setTimeLeft(5 * 60);
 
     try {
-      const res = await fetch("https://server-fundify.up.railway.app/api/auth/resend-code-pr", {
+      const res = await fetch("https://fundify-server.vercel.app/api/auth/resend-code-pr", {
         method: "POST",
         headers: {
           "Content-Type": "application/json"

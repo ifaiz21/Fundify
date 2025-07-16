@@ -32,7 +32,7 @@ function ProjectView() {
       const fetchCampaignDetails = async () => {
         try {
           setLoading(true)
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`)
+          const response = await axios.get(`https://fundify-server.vercel.app/api/campaigns/${campaignId}`)
           setCampaignData(response.data)
           setError(null)
         } catch (err) {
@@ -46,7 +46,7 @@ function ProjectView() {
 
       const fetchCampaignUpdates = async () => {
         try {
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`)
+          const response = await axios.get(`https://fundify-server.vercel.app/api/campaigns/${campaignId}/updates`)
           setCampaignUpdates(response.data)
         } catch (err) {
           console.error("Error fetching campaign updates:", err)
@@ -56,7 +56,7 @@ function ProjectView() {
 
       const fetchRecentDonors = async () => {
         try {
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`) // Fetch top 3 recent donors
+          const response = await axios.get(`https://fundify-server.vercel.app/api/donations/campaign/${campaignId}/recent?limit=3`) // Fetch top 3 recent donors
           setRecentDonors(response.data.recentDonors)
           setTotalBackersCount(response.data.totalBackers)
         } catch (err) {
@@ -103,7 +103,7 @@ function ProjectView() {
 
     const token = localStorage.getItem('token');
     try {
-      const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
+      const response = await fetch('https://fundify-server.vercel.app/api/users/saved-campaigns', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -292,7 +292,7 @@ function ProjectView() {
             <div className="lg:col-span-2">
               {/* Main Campaign Image */}
               <img
-                src={campaignData.mediaUrls && campaignData.mediaUrls.length > 0 ? `https://server-fundify.up.railway.app/${campaignData.mediaUrls[0]}` : "https://placehold.co/800x400/CCCCCC/333333?text=No+Image"}
+                src={campaignData.mediaUrls && campaignData.mediaUrls.length > 0 ? `https://fundify-server.vercel.app/${campaignData.mediaUrls[0]}` : "https://placehold.co/800x400/CCCCCC/333333?text=No+Image"}
                 alt={campaignData.title}
                 className="w-full h-auto rounded-md shadow-md mb-6"
                 onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800x400/CCCCCC/333333?text=No+Image'; }} // Fallback image on error
@@ -425,7 +425,7 @@ function ProjectView() {
                     {campaignData.story ? ( // Check if story content exists
                       <>
                         {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
-                            <img src={`https://server-fundify.up.railway.app/${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
+                            <img src={`https://fundify-server.vercel.app/${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
                         )}
                         <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.story }}>
                         </div>
@@ -486,7 +486,7 @@ function ProjectView() {
                             <div className="mb-4" dangerouslySetInnerHTML={{ __html: update.content }}></div>
 
                             {update.mediaUrls && update.mediaUrls.length > 0 && (
-                                <img src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`} alt="Update Media" className="w-full h-auto rounded-md mb-4" />
+                                <img src={`https://fundify-server.vercel.app/${update.mediaUrls[0]}`} alt="Update Media" className="w-full h-auto rounded-md mb-4" />
                             )}
 
                             {update.listItems && update.listItems.length > 0 && (

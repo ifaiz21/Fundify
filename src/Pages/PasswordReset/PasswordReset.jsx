@@ -32,7 +32,7 @@ const PasswordReset = () => {
     setShowConfirmModal(false);
 
     try {
-      const res = await fetch("https://server-fundify.up.railway.app/api/auth/reset-password", {
+      const res = await fetch("https://fundify-server.vercel.app/api/auth/reset-password", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, newPassword }),

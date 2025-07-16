@@ -41,7 +41,7 @@ const ContactUsPage = () => { // Removed showToast prop
     console.log("Submitting support request to backend:", formData)
 
     try {
-      const response = await fetch('https://server-fundify.up.railway.app/api/contactus', {
+      const response = await fetch('https://fundify-server.vercel.app/api/contactus', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
