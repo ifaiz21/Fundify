@@ -29,9 +29,9 @@ function AboutSection() {
         <div className="flex flex-col lg:flex-row gap-10 items-center">
           <div className="lg:w-1/2">
             <img
-              src="/Images/funding-illustration.png"
+              src="/Images/donation.png"
               alt="People funding ideas"
-              className="w-full max-w-sm sm:max-w-md mx-auto rounded-lg shadow-xl"
+              className="w-full h-72 max-w-sm sm:max-w-md mx-auto rounded-lg shadow-xl"
             />
           </div>
 
@@ -90,7 +90,7 @@ function AboutSection() {
         <div className="flex flex-col lg:flex-row-reverse gap-10 items-center">
           <div className="lg:w-1/2">
             <img
-              src="/Images/discussion-illustration.png"
+              src="https://images.unsplash.com/photo-1521737852567-6949f3f9f2b5?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=MnwzNjUyOXwwfDF8c2VhcmNofDR8fHRlYW18ZW58MHx8fHwxNjg0MjU0OTY3&ixlib=rb-4.0.3&q=80&w=1080"
               alt="People in discussion"
               className="w-full max-w-sm sm:max-w-md mx-auto rounded-lg shadow-xl"
             />
