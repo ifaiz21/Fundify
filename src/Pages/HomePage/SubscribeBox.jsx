@@ -21,7 +21,7 @@ export default function SubscribeBox({ showToast }) { // Accepts showToast as a 
     setMessage(null); // Clear previous messages
 
     try {
-      const response = await axios.post('https://fundify-server.vercel.app/api/newsletter/subscribe', { email });
+      const response = await axios.post('https://server-fundify.up.railway.app/api/newsletter/subscribe', { email });
       
       if (response.status === 201) {
         setMessage({ type: 'success', text: response.data.message || 'Successfully subscribed!' });

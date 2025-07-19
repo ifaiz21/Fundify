@@ -84,7 +84,7 @@ const KYCDocumentUpload = () => {
     }
 
     try {
-      const response = await axios.post("https://fundify-server.vercel.app/api/users/kyc/submit-documents", formData, {
+      const response = await axios.post("https://server-fundify.up.railway.app/api/users/kyc/submit-documents", formData, {
         headers: {
           'Content-Type': 'multipart/form-data',
           'Authorization': `Bearer ${token}`,

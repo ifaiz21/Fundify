@@ -39,7 +39,7 @@ function Billing({ showToast }) {
           setError(null);
           try {
             const token = localStorage.getItem('token');
-            const response = await fetch('https://fundify-server.vercel.app/api/users/profile', {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/profile', {
               method: 'GET',
               headers: {
                 'Content-Type': 'application/json',
@@ -114,7 +114,7 @@ function Billing({ showToast }) {
 
       console.log("Data to send for account update:", dataToUpdate);
 
-      const response = await fetch('https://fundify-server.vercel.app/api/users/profile', {
+      const response = await fetch('https://server-fundify.up.railway.app/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

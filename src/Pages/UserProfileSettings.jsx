@@ -62,7 +62,7 @@ function UserProfileSettings() {
 
       // --- 1. Fetch main user profile ---
       const userProfileResponse = await fetch(
-        "https://fundify-server.vercel.app/api/users/profile",
+        "https://server-fundify.up.railway.app/api/users/profile",
         {
           method: "GET",
           headers: {
@@ -95,7 +95,7 @@ function UserProfileSettings() {
 
       // --- 2. Fetch user's KYC application details ---
       const kycAppResponse = await fetch(
-        "https://fundify-server.vercel.app/api/kyc/my-application",
+        "https://server-fundify.up.railway.app/api/kyc/my-application",
         {
           method: "GET",
           headers: {
@@ -139,7 +139,7 @@ function UserProfileSettings() {
       setAdditionalEmails(userData.additionalEmails || []);
       setProfileImagePreview(
         userData.profilePictureUrl
-          ? `https://fundify-server.vercel.app/${userData.profilePictureUrl}`
+          ? `https://server-fundify.up.railway.app/${userData.profilePictureUrl}`
           : null
       );
 
@@ -183,7 +183,7 @@ function UserProfileSettings() {
       setSelectedProfileImage(null);
       setProfileImagePreview(
         profileData.profilePictureUrl
-          ? `https://fundify-server.vercel.app/${profileData.profilePictureUrl}`
+          ? `https://server-fundify.up.railway.app/${profileData.profilePictureUrl}`
           : null
       );
     }
@@ -210,7 +210,7 @@ function UserProfileSettings() {
       formDataToSend.append("profilePicture", selectedProfileImage);
 
       const response = await fetch(
-        "https://fundify-server.vercel.app/api/users/profile-picture",
+        "https://server-fundify.up.railway.app/api/users/profile-picture",
         {
           method: "PUT",
           headers: {
@@ -236,7 +236,7 @@ function UserProfileSettings() {
       const updatedBackendUser = updatedData.user;
       const newPicPath = updatedBackendUser.profilePictureUrl;
       const newPicUrl = newPicPath
-        ? `https://fundify-server.vercel.app/${newPicPath}`
+        ? `https://server-fundify.up.railway.app/${newPicPath}`
         : null;
 
       setProfileData((prev) => ({
@@ -275,7 +275,7 @@ function UserProfileSettings() {
       }
 
       const response = await fetch(
-        "https://fundify-server.vercel.app/api/users/profile-picture",
+        "https://server-fundify.up.railway.app/api/users/profile-picture",
         {
           method: "DELETE",
           headers: {
@@ -301,7 +301,7 @@ function UserProfileSettings() {
       const updatedBackendUser = updatedData.user;
       const newPicPath = updatedBackendUser.profilePictureUrl;
       const newPicUrl = newPicPath
-        ? `https://fundify-server.vercel.app/${newPicPath}`
+        ? `https://server-fundify.up.railway.app/${newPicPath}`
         : null;
 
       setProfileData((prev) => ({
@@ -348,7 +348,7 @@ function UserProfileSettings() {
       console.log("Data to send for profile details update:", dataToUpdate);
 
       const response = await fetch(
-        "https://fundify-server.vercel.app/api/users/profile",
+        "https://server-fundify.up.railway.app/api/users/profile",
         {
           method: "PUT",
           headers: {

@@ -20,7 +20,7 @@ export default function CampaignListing() {
       try {
         setLoading(true);
         // Fetch from backend
-        const response = await axios.get('https://fundify-server.vercel.app/api/campaigns'); 
+        const response = await axios.get('https://server-fundify.up.railway.app/api/campaigns'); 
 
         // Ensure campaigns array is accessed correctly as backend returns an object { campaigns: [], stats: {} }
         const fetchedCampaigns = response.data.campaigns || []; 
@@ -163,7 +163,7 @@ export default function CampaignListing() {
               className="bg-white rounded-xl overflow-hidden shadow-lg hover:shadow-2xl transition-all duration-300 flex flex-col transform hover:-translate-y-2" // Added hover:scale-103
             >
               <img
-                src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `https://fundify-server.vercel.app/${campaign.mediaUrls[0]}` : "/placeholder.svg"}
+                src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `https://server-fundify.up.railway.app/${campaign.mediaUrls[0]}` : "/placeholder.svg"}
                 alt={campaign.title}
                 className="w-full h-48 object-cover rounded-t-xl"
               />

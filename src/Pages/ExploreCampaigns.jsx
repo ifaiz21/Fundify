@@ -47,7 +47,7 @@ function CampaignCard({ campaign, onSelectForDonation }) {
         }
 
         try {
-            const response = await fetch('https://fundify-server.vercel.app/api/users/saved-campaigns', {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -87,7 +87,7 @@ function CampaignCard({ campaign, onSelectForDonation }) {
         <div className="campaign-card flex flex-col cursor-pointer" onClick={handleCardClick}>
             <div className="card-image-wrapper">
                 <img
-                    src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `https://fundify-server.vercel.app${campaign.mediaUrls[0]}` : "https://placehold.co/600x400/a9bea2/4B5842?text=Fundify"}
+                    src={campaign.mediaUrls && campaign.mediaUrls.length > 0 ? `https://server-fundify.up.railway.app${campaign.mediaUrls[0]}` : "https://placehold.co/600x400/a9bea2/4B5842?text=Fundify"}
                     alt={campaign.title}
                     className="card-image w-full h-48 object-cover"
                     onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/600x400/a9bea2/4B5842?text=Fundify" }}
@@ -162,7 +162,7 @@ export default function ExploreCampaigns() {
         const fetchCampaigns = async () => {
             try {
                 setLoading(true);
-                const response = await axios.get("https://fundify-server.vercel.app/api/campaigns");
+                const response = await axios.get("https://server-fundify.up.railway.app/api/campaigns");
                 const activeCampaigns = (response.data.campaigns || []).filter(
                     c => c.status === 'Active' || c.status === 'Approved'
                 );

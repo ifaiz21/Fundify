@@ -58,7 +58,7 @@ const DonationScreen = () => {
     console.log("Attempting to send donation:", donationData);
 
     try {
-      const response = await fetch('https://fundify-server.vercel.app/api/donations', {
+      const response = await fetch('https://server-fundify.up.railway.app/api/donations', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

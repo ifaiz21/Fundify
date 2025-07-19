@@ -123,7 +123,7 @@ const CampaignUpdate = () => {
       <div className="flex flex-col lg:flex-row flex-1 px-4 sm:px-8 py-8 gap-8">
         {/* Logo */}
         
-        <div className="flex flex-col items-center justify-center w-full w-1/2">
+        <div className="flex flex-col items-center justify-center w-full">
          <div className="hidden md:block">
           <div className="w-64 h-64 mb-4">
             <img
