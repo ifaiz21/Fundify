@@ -1,15 +1,21 @@
-import React, { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from "react";
 
 const Chatbot = ({ onClose }) => {
   // State to store chat messages
   // Each message object will have: { text: string, sender: 'user' | 'ai' }
   const [messages, setMessages] = useState([
     // Example initial messages (you can remove these or populate from your data)
-    { text: 'My verification code has expired. Could you help me with that?', sender: 'user' },
-    { text: 'Sure! Choose the "request new code" option. Then check your email or phone messages.', sender: 'ai' },
+    {
+      text: "My verification code has expired. Could you help me with that?",
+      sender: "user",
+    },
+    {
+      text: 'Sure! Choose the "request new code" option. Then check your email or phone messages.',
+      sender: "ai",
+    },
   ]);
   // State for the current message being typed by the user
-  const [inputMessage, setInputMessage] = useState('');
+  const [inputMessage, setInputMessage] = useState("");
   // Ref to automatically scroll to the bottom of the chat
   const messagesEndRef = useRef(null);
 
@@ -20,17 +26,17 @@ const Chatbot = ({ onClose }) => {
 
   // Function to scroll the chat container to the bottom
   const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
   // Function to handle sending a user message
   const handleSendMessage = () => {
-    if (inputMessage.trim() === '') return; // Don't send empty messages
+    if (inputMessage.trim() === "") return; // Don't send empty messages
 
-    const newUserMessage = { text: inputMessage, sender: 'user' };
+    const newUserMessage = { text: inputMessage, sender: "user" };
     // Add user's message to the chat
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
-    setInputMessage(''); // Clear input field
+    setInputMessage(""); // Clear input field
 
     // --- IMPORTANT ---
     // This is where you would integrate your existing chatbot logic.
@@ -45,7 +51,7 @@ const Chatbot = ({ onClose }) => {
 
   // Handle Enter key press in the input field
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === "Enter") {
       handleSendMessage();
     }
   };
@@ -77,7 +83,10 @@ const Chatbot = ({ onClose }) => {
             <h2 className="text-lg font-semibold text-gray-800">AI ChatBot</h2>
           </div>
           {/* Close button - now uses the onClose prop */}
-          <button className="text-gray-500 hover:text-gray-700" onClick={onClose}>
+          <button
+            className="text-gray-500 hover:text-gray-700"
+            onClick={onClose}
+          >
             <svg
               className="w-6 h-6"
               fill="none"
@@ -85,7 +94,12 @@ const Chatbot = ({ onClose }) => {
               viewBox="0 0 24 24"
               xmlns="http://www.w3.org/2000/svg"
             >
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth="2"
+                d="M6 18L18 6M6 6l12 12"
+              ></path>
             </svg>
           </button>
         </div>
@@ -96,10 +110,10 @@ const Chatbot = ({ onClose }) => {
             <div
               key={index}
               className={`flex ${
-                message.sender === 'user' ? 'justify-end' : 'justify-start'
+                message.sender === "user" ? "justify-end" : "justify-start"
               }`}
             >
-              {message.sender === 'ai' && (
+              {message.sender === "ai" && (
                 // AI Avatar placeholder (you can replace with an actual image)
                 <div className="w-8 h-8 rounded-full bg-blue-200 flex items-center justify-center mr-2 text-blue-700 font-bold flex-shrink-0">
                   AI
@@ -107,14 +121,14 @@ const Chatbot = ({ onClose }) => {
               )}
               <div
                 className={`max-w-[70%] p-3 rounded-xl shadow-sm ${
-                  message.sender === 'user'
-                    ? 'bg-white text-gray-800 rounded-br-none' // User message styling
-                    : 'bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-bl-none' // AI message styling
+                  message.sender === "user"
+                    ? "bg-white text-gray-800 rounded-br-none" // User message styling
+                    : "bg-gradient-to-r from-blue-500 to-purple-600 text-white rounded-bl-none" // AI message styling
                 }`}
               >
                 {message.text}
               </div>
-              {message.sender === 'user' && (
+              {message.sender === "user" && (
                 // User Avatar placeholder (you can replace with an actual image)
                 <img
                   src="https://placehold.co/32x32/E0E0E0/333333?text=You"
