@@ -53,19 +53,14 @@ const CampaignCreation01 = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16 items-center">
             
             {/* Left Column - Logo */}
-            {/* Center content and adjust logo size for different breakpoints */}
-            <div className="flex flex-col items-center text-center lg:items-start lg:text-left">
-            <div className="hidden md:block">
-              <div className="w-48 h-48 sm:w-56 sm:h-56 lg:w-64 lg:h-64 mb-6 lg:mb-0">
-                <img 
-                  src="/Images/fundify-white-bg-logo.png"
-                  alt="Fundify Logo"
-                  className="w-full h-full object-contain" // Use object-contain to ensure logo isn't distorted
-                />
+            <div className="flex flex-col items-center text-center">
+              <div className="hidden md:block">
+                <div className="w-64 h-64 mb-6">
+                  <img src="/Images/fundify-white-bg-logo.png" alt="Fundify Logo" className="w-full h-full" />
+                </div>
               </div>
-            </div>  
-              {/* Optional: Add a heading and paragraph for better context on mobile */}
-              <div className="lg:hidden">
+               {/* Optional: Add a heading and paragraph for better context on mobile */}
+               <div className="">
                 <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mt-4">Welcome to Fundify</h1>
                 <p className="text-gray-600 mt-2 max-w-md">
                   Let's get you set up to start your fundraising journey. Just a few quick questions to begin.
