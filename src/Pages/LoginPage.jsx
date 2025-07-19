@@ -43,7 +43,7 @@ const LoginPage = () => {
     }
 
     try {
-      const response = await axios.post("https://fundify-server.vercel.app/api/auth/login", {
+      const response = await axios.post("https://server-fundify.up.railway.app/api/auth/login", {
         email,
         password,
       });

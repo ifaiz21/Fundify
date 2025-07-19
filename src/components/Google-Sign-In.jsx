@@ -27,7 +27,7 @@ const GoogleSignInButton = () => {
 
     setLoading(true);
     try {
-      const response = await fetch('https://fundify-server.vercel.app/api/auth/google-login', {
+      const response = await fetch('https://server-fundify.up.railway.app/api/auth/google-login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

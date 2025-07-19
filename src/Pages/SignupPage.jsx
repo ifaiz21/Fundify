@@ -53,7 +53,7 @@ const SignupPage = () => {
 
     try {
       // API call for manual email/password signup
-      const response = await axios.post("https://fundify-server.vercel.app/api/auth/sign-up", {
+      const response = await axios.post("https://server-fundify.up.railway.app/api/auth/sign-up", {
         name: formData.fullName,
         email: formData.email,
         password: formData.password,
@@ -84,7 +84,7 @@ const SignupPage = () => {
 
     try {
       const response = await axios.post(
-        "https://fundify-server.vercel.app/api/auth/google-signup-verify-email",
+        "https://server-fundify.up.railway.app/api/auth/google-signup-verify-email",
         {},
         {
           headers: {
