@@ -1,4 +1,4 @@
-// src/Pages/AdminSide/ProjectDetailsPage.jsx
+// src/Pages/Project/ProjectDetailsPage.jsx
 "use client"
 
 import React, { useState, useEffect } from 'react';
