@@ -6,16 +6,16 @@ import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
 import { useUser } from '../context/UserContext';
 import SideBar from '../components/SideBar';
-import axios from 'axios'; // Import axios
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'; // Import icons for the new sidebar button
+import axios from 'axios';
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { showSuccessMessage, showErrorMessage } from "../utils/toast";
 
-function MyCampaigns() { // Removed showToast prop as it's not passed from App.js in this structure
+function MyCampaigns() {
   const { userProfile, loadingUserContext, setUserProfile } = useUser();
   const navigate = useNavigate();
 
-  const [campaigns, setCampaigns] = useState([]); // All campaigns created by user
-  const [savedCampaignsData, setSavedCampaignsData] = useState([]); // Full data for saved campaigns
+  const [campaigns, setCampaigns] = useState([]);
+  const [savedCampaignsData, setSavedCampaignsData] = useState([]);
   const [activeTab, setActiveTab] = useState("All campaigns");
   const [searchTerm, setSearchTerm] = useState("");
   const [loading, setLoading] = useState(true);
@@ -23,10 +23,8 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
 
   const [activeMenuItem, setActiveMenuItem] = useState("My Campaigns");
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  // NEW STATE: State to control the DEDICATED profile sidebar visibility
   const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
 
-  // Function to toggle the DEDICATED profile sidebar
   const toggleProfileSidebar = () => {
     setIsProfileSidebarOpen((prev) => !prev);
   };
@@ -71,7 +69,7 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
           localStorage.removeItem('userProfile');
           setError("Session expired or unauthorized. Please log in again.");
           navigate("/login");
-          showErrorMessage('Session expired, please log in again.'); // Use showErrorMessage
+          showErrorMessage('Session expired, please log in again.');
         } else {
           setError(`Failed to load your campaigns: ${err.response.data?.message || err.message}`);
         }
@@ -83,7 +81,7 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
     } finally {
       setLoading(false);
     }
-  }, [userProfile.isAuthenticated, userProfile.id, userProfile.savedCampaigns, navigate, setUserProfile]); // Added setUserProfile to dependencies
+  }, [userProfile, navigate]); // Corrected dependencies: removed showErrorMessage
 
   useEffect(() => {
     if (!loadingUserContext) {
@@ -91,7 +89,6 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
     }
   }, [loadingUserContext, fetchMyCampaignsAndSaved]);
 
-  // Determine which campaigns to display based on the active tab
   const displayedCampaigns = activeTab === "All campaigns" ? campaigns : savedCampaignsData;
 
   const filteredCampaigns = displayedCampaigns.filter(campaign => {
@@ -104,28 +101,26 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
     localStorage.removeItem('userProfile');
     navigate('/login');
     setShowConfirmLogout(false);
-    showSuccessMessage('You have been logged out successfully!'); // Use showSuccessMessage
+    showSuccessMessage('You have been logged out successfully!');
   };
 
   const handleMenuItemClick = (menuItem) => {
     setActiveMenuItem(menuItem);
-    // Close the DEDICATED profile sidebar if an item is clicked
-    setIsProfileSidebarOpen(false); // Important: Close sidebar after navigation
+    setIsProfileSidebarOpen(false);
     if (menuItem === "My Campaigns") {
       navigate("/my-campaigns");
     } else if (menuItem === "Profile") {
-      navigate("/user-profile"); // Assuming /user-profile is the correct route
+      navigate("/user-profile");
     } else if (menuItem === "Billing") {
       navigate("/billing");
-    } else if (menuItem === "Notifications") { // Corrected from "Help & Support"
-      navigate("/notifications"); // Assuming Notifications route
+    } else if (menuItem === "Notifications") {
+      navigate("/notifications");
     }
   };
 
-  // Function to handle unsaving a campaign from the "Saved Campaigns" tab
   const handleUnsaveCampaign = async (campaignIdToUnsave) => {
     if (!userProfile.isAuthenticated) {
-      showErrorMessage('Please log in to unsave campaigns.'); // Use showErrorMessage
+      showErrorMessage('Please log in to unsave campaigns.');
       return;
     }
 
@@ -141,25 +136,24 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
       });
 
       if (response.ok) {
-        showSuccessMessage('Campaign unsaved.'); // Use showSuccessMessage
-        // Update userProfile state to reflect the change
+        showSuccessMessage('Campaign unsaved.');
         const updatedSavedCampaignsIds = userProfile.savedCampaigns.filter(id => id !== campaignIdToUnsave);
         const updatedSavedCampaignsData = savedCampaignsData.filter(campaign => campaign._id !== campaignIdToUnsave);
         setUserProfile(prev => ({ ...prev, savedCampaigns: updatedSavedCampaignsIds }));
-        setSavedCampaignsData(updatedSavedCampaignsData); // Also update the local state for immediate UI refresh
+        setSavedCampaignsData(updatedSavedCampaignsData);
       } else {
         const errorData = await response.json();
-        showErrorMessage(`Failed to unsave campaign: ${errorData.message}`); // Use showErrorMessage
+        showErrorMessage(`Failed to unsave campaign: ${errorData.message}`);
       }
     } catch (error) {
       console.error('Error unsaving campaign:', error);
-      showErrorMessage('An error occurred while unsaving the campaign.'); // Use showErrorMessage
+      showErrorMessage('An error occurred while unsaving the campaign.');
     }
   };
 
   const handleCreateNewCampaign = () => {
     const kycStatus = userProfile.kycStatus;
-    console.log("KYC Status:", kycStatus); // Debugging line
+    console.log("KYC Status:", kycStatus);
 
     if (kycStatus === 'Approved') {
       navigate("/create-campaign");
@@ -167,7 +161,7 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
       showErrorMessage('You are not a verified user by FUNDIFY. Please complete your KYC first.');
     } else if (kycStatus === 'Pending Review') {
       showErrorMessage('Please wait for verification by FUNDIFY.');
-    } else { // Covers cases like undefined, null, or any other status indicating not submitted
+    } else {
       showErrorMessage('Please submit your KYC first.');
     }
   };
@@ -196,10 +190,8 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* HeaderLayout is now independent of the profile sidebar */}
       <HeaderLayout hideProfile={true} />
 
-      {/* Main content area: Flex container for Profile Sidebar and Main content */}
       <div className="flex flex-grow flex-col md:flex-row bg-gray-50">
 
         {/* Desktop Profile Sidebar (visible on medium screens and up) */}
@@ -208,14 +200,12 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
             activeItem={activeMenuItem}
             onItemClick={handleMenuItemClick}
             handleLogout={() => setShowConfirmLogout(true)}
-            // These props are for the mobile version, not used by desktop sidebar
             isMobileOpen={false}
             toggleMobile={() => {}}
           />
         </div>
 
         {/* Mobile Profile Sidebar Button - Visible on small screens, hidden on md and up */}
-        {/* This button toggles the DEDICATED profile sidebar */}
         <div className="md:hidden flex justify-start p-4 bg-gray-50">
           <button
             onClick={toggleProfileSidebar}
@@ -234,7 +224,7 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
         {isProfileSidebarOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-            onClick={toggleProfileSidebar} // Close profile sidebar when clicking outside
+            onClick={toggleProfileSidebar}
           ></div>
         )}
 
@@ -247,8 +237,8 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
             activeItem={activeMenuItem}
             onItemClick={handleMenuItemClick}
             handleLogout={() => setShowConfirmLogout(true)}
-            isMobileOpen={isProfileSidebarOpen} // Pass mobile open state
-            toggleMobile={toggleProfileSidebar} // Pass toggle function for the X button
+            isMobileOpen={isProfileSidebarOpen}
+            toggleMobile={toggleProfileSidebar}
           />
         </div>
 
@@ -267,7 +257,7 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
 
           <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
             {/* Tabs */}
-            <div className="flex border-b border-gray-200 mb-4 overflow-x-auto"> {/* Added overflow-x-auto for small screens */}
+            <div className="flex border-b border-gray-200 mb-4 overflow-x-auto">
               <button
                 className={`px-4 py-2 text-sm font-medium whitespace-nowrap ${activeTab === "All campaigns" ? "border-b-2 border-[#4A5D45] text-[#4A5D45]" : "text-gray-600 hover:text-gray-900"}`}
                 onClick={() => setActiveTab("All campaigns")}
@@ -351,14 +341,13 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
                         <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                           {new Date(campaign.createdAt).toLocaleDateString()}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center space-x-2"> {/* Added flex and space-x for buttons */}
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 flex items-center space-x-2">
                           <button
                             onClick={() => navigate(`/ProjectView?id=${campaign._id}`)}
                             className="text-[#4A5D45] hover:underline text-sm"
                           >
                             View
                           </button>
-                          {/* Show Edit button only for 'All campaigns' tab and 'Draft' status */}
                           {activeTab === 'All campaigns' && campaign.status === 'Draft' && (
                             <button
                               onClick={() => navigate("/campaign-creation-05", { state: { campaignData: campaign } })}
@@ -367,7 +356,6 @@ function MyCampaigns() { // Removed showToast prop as it's not passed from App.j
                               Edit
                             </button>
                           )}
-                          {/* Show Unsave button only for 'Saved Campaigns' tab */}
                           {activeTab === 'Saved Campaigns' && (
                             <button
                               onClick={() => handleUnsaveCampaign(campaign._id)}
