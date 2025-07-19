@@ -84,7 +84,7 @@ const PaymentPage = () => {
 
     try {
         // Call backend to update donation status to 'completed'
-        const response = await fetch(`https://fundify-server.vercel.app/api/donations/${donationId}/status`, {
+        const response = await fetch(`https://fundify.up.railway.app/api/donations/${donationId}/status`, {
             method: 'PUT',
             headers: {
                 'Content-Type': 'application/json',
@@ -143,7 +143,7 @@ const PaymentPage = () => {
                             <p className="text-sm text-center text-gray-200 mt-1">Every contribution helps bring amazing ideas to life and supports communities in need.</p>
                          </div>
                           {/* UPDATED: Trust & Security Badges - Hidden on mobile */}
-                         <div className="hidden bd:blocktrust-badges hidden lg:flex p-6 bg-white rounded-lg shadow-md">
+                         <div className="hidden bd:blocktrust-badges lg:flex p-6 bg-white rounded-lg shadow-md">
                           <div className="badge-item">
                               <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6 text-fundify-green" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                               <span>PCI Compliant</span>
