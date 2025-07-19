@@ -2,12 +2,11 @@
 "use client";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
-// Assuming HeaderLayout and FooterLayout are responsive or will be made responsive externally
 import HeaderLayout from "./Layout/HeaderLayout";
-// Assuming SideBar is a separate component that will handle its own mobile state (e.g., a drawer)
-import SideBar from "../components/SideBar";
 import FooterLayout from "./Layout/FooterLayout";
 import { useUser } from "../context/UserContext";
+import SideBar from "../components/SideBar"; // Your existing SideBar component
+import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'; // Import icons for the new sidebar button
 import { showSuccessMessage, showErrorMessage } from "../utils/toast";
 
 function UserProfileSettings() {
@@ -42,14 +41,14 @@ function UserProfileSettings() {
   const fileInputRef = useRef(null);
 
   const [activeMenuItem, setActiveMenuItem] = useState("Profile");
-  // State to control mobile sidebar visibility
-  const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
+  // NEW STATE: State to control the DEDICATED profile sidebar visibility
+  const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
 
   const navigate = useNavigate();
 
-  // Function to toggle mobile sidebar
-  const toggleMobileSidebar = () => {
-    setIsMobileSidebarOpen((prev) => !prev);
+  // Function to toggle the DEDICATED profile sidebar
+  const toggleProfileSidebar = () => {
+    setIsProfileSidebarOpen((prev) => !prev);
   };
 
   const fetchAllUserDetails = useCallback(async () => {
@@ -484,6 +483,8 @@ function UserProfileSettings() {
 
   const handleMenuItemClick = (itemName) => {
     setActiveMenuItem(itemName);
+    // Close the DEDICATED profile sidebar if an item is clicked
+    setIsProfileSidebarOpen(false); // Important: Close sidebar after navigation
     if (itemName === "Logout") {
       setShowConfirmLogout(true);
     } else if (itemName === "Profile") {
@@ -495,8 +496,6 @@ function UserProfileSettings() {
     } else if (itemName === "Notifications") {
       navigate("/notifications");
     }
-    // Close mobile sidebar if an item is clicked
-    setIsMobileSidebarOpen(false);
   };
 
   if (loading || loadingUserContext) {
@@ -523,50 +522,72 @@ function UserProfileSettings() {
 
   return (
     <div className="flex flex-col min-h-screen">
-      {/* HeaderLayout needs to handle its own responsiveness, potentially a hamburger */}
-      {/* Pass toggleMobileSidebar to HeaderLayout so it can trigger the sidebar */}
-      <HeaderLayout hideProfile={true} toggleSidebar={toggleMobileSidebar} />
+      {/* HeaderLayout is now independent of the profile sidebar */}
+      <HeaderLayout
+        hideProfile={true}
+        // No toggleSidebar prop passed here for HeaderLayout's own menu
+        hideCreate={false}
+        hideContact={false}
+        hideDonate={false}
+        hideAboutUs={false}
+      />
 
-      {/* Main content area: Flex container for Sidebar and Main content */}
-      {/* On small screens, flex-col stacks them. On md and up, it's a row */}
+      {/* Main content area: Flex container for Profile Sidebar and Main content */}
       <div className="flex flex-grow flex-col md:flex-row bg-gray-50">
-        {/* Sidebar: Hidden on small screens, block on medium and up */}
-        {/* For mobile, consider making SideBar a drawer/overlay component that slides in/out. */}
-        {/* Pass isMobileSidebarOpen and toggleMobileSidebar to SideBar */}
-        <SideBar
-          activeItem={activeMenuItem}
-          onItemClick={handleMenuItemClick}
-          handleLogout={() => setShowConfirmLogout(true)}
-          className="hidden md:block" // Hide on small, show on md and above
-          isMobileOpen={isMobileSidebarOpen} // Pass mobile open state
-          toggleMobile={toggleMobileSidebar} // Pass toggle function
-        />
 
-        {/* Mobile Sidebar Overlay (when open) */}
-        {isMobileSidebarOpen && (
+        {/* Desktop Profile Sidebar (visible on medium screens and up) */}
+        <div className="hidden md:block w-64 flex-shrink-0">
+          <SideBar
+            activeItem={activeMenuItem}
+            onItemClick={handleMenuItemClick}
+            handleLogout={() => setShowConfirmLogout(true)}
+            // These props are for the mobile version, not used by desktop sidebar
+            isMobileOpen={false}
+            toggleMobile={() => {}}
+          />
+        </div>
+
+        {/* Mobile Profile Sidebar Button - Visible on small screens, hidden on md and up */}
+        {/* This button toggles the DEDICATED profile sidebar */}
+        <div className="md:hidden flex justify-start p-4 bg-gray-50">
+          <button
+            onClick={toggleProfileSidebar}
+            className="p-2 text-gray-600 hover:text-gray-900 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-green-500 rounded"
+            aria-label="Toggle profile sidebar"
+          >
+            {isProfileSidebarOpen ? (
+              <XMarkIcon className="h-8 w-8" />
+            ) : (
+              <Bars3Icon className="h-8 w-8" />
+            )}
+          </button>
+        </div>
+
+
+        {/* Mobile Profile Sidebar Overlay (when open) */}
+        {isProfileSidebarOpen && (
           <div
             className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
-            onClick={toggleMobileSidebar} // Close sidebar when clicking outside
+            onClick={toggleProfileSidebar} // Close profile sidebar when clicking outside
           ></div>
         )}
 
-        {/* Mobile Sidebar Drawer (when open) */}
+        {/* Mobile Profile Sidebar Drawer (when open) */}
         <div
           className={`fixed top-0 left-0 h-full bg-white w-64 z-50 transform transition-transform duration-300 ease-in-out md:hidden
-            ${isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
+            ${isProfileSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}
         >
           <SideBar
             activeItem={activeMenuItem}
             onItemClick={handleMenuItemClick}
             handleLogout={() => setShowConfirmLogout(true)}
-            isMobileOpen={isMobileSidebarOpen}
-            toggleMobile={toggleMobileSidebar}
+            isMobileOpen={isProfileSidebarOpen} // Pass mobile open state
+            toggleMobile={toggleProfileSidebar} // Pass toggle function for the X button
           />
         </div>
 
 
         {/* Main content area */}
-        {/* mx-auto and px-4 on main container are good. */}
         <main className="flex-grow container mx-auto px-4 py-6 md:ml-0">
           {activeMenuItem === "Profile" && (
             <>
@@ -574,10 +595,8 @@ function UserProfileSettings() {
               <h1 className="text-xl sm:text-2xl font-bold mb-4 sm:mb-6">Profile Settings</h1>
 
               {/* Profile Picture Section */}
-              {/* On mobile, stack items instead of side-by-side */}
               <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6 flex flex-col sm:flex-row items-center sm:justify-between">
                 {/* Left Section: Text and File Input */}
-                {/* Order of elements might change on mobile if you want picture above text */}
                 <div className="text-center sm:text-left flex-grow mb-4 sm:mb-0 sm:mr-6 order-2 sm:order-1">
                   <h1 className="text-lg sm:text-xl font-semibold mb-1 sm:mb-2">
                     Profile Picture
@@ -616,7 +635,6 @@ function UserProfileSettings() {
                 </div>
 
                 {/* Right Section: Profile Picture Display */}
-                {/* Center on mobile, maintain size but adjust margins/placement */}
                 <div
                   className="w-24 h-24 sm:w-32 sm:h-32 rounded-full overflow-hidden border-2 border-gray-300 flex items-center justify-center cursor-pointer relative group flex-shrink-0 order-1 sm:order-2 mb-4 sm:mb-0"
                   onClick={() => fileInputRef.current.click()}
@@ -639,27 +657,26 @@ function UserProfileSettings() {
 
               {/* Profile Details Section */}
               <div className="bg-white rounded-lg shadow-md p-4 sm:p-6 mb-4 sm:mb-6">
-                <div className="flex flex-col sm:flex-row justify-between items-start mb-4 sm:mb-6"> {/* Stack on mobile */}
-                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-0">Profile Details</h2> {/* Adjust heading size */}
-                  <div className="flex flex-col space-y-2 w-full sm:w-auto"> {/* Stack buttons on mobile */}
+                <div className="flex flex-col sm:flex-row justify-between items-start mb-4 sm:mb-6">
+                  <h2 className="text-lg sm:text-xl font-semibold mb-3 sm:mb-0">Profile Details</h2>
+                  <div className="flex flex-col space-y-2 w-full sm:w-auto">
                     {/* Edit/Save/Cancel buttons */}
                     {isProfileEditMode ? (
                       <div className="flex space-x-2 w-full">
                         <button
                           onClick={handleProfileDetailsSave}
-                          className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm w-1/2" // Half width on mobile
+                          className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm w-1/2"
                         >
                           Save
                         </button>
                         <button
                           onClick={toggleProfileEditMode}
-                          className="bg-gray-300 text-gray-700 py-2 px-4 rounded text-sm w-1/2" // Half width on mobile
+                          className="bg-gray-300 text-gray-700 py-2 px-4 rounded text-sm w-1/2"
                         >
                           Cancel
                         </button>
                       </div>
                     ) : (
-                      // This is the "Edit" button
                       <button
                         onClick={toggleProfileEditMode}
                         className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm"
@@ -670,10 +687,8 @@ function UserProfileSettings() {
 
                     {/* Conditional rendering for KYC button - Always ensure it occupies space for consistent layout */}
                     {profileData.kycStatus === "Approved" ? (
-                      // If Approved, render an invisible placeholder to maintain layout
                       <div className="w-full py-2 px-4 text-sm invisible"></div>
                     ) : (
-                      // For other statuses (Pending Review, Rejected, Not Submitted), show the button
                       <button
                         onClick={handleKYC}
                         className="w-full bg-[#4A5D45] text-white py-2 px-4 rounded text-sm"
@@ -687,7 +702,6 @@ function UserProfileSettings() {
                 </div>
 
                 {/* Profile Details Grid */}
-                {/* On small screens, make it a single column grid */}
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
                   <div>
                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
@@ -699,10 +713,10 @@ function UserProfileSettings() {
                         name="fullName"
                         value={editedProfile.fullName}
                         onChange={handleProfileEditChange}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500" // Adjusted text size
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500"
                       />
                     ) : (
-                      <div className="text-gray-600 font-medium text-sm"> {/* Adjusted text size */}
+                      <div className="text-gray-600 font-medium text-sm">
                         {profileData.fullName}
                       </div>
                     )}
@@ -711,7 +725,7 @@ function UserProfileSettings() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
                       Email
                     </label>
-                    <div className="text-blue-500 font-medium text-sm break-words"> {/* Adjusted text size, added break-words */}
+                    <div className="text-blue-500 font-medium text-sm break-words">
                       {profileData.email}
                     </div>
                   </div>
@@ -725,10 +739,10 @@ function UserProfileSettings() {
                         name="contactNo"
                         value={editedProfile.contactNo}
                         onChange={handleProfileEditChange}
-                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500" // Adjusted text size
+                        className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-green-500"
                       />
                     ) : (
-                      <div className="text-blue-500 font-medium text-sm"> {/* Adjusted text size */}
+                      <div className="text-blue-500 font-medium text-sm">
                         {profileData.contactNo}
                       </div>
                     )}
@@ -738,7 +752,7 @@ function UserProfileSettings() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
                       User ID
                     </label>
-                    <div className="text-gray-600 font-medium text-sm break-all"> {/* Adjusted text size */}
+                    <div className="text-gray-600 font-medium text-sm break-all">
                       {profileData.userId}
                     </div>
                   </div>
@@ -746,7 +760,7 @@ function UserProfileSettings() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
                       Created Campaigns
                     </label>
-                    <div className="text-gray-600 font-medium text-sm"> {/* Adjusted text size */}
+                    <div className="text-gray-600 font-medium text-sm">
                       {profileData.createdCampaigns}
                     </div>
                   </div>
@@ -754,7 +768,7 @@ function UserProfileSettings() {
                     <label className="block text-xs sm:text-sm font-medium text-gray-700">
                       Backed Campaigns
                     </label>
-                    <div className="text-gray-600 font-medium text-sm"> {/* Adjusted text size */}
+                    <div className="text-gray-600 font-medium text-sm">
                       {profileData.backedCampaigns}
                     </div>
                   </div>
@@ -762,13 +776,13 @@ function UserProfileSettings() {
 
                 {/* KYC Status Section */}
                 <div className="mt-6 sm:mt-8 pt-4 border-t border-gray-200">
-                  <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">KYC Status</h3> {/* Adjust heading size */}
-                  <div className="flex items-center flex-wrap gap-2"> {/* Added flex-wrap and gap for small screens */}
+                  <h3 className="text-base sm:text-lg font-semibold mb-2 sm:mb-3">KYC Status</h3>
+                  <div className="flex items-center flex-wrap gap-2">
                     {/* Conditional rendering for status tag based on profileData.kycStatus */}
                     {profileData.kycStatus === "Pending Review" && (
                       <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-yellow-100 text-yellow-800">
                         <svg
-                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1" // Adjusted icon size
+                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                           xmlns="http://www.w3.org/2000/svg"
@@ -785,7 +799,7 @@ function UserProfileSettings() {
                     {profileData.kycStatus === "Approved" && (
                       <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-green-100 text-green-800">
                         <svg
-                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1" // Adjusted icon size
+                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                           xmlns="http://www.w3.org/2000/svg"
@@ -802,7 +816,7 @@ function UserProfileSettings() {
                     {profileData.kycStatus === "Rejected" && (
                       <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-red-100 text-red-800">
                         <svg
-                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1" // Adjusted icon size
+                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                           xmlns="http://www.w3.org/2000/svg"
@@ -819,7 +833,7 @@ function UserProfileSettings() {
                     {profileData.kycStatus === "Not Submitted" && (
                       <span className="inline-flex items-center px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-medium bg-gray-100 text-gray-800">
                         <svg
-                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1" // Adjusted icon size
+                          className="h-3 w-3 sm:h-4 sm:w-4 mr-1"
                           fill="currentColor"
                           viewBox="0 0 20 20"
                           xmlns="http://www.w3.org/2000/svg"
@@ -836,7 +850,7 @@ function UserProfileSettings() {
                   </div>
                   {profileData.kycStatus === "Rejected" &&
                     userKYCApplication?.adminComments && (
-                      <p className="text-red-600 text-xs sm:text-sm mt-2"> {/* Adjusted text size */}
+                      <p className="text-red-600 text-xs sm:text-sm mt-2">
                         Reason for Rejection: {userKYCApplication.adminComments}
                       </p>
                     )}
@@ -852,13 +866,13 @@ function UserProfileSettings() {
                       {additionalEmails.map((email, index) => (
                         <div
                           key={index}
-                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-blue-500 text-sm" // Stack on mobile
+                          className="flex flex-col sm:flex-row justify-between items-start sm:items-center text-blue-500 text-sm"
                         >
-                          <span className="mb-1 sm:mb-0 break-words">{email}</span> {/* Added break-words */}
+                          <span className="mb-1 sm:mb-0 break-words">{email}</span>
                           {isProfileEditMode && (
                             <button
                               onClick={() => handleRemoveEmail(email)}
-                              className="text-red-500 hover:text-red-700 sm:ml-2 text-xs sm:text-sm" // Adjusted text size
+                              className="text-red-500 hover:text-red-700 sm:ml-2 text-xs sm:text-sm"
                             >
                               Remove
                             </button>
@@ -874,17 +888,17 @@ function UserProfileSettings() {
 
                   {isProfileEditMode &&
                     (isAddingEmail ? (
-                      <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center"> {/* Stack on mobile */}
+                      <div className="mt-2 flex flex-col sm:flex-row items-stretch sm:items-center">
                         <input
                           type="email"
                           value={newEmail}
                           onChange={(e) => setNewEmail(e.target.value)}
                           placeholder="Enter new email"
-                          className="flex-grow border border-gray-300 rounded sm:rounded-l px-3 py-1 focus:ring-green-500 text-sm mb-2 sm:mb-0" // Full width on mobile, rounded
+                          className="flex-grow border border-gray-300 rounded sm:rounded-l px-3 py-1 focus:ring-green-500 text-sm mb-2 sm:mb-0"
                         />
                         <button
                           onClick={handleAddEmail}
-                          className="bg-[#4A5D45] text-white px-3 py-1 rounded sm:rounded-r text-sm w-full sm:w-auto" // Full width on mobile
+                          className="bg-[#4A5D45] text-white px-3 py-1 rounded sm:rounded-r text-sm w-full sm:w-auto"
                         >
                           Add
                         </button>
@@ -919,8 +933,8 @@ function UserProfileSettings() {
           )}
 
           {activeMenuItem === "Notifications" && (
-            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6"> {/* Adjusted padding */}
-              <h2 className="text-lg sm:text-xl font-semibold"> {/* Adjusted heading size */}
+            <div className="bg-white rounded-lg shadow-md p-4 sm:p-6">
+              <h2 className="text-lg sm:text-xl font-semibold">
                 Notifications (Coming Soon)
               </h2>
             </div>

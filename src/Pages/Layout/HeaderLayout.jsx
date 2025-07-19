@@ -9,23 +9,27 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // New state for mobile menu
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State for HeaderLayout's mobile menu
   const navigate = useNavigate();
   const location = useLocation();
 
   const { userProfile, loadingUserContext } = useUser();
   const dropdownRef = useRef(null);
-  const mobileMenuRef = useRef(null); // Ref for mobile menu container
+  const mobileMenuRef = useRef(null); // Ref for HeaderLayout's mobile menu container
 
   const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
 
-  // Close dropdown or mobile menu when clicking outside
+  // Close dropdown or HeaderLayout's mobile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
+      // Close user dropdown if clicking outside
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
         setShowDropdown(false);
       }
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target)) {
+      // Close HeaderLayout's mobile menu if clicking outside its container
+      // Ensure the click is not on the hamburger button itself, to prevent immediate re-opening
+      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) &&
+          !event.target.closest('.mobile-menu-toggle-button')) { // Added class to button for exclusion
         setIsMobileMenuOpen(false);
       }
     };
@@ -33,7 +37,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
     return () => {
       document.removeEventListener("mousedown", handleClickOutside);
     };
-  }, []);
+  }, []); // No dependencies needed here as refs are stable
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -80,15 +84,15 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6"> {/* Adjusted padding for mobile */}
+      <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6">
         {/* Left Side - Logo & Navigation */}
-        <div className="flex items-center space-x-4 md:space-x-6"> {/* Adjusted space-x for mobile */}
+        <div className="flex items-center space-x-4 md:space-x-6">
           {/* Logo */}
           <div className="flex items-center">
             <img
               src="./Images/fundify-transparent-logo.png"
               alt="Fundify Logo"
-              className="w-10 h-10 mr-1 cursor-pointer md:w-12 md:h-12 md:mr-2" // Adjusted logo size and margin for mobile
+              className="w-10 h-10 mr-1 cursor-pointer md:w-12 md:h-12 md:mr-2"
               onClick={() => navigate('/')}
             />
           </div>
@@ -106,7 +110,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
         </div>
 
         {/* Right Side - Actions & User */}
-        <div className="flex items-center space-x-4 md:space-x-6"> {/* Adjusted space-x for mobile */}
+        <div className="flex items-center space-x-4 md:space-x-6">
           {/* Desktop "Create Campaign" and "Contact Us" - Hidden on mobile, visible on medium screens and up */}
           {!hideCreate && (
             <Link to="/create-campaign" className="hidden text-[#000000] hover:underline md:block" onClick={handleCreateCampaignClick}>
@@ -156,7 +160,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
               )}
             </div>
           ) : (
-            <Link to="/login" className="hidden text-[#000000] hover:underline md:block"> {/* Login/Signup also hidden on mobile, part of hamburger menu */}
+            <Link to="/login" className="hidden text-[#000000] hover:underline md:block">
               Login / Sign Up
             </Link>
           )}
@@ -165,7 +169,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
           <div className="md:hidden">
             <button
               onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+              className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 mobile-menu-toggle-button" // Added class for exclusion
             >
               {isMobileMenuOpen ? (
                 <XMarkIcon className="h-8 w-8" />
@@ -183,7 +187,17 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
           ref={mobileMenuRef}
           className="fixed inset-0 bg-white bg-opacity-95 z-40 md:hidden animate-fade-in-down" // Using white background for consistency with HeaderLayout
         >
-          <div className="flex flex-col items-center pt-20 pb-8 space-y-6 text-[#000000] text-xl"> {/* Text color adjusted to black */}
+          {/* Close button inside the mobile menu overlay */}
+          <div className="flex justify-end p-4">
+            <button
+              onClick={() => setIsMobileMenuOpen(false)} // Explicitly close the menu
+              className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+              aria-label="Close main menu"
+            >
+              <XMarkIcon className="h-8 w-8" />
+            </button>
+          </div>
+          <div className="flex flex-col items-center pt-20 pb-8 space-y-6 text-[#000000] text-xl">
             <Link to="/" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
             {!hideDonate && (
               <a href="/explore" onClick={handleDonateClick} className="hover:text-[#485842]">Donate</a>
@@ -211,7 +225,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
       {/* Logout Confirmation Modal */}
       {showConfirmLogout && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm text-center"> {/* Adjusted width for mobile */}
+          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm text-center">
             <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
             <p className="mb-6">Are you sure you want to log out?</p>
             <div className="flex justify-center space-x-4">
