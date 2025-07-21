@@ -13,25 +13,22 @@ import {
 import CreditCardIcon from '@mui/icons-material/CreditCard';
 import EventIcon from '@mui/icons-material/Event';
 import VpnKeyIcon from '@mui/icons-material/VpnKey';
-import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Import toast functions
+import { showSuccessMessage, showErrorMessage } from '../utils/toast';
 import './Payment.css';
 
 const Payment = () => {
-  // 1. Get donation details from sessionStorage
   const donationDetails = JSON.parse(sessionStorage.getItem('donationDetails'));
-  
   const navigate = useNavigate();
   const stripe = useStripe();
   const elements = useElements();
   const payBtn = useRef(null);
 
   const { user } = useSelector((state) => state.user);
-  
-  // Redirect if details are not found
+
   useEffect(() => {
     if (!donationDetails) {
       showErrorMessage("Donation details not found. Returning to donation page.");
-      // navigate('/donate'); // Or your relevant donation screen route
+      navigate('/donate');
     }
   }, [donationDetails, navigate]);
   
@@ -42,30 +39,22 @@ const Payment = () => {
     payBtn.current.disabled = true;
 
     try {
-      // --- Step 1: Create Payment Intent with Stripe ---
       const paymentData = {
         amount: donationDetails.amount,
       };
       
-      const config = {
-        headers: { 'Content-Type': 'application/json' },
-        withCredentials: true,
-      };
+      const config = { headers: { 'Content-Type': 'application/json' } };
 
       const { data } = await axios.post(
-        '/api/v1/payment/process',
+        `https://server-fundify.up.railway.app/api/v1/payment/process`,
         paymentData,
         config
       );
 
       const client_secret = data.client_secret;
 
-      if (!stripe || !elements) {
-        payBtn.current.disabled = false;
-        return;
-      }
+      if (!stripe || !elements) return;
 
-      // --- Step 2: Confirm the Card Payment ---
       const result = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
           card: elements.getElement(CardNumberElement),
@@ -80,7 +69,6 @@ const Payment = () => {
         showErrorMessage(result.error.message);
         payBtn.current.disabled = false;
       } else {
-        // --- Step 3: Payment Succeeded, Now Save Donation to DB ---
         if (result.paymentIntent.status === 'succeeded') {
           const donationDataForDB = {
             ...donationDetails,
@@ -91,26 +79,19 @@ const Payment = () => {
           };
           
           const token = getAuthToken();
-          // Use fetch or axios to post to your original donations endpoint
-          const dbResponse = await fetch('https://server-fundify.up.railway.app/api/donations', {
-            method: 'POST',
+          // Use axios consistently
+          const dbConfig = {
             headers: {
               'Content-Type': 'application/json',
               'Authorization': `Bearer ${token}`,
             },
-            body: JSON.stringify(donationDataForDB),
-          });
+          };
+
+          await axios.post(`https://server-fundify.up.railway.app/api/donations`, donationDataForDB, dbConfig);
           
-          if (dbResponse.ok) {
-            showSuccessMessage('Payment Successful & Donation Recorded!');
-            sessionStorage.removeItem('donationDetails'); // Clean up
-            navigate('/campaigns'); // Or a success page
-          } else {
-            const errorData = await dbResponse.json();
-            showErrorMessage(`Payment succeeded but failed to save donation: ${errorData.message}`);
-            payBtn.current.disabled = false;
-          }
-          
+          showSuccessMessage('Payment Successful & Donation Recorded!');
+          sessionStorage.removeItem('donationDetails');
+          navigate('/submit-2'); // Navigate to a success page
         } else {
           showErrorMessage("There's an issue while processing payment.");
           payBtn.current.disabled = false;
@@ -118,7 +99,7 @@ const Payment = () => {
       }
     } catch (error) {
       payBtn.current.disabled = false;
-      const errorMessage = error.response ? error.response.data.message : "An unexpected error occurred.";
+      const errorMessage = error.response ? error.response.data.message : "An unexpected network error occurred.";
       showErrorMessage(errorMessage);
     }
   };
