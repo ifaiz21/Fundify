@@ -43,7 +43,13 @@ const Payment = () => {
         amount: donationDetails.amount,
       };
       
-      const config = { headers: { 'Content-Type': 'application/json' } };
+      const token = getAuthToken();
+      const config = { 
+        headers: { 
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}` // <-- Add this line
+       } 
+      };
 
       const { data } = await axios.post(
         `https://server-fundify.up.railway.app/api/v1/payment/process`,
