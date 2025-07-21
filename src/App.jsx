@@ -1,8 +1,13 @@
 // src/App.jsx
-import React from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
+import WebFont from 'webfontloader';
+
+// Import Stripe libraries
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
 
 // Import all your page and component files
 import LoginPage from "./Pages/LoginPage";
@@ -50,7 +55,7 @@ import MyCampaigns from './Pages/MyCampaigns';
 //import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
-import ProjectDetailsPage from './Pages/Project/ProjectDetailsPage';
+import Payment from './components/Payment';
 
 //KYC
 import KYCLivenessVerification from './Pages/KYC/KYCLivenessVerification'; // Already imported
@@ -60,6 +65,18 @@ import KYCSuccessPage from './Pages/KYC/KYCSuccessPage'; // Import the new KYCSu
 
 
 function App() {
+
+    // Create a stripePromise with your publishable key
+  const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
+ 
+  useEffect(() => {
+    WebFont.load({
+      google: {
+        families: ['Roboto', 'Droid Sans', 'Chilanka'],
+      },
+    });
+  }, []);
+
   // Functions to show toast notifications
   const showSuccess = (message) => {
     toast.success(message, {
@@ -88,6 +105,8 @@ function App() {
   return (
     <UserProvider>
       <Router>
+       {/* Wrap the Routes with the Elements provider */}
+      <Elements stripe={stripePromise}>
         <Routes>
           {/* All Route elements must be nested directly inside <Routes> */}
           {/* Pass showSuccess and showError functions as props to components that need to trigger them */}
@@ -144,8 +163,8 @@ function App() {
           <Route path="/admin/campaigns" element={<CampaignsPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/verifications" element={<VerificationPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/feedbacks" element={<FeedbacksPage showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/project/:campaignId" element={<ProjectDetailsPage />} /> 
-          
+          <Route path="/payments" element={<Payment />} />
+
           <Route path="/billing" element={<Billing showSuccess={showSuccess} showError={showError} />} />
 
           {/* Fallback for other routes which also uses HeaderLayout. 
@@ -159,6 +178,7 @@ function App() {
             </div>
           } />
         </Routes>
+        </Elements>
         <ConditionalChatWrapper />
       </Router>
 
