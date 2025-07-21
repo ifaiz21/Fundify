@@ -36,14 +36,27 @@ const Payment = () => {
 
   const submitHandler = async (e) => {
     e.preventDefault();
+    if (!donationDetails) {
+        showErrorMessage("Donation details are missing.");
+        return;
+    }
+
     payBtn.current.disabled = true;
 
     try {
+      const token = getAuthToken(); // Get the token from localStorage
+
+        // Check if the token exists before making the request
+        if (!token) {
+            showErrorMessage("You must be logged in to make a payment.");
+            payBtn.current.disabled = false;
+            navigate('/login');
+            return;
+        }
       const paymentData = {
         amount: donationDetails.amount,
       };
       
-      const token = getAuthToken();
       const config = { 
         headers: { 
           'Content-Type': 'application/json',
@@ -59,7 +72,10 @@ const Payment = () => {
 
       const client_secret = data.client_secret;
 
-      if (!stripe || !elements) return;
+      if (!stripe || !elements){
+        payBtn.current.disabled = false;
+        return;
+      }
 
       const result = await stripe.confirmCardPayment(client_secret, {
         payment_method: {
