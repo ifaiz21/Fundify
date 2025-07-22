@@ -34,97 +34,88 @@ const Payment = () => {
   
   const getAuthToken = () => localStorage.getItem('token');
 
-  const submitHandler = async (e) => {
-    e.preventDefault();
-    if (!donationDetails) {
-        showErrorMessage("Donation details are missing.");
-        return;
-    }
+  // In Payment.jsx
 
+const submitHandler = async (e) => {
+    e.preventDefault();
     payBtn.current.disabled = true;
 
     try {
-      const token = getAuthToken(); // Get the token from localStorage
-
-        // Check if the token exists before making the request
+        const token = getAuthToken();
         if (!token) {
-            showErrorMessage("You must be logged in to make a payment.");
+            showErrorMessage("You must be logged in.");
             payBtn.current.disabled = false;
             navigate('/login');
             return;
         }
-      const paymentData = {
-        amount: donationDetails.amount,
-      };
-      
-      const config = { 
-        headers: { 
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}` // <-- Add this line
-       } 
-      };
 
-      const { data } = await axios.post(
-        `https://server-fundify.up.railway.app/api/v1/payment/process`,
-        paymentData,
-        config
-      );
-
-      const client_secret = data.client_secret;
-
-      if (!stripe || !elements){
-        payBtn.current.disabled = false;
-        return;
-      }
-
-      const result = await stripe.confirmCardPayment(client_secret, {
-        payment_method: {
-          card: elements.getElement(CardNumberElement),
-          billing_details: {
-            name: user.name,
-            email: user.email,
-          },
-        },
-      });
-
-      if (result.error) {
-        showErrorMessage(result.error.message);
-        payBtn.current.disabled = false;
-      } else {
-        if (result.paymentIntent.status === 'succeeded') {
-          const donationDataForDB = {
-            ...donationDetails,
-            paymentInfo: {
-              id: result.paymentIntent.id,
-              status: result.paymentIntent.status,
-            },
-          };
-          
-          const token = getAuthToken();
-          // Use axios consistently
-          const dbConfig = {
+        console.log("Step 1: Sending request to create Payment Intent...");
+        
+        const paymentData = { amount: donationDetails.amount };
+        const API_URL = process.env.REACT_APP_API_URL;
+        const config = {
             headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`,
-            },
-          };
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+            }
+        };
+        
+        const { data } = await axios.post(
+            `${API_URL}/api/payment/process`,
+            paymentData,
+            config
+        );
 
-          await axios.post(`https://server-fundify.up.railway.app/api/donations`, donationDataForDB, dbConfig);
-          
-          showSuccessMessage('Payment Successful & Donation Recorded!');
-          sessionStorage.removeItem('donationDetails');
-          navigate('/submit-2'); // Navigate to a success page
-        } else {
-          showErrorMessage("There's an issue while processing payment.");
-          payBtn.current.disabled = false;
+        console.log("Step 2: Received response from backend:", data);
+
+        const client_secret = data.client_secret;
+
+        if (!client_secret) {
+            console.error("FATAL: client_secret not found in backend response!");
+            showErrorMessage("Failed to initialize payment from server.");
+            payBtn.current.disabled = false;
+            return;
         }
-      }
+
+        if (!stripe || !elements) return;
+
+        console.log("Step 3: Confirming card payment with Stripe...");
+        const result = await stripe.confirmCardPayment(client_secret, {
+            payment_method: {
+                card: elements.getElement(CardNumberElement),
+                billing_details: {
+                    name: user.name,
+                    email: user.email,
+                },
+            },
+        });
+
+        console.log("Step 4: Stripe confirmation result:", result);
+
+        if (result.error) {
+            // This is likely where the error is.
+            // For example, using an invalid test card number.
+            showErrorMessage(result.error.message);
+            payBtn.current.disabled = false;
+        } else {
+            if (result.paymentIntent.status === 'succeeded') {
+                console.log("Step 5: Payment Succeeded! Saving to DB...");
+                // ... your logic to save the donation ...
+                showSuccessMessage('Payment Successful & Donation Recorded!');
+                sessionStorage.removeItem('donationDetails');
+                navigate('/submit-2');
+            } else {
+                showErrorMessage("Payment not successful.");
+                payBtn.current.disabled = false;
+            }
+        }
     } catch (error) {
-      payBtn.current.disabled = false;
-      const errorMessage = error.response ? error.response.data.message : "An unexpected network error occurred.";
-      showErrorMessage(errorMessage);
+        console.error("An error occurred in submitHandler:", error);
+        payBtn.current.disabled = false;
+        const errorMessage = error.response ? error.response.data.message : "An unexpected network error occurred.";
+        showErrorMessage(errorMessage);
     }
-  };
+};
 
   return (
     <Fragment>
