@@ -4,7 +4,8 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import WebFont from 'webfontloader';
-
+import { useDispatch } from 'react-redux';
+import { loadUser } from './actions/userActions';
 // Import Stripe libraries
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
@@ -65,6 +66,13 @@ import KYCSuccessPage from './Pages/KYC/KYCSuccessPage'; // Import the new KYCSu
 
 
 function App() {
+
+  const dispatch = useDispatch();
+
+    useEffect(() => {
+        // Dispatch the loadUser action when the app component mounts
+        dispatch(loadUser());
+    }, [dispatch]);
 
     // Create a stripePromise with your publishable key
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
