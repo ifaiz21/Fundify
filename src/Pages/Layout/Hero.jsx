@@ -1,30 +1,31 @@
 import Header from "./Header";
 import { useNavigate } from "react-router-dom";
-import { useUser } from '../../context/UserContext';
+import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 
 export default function Hero() {
     // --- Hooks istemal karein ---
     const navigate = useNavigate();
-    const { userProfile, loadingUserContext } = useUser();
+    const { user, loading } = useSelector((state) => state.user);
 
     // --- Header se KYC check wala function copy karein ---
     const handleCreateCampaignClick = (e) => {
         e.preventDefault();
 
         // Check if user is logged in first
-        if (!userProfile || !userProfile._id) {
+         if (!user) {
              toast.error('Please log in first to create a campaign.');
              navigate('/login');
              return;
         }
 
-        if (loadingUserContext) {
+         if (loading) {
             toast.info('Loading user data, please wait...');
             return;
         }
 
-        const kycStatus = userProfile.kycStatus;
+
+        const kycStatus = user.kycStatus;
 
         if (kycStatus === 'Approved') {
             navigate("/create-campaign");
