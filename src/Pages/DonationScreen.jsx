@@ -60,7 +60,7 @@ const DonationScreen = () => {
         showSuccessMessage("Proceeding to secure checkout...");
         
         // Navigate directly to the Stripe payment form.
-        navigate("/payments");
+        navigate("/payment1");
         // --- MODIFICATION END ---
         
         // The original fetch logic will be moved to the payment component after successful payment.

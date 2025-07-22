@@ -57,6 +57,7 @@ import MyCampaigns from './Pages/MyCampaigns';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
 import Payment from './components/Payment';
+import StripePaymentScreen from './Pages/Payment/StripePaymentScreen'
 
 //KYC
 import KYCLivenessVerification from './Pages/KYC/KYCLivenessVerification'; // Already imported
@@ -172,6 +173,7 @@ function App() {
           <Route path="/admin/verifications" element={<VerificationPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/feedbacks" element={<FeedbacksPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/payments" element={<Payment />} />
+          <Route path="/payment1" element={<StripePaymentScreen />}/>
 
           <Route path="/billing" element={<Billing showSuccess={showSuccess} showError={showError} />} />
 
