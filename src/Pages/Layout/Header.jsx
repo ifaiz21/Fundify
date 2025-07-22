@@ -96,7 +96,7 @@ export default function Header({ hideHome }) {
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-3 bg-transparent relative md:px-6"> {/* Adjusted padding for mobile */}
+      <header className="flex items-center justify-between px-4 py-3 bg-transparent relative md:px-6 z-50"> {/* Adjusted padding for mobile */}
         {/* Left Side - Logo & Navigation */}
         <div className="flex items-center space-x-4 md:space-x-6"> {/* Adjusted space-x for mobile */}
           {/* Logo */}

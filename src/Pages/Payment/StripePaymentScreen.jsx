@@ -6,7 +6,6 @@ import { CardNumberElement, CardCvcElement, CardExpiryElement, useStripe, useEle
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 import Header from "../Layout/HeaderLayout";
 import Footer from "../Layout/FooterLayout";
-//import './Payment.css'; // Use the CSS from your new Payment.jsx
 
 const StripePaymentScreen = () => {
     const navigate = useNavigate();
