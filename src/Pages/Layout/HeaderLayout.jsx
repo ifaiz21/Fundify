@@ -1,185 +1,138 @@
 // src/Pages/Layout/HeaderLayout.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate, useLocation } from "react-router-dom";
-import { useUser } from '../../context/UserContext';
-import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
-import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline'; // Import icons for hamburger menu
+import { Link, useNavigate } from "react-router-dom";
+import { useSelector, useDispatch } from 'react-redux'; // <-- Change: Import Redux hooks
+import { logoutSuccess } from '../../store'; // <-- Change: Import logout action
+import { fetchNotifications } from '../../features/notificationSlice'; // <-- Change: Import notification action
+import { showSuccessMessage } from '../../utils/toast';
+import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/react/24/outline';
 
 const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hideProfile }) => {
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const [showDropdown, setShowDropdown] = useState(false);
-  const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false); // State for HeaderLayout's mobile menu
-  const navigate = useNavigate();
-  const location = useLocation();
+    const [showDropdown, setShowDropdown] = useState(false);
+    const [showConfirmLogout, setShowConfirmLogout] = useState(false);
+    const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch(); // <-- Change: Initialize useDispatch
 
-  const { userProfile, loadingUserContext } = useUser();
-  const dropdownRef = useRef(null);
-  const mobileMenuRef = useRef(null); // Ref for HeaderLayout's mobile menu container
+    // --- Change: Get user and notification data from Redux store ---
+    const { user, isAuthenticated, loading } = useSelector((state) => state.user);
+    const { unreadCount } = useSelector((state) => state.notifications);
 
-  const avatarSrc = userProfile.profilePictureUrl || "/Images/default-avatar.png";
+    const dropdownRef = useRef(null);
+    const mobileMenuRef = useRef(null);
 
-  // Close dropdown or HeaderLayout's mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      // Close user dropdown if clicking outside
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setShowDropdown(false);
-      }
-      // Close HeaderLayout's mobile menu if clicking outside its container
-      // Ensure the click is not on the hamburger button itself, to prevent immediate re-opening
-      if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) &&
-          !event.target.closest('.mobile-menu-toggle-button')) { // Added class to button for exclusion
+    // --- Change: Use 'user' object from Redux for avatar ---
+    const avatarSrc = user?.profilePictureUrl ? `https://server-fundify.up.railway.app/${user.profilePictureUrl}` : "/Images/default-avatar.png";
+
+    // Fetch notifications when user is authenticated
+    useEffect(() => {
+        if (isAuthenticated) {
+            dispatch(fetchNotifications());
+        }
+    }, [dispatch, isAuthenticated]);
+
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (dropdownRef.current && !dropdownRef.current.contains(event.target)) setShowDropdown(false);
+            if (mobileMenuRef.current && !mobileMenuRef.current.contains(event.target) && !event.target.closest('.mobile-menu-toggle-button')) {
+                setIsMobileMenuOpen(false);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
+
+    const handleLogout = () => {
+        dispatch(logoutSuccess()); // <-- Change: Dispatch Redux action for logout
+        setShowConfirmLogout(false);
+        navigate("/login");
+        showSuccessMessage("You have been logged out successfully!");
+    };
+
+    const handleDonateClick = (e) => {
+        e.preventDefault();
+        navigate("/explore", { state: { purpose: "select-for-donation" } });
         setIsMobileMenuOpen(false);
-      }
     };
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      document.removeEventListener("mousedown", handleClickOutside);
+
+    const handleCreateCampaignClick = (e) => {
+        e.preventDefault();
+        if (!isAuthenticated || !user) {
+            showSuccessMessage('Please log in first to create a campaign.');
+            navigate('/login');
+            return;
+        }
+        if (loading) {
+            showSuccessMessage('Loading user data, please wait...');
+            return;
+        }
+        const kycStatus = user.kycStatus;
+        if (kycStatus === 'Approved') navigate("/create-campaign");
+        else if (kycStatus === 'Rejected') showSuccessMessage('You are not a verified user. Please complete your KYC first.');
+        else if (kycStatus === 'Pending Review') showSuccessMessage('Please wait for your KYC verification.');
+        else showSuccessMessage('Please submit your KYC first.');
+        setIsMobileMenuOpen(false);
     };
-  }, []); // No dependencies needed here as refs are stable
 
-  useEffect(() => {
-    const token = localStorage.getItem("token");
-    setIsLoggedIn(!!token);
-  }, [location.pathname]);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("userProfile");
-    setIsLoggedIn(false);
-    setShowConfirmLogout(false);
-    navigate("/login");
-    showSuccessMessage("You have been logged out successfully!");
-  };
-
-  const handleDonateClick = (e) => {
-    e.preventDefault();
-    navigate("/explore", { state: { purpose: "select-for-donation" } });
-    setIsMobileMenuOpen(false); // Close mobile menu after navigation
-  };
-
-  const handleCreateCampaignClick = (e) => {
-    e.preventDefault();
-
-    if (loadingUserContext) {
-      showErrorMessage('Loading user data, please wait...');
-      return;
-    }
-
-    const kycStatus = userProfile.kycStatus;
-    console.log("HeaderLayout Create Campaign Click - KYC Status:", kycStatus);
-
-    if (kycStatus === 'Approved') {
-      navigate("/create-campaign");
-    } else if (kycStatus === 'Rejected') {
-      showErrorMessage('You are not a verified user by FUNDIFY. Please complete your KYC first.');
-    } else if (kycStatus === 'Pending Review') {
-      showErrorMessage('Please wait for verification by FUNDIFY.');
-    } else {
-      showErrorMessage('Please submit your KYC first.');
-    }
-    setIsMobileMenuOpen(false); // Close mobile menu after navigation
-  };
-
-  return (
-    <>
-      <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6 z-50">
-        {/* Left Side - Logo & Navigation */}
-        <div className="flex items-center space-x-4 md:space-x-6">
-          {/* Logo */}
-          <div className="flex items-center">
-            <img
-              src="./Images/fundify-transparent-logo.png"
-              alt="Fundify Logo"
-              className="w-10 h-10 mr-1 cursor-pointer md:w-12 md:h-12 md:mr-2"
-              onClick={() => navigate('/')}
-            />
-          </div>
-
-          {/* Desktop Navigation - Hidden on mobile, visible on medium screens and up */}
-          <nav className="hidden md:flex md:space-x-6 md:text-[#000000]">
-            <Link to="/" className="hover:text-[#485842] transition duration-300">Home</Link>
-            {!hideDonate && (
-              <a href="/explore" onClick={handleDonateClick} className="hover:underline">Donate</a>
-            )}
-            {!hideAboutUs && (
-              <Link to="/about" className="hover:underline">About Us</Link>
-            )}
-          </nav>
-        </div>
-
-        {/* Right Side - Actions & User */}
-        <div className="flex items-center space-x-4 md:space-x-6">
-          {/* Desktop "Create Campaign" and "Contact Us" - Hidden on mobile, visible on medium screens and up */}
-          {!hideCreate && (
-            <Link to="/create-campaign" className="hidden text-[#000000] hover:underline md:block" onClick={handleCreateCampaignClick}>
-              Create Campaign
-            </Link>
-          )}
-          {!hideContact && (
-            <Link to="/contact" className="hidden text-[#000000] hover:underline md:block">Contact Us</Link>
-          )}
-
-          {/* User Account Icon with Login Check */}
-          {isLoggedIn ? (
-            <div className="relative" ref={dropdownRef}>
-              <button
-                onClick={() => setShowDropdown(!showDropdown)}
-                className="w-10 h-10 rounded-full flex items-center justify-center focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 transition duration-300"
-              >
-                {loadingUserContext ? (
-                  <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
-                ) : (
-                  <img
-                    src={avatarSrc}
-                    alt="Profile"
-                    className="w-10 h-10 rounded-full object-cover border-2 border-gray-300"
-                    onError={(e) => {
-                      e.target.onerror = null;
-                      e.target.src = "/Images/default-avatar.png";
-                    }}
-                  />
-                )}
-              </button>
-
-              {showDropdown && (
-                <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-40 transition-opacity duration-300 ease-out z-50">
-                  {!hideProfile && (
-                    <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50 hover:text-indigo-700 transition-colors duration-200" onClick={() => { setShowDropdown(false); setIsMobileMenuOpen(false); }}>
-                      My Profile
-                    </Link>
-                  )}
-                  <button
-                    onClick={() => { setShowConfirmLogout(true); setShowDropdown(false); }}
-                    className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50 hover:text-red-700 transition-colors duration-200"
-                  >
-                    Logout
-                  </button>
+    return (
+        <>
+            <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6 z-50">
+                <div className="flex items-center space-x-4 md:space-x-6">
+                    <div className="flex items-center">
+                        <img src="/Images/fundify-transparent-logo.png" alt="Fundify Logo" className="w-10 h-10 mr-1 cursor-pointer md:w-12 md:h-12 md:mr-2" onClick={() => navigate('/')} />
+                    </div>
+                    <nav className="hidden md:flex md:space-x-6 md:text-[#000000]">
+                        <Link to="/" className="hover:text-[#485842] transition duration-300">Home</Link>
+                        {!hideDonate && <a href="/explore" onClick={handleDonateClick} className="hover:underline">Donate</a>}
+                        {!hideAboutUs && <Link to="/about" className="hover:underline">About Us</Link>}
+                    </nav>
                 </div>
-              )}
-            </div>
-          ) : (
-            <Link to="/login" className="hidden text-[#000000] hover:underline md:block">
-              Login / Sign Up
-            </Link>
-          )}
 
-          {/* Hamburger Menu Button - Visible on mobile, hidden on medium screens and up */}
-          <div className="md:hidden">
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50 mobile-menu-toggle-button" // Added class for exclusion
-            >
-              {isMobileMenuOpen ? (
-                <XMarkIcon className="h-8 w-8" />
-              ) : (
-                <Bars3Icon className="h-8 w-8" />
-              )}
-            </button>
-          </div>
-        </div>
-      </header>
+                <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-6">
+                    {!hideCreate && <Link to="/create-campaign" className="hidden text-[#000000] hover:underline md:block" onClick={handleCreateCampaignClick}>Create Campaign</Link>}
+                    {!hideContact && <Link to="/contact" className="hidden text-[#000000] hover:underline md:block">Contact Us</Link>}
+
+                    {isAuthenticated ? (
+                        <div className="flex items-center space-x-2 sm:space-x-4">
+                            {/* --- Notification Bell Icon Added --- */}
+                            <button onClick={() => navigate('/notifications')} className="relative text-gray-600 p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                                <BellIcon className="h-6 w-6" />
+                                {unreadCount > 0 && (
+                                    <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
+                                )}
+                            </button>
+
+                            <div className="relative" ref={dropdownRef}>
+                                <button onClick={() => setShowDropdown(!showDropdown)} className="w-10 h-10 rounded-full flex items-center justify-center focus:outline-none">
+                                    {loading ? <div className="w-10 h-10 rounded-full bg-gray-200 animate-pulse"></div>
+                                        : <img src={avatarSrc} alt="Profile" className="w-10 h-10 rounded-full object-cover border-2 border-gray-300" onError={(e) => { e.target.onerror = null; e.target.src = "/Images/default-avatar.png"; }} />}
+                                </button>
+                                {showDropdown && (
+                                    <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
+                                        {!hideProfile && <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>My Profile</Link>}
+                                        
+                                        {/* --- Notification Link Added to Dropdown --- */}
+                                        <Link to="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>
+                                            <span>Notifications</span>
+                                            {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
+                                        </Link>
+                                        
+                                        <button onClick={() => { setShowConfirmLogout(true); setShowDropdown(false); }} className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50">Logout</button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    ) : (
+                        <Link to="/login" className="hidden text-[#000000] hover:underline md:block">Login / Sign Up</Link>
+                    )}
+
+                    <div className="md:hidden">
+                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-[#000000] focus:outline-none mobile-menu-toggle-button">
+                            {isMobileMenuOpen ? <XMarkIcon className="h-8 w-8" /> : <Bars3Icon className="h-8 w-8" />}
+                        </button>
+                    </div>
+                </div>
+            </header>
 
       {/* Mobile Menu Overlay - hidden by default, slides in from top/side */}
       {isMobileMenuOpen && (
@@ -213,7 +166,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
             {!hideContact && (
               <Link to="/contact" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
             )}
-            {!isLoggedIn && (
+            {!isAuthenticated && (
               <Link to="/login" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>
                 Login / Sign Up
               </Link>
