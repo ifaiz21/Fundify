@@ -84,7 +84,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
 
   return (
     <>
-      <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6">
+      <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6 z-50">
         {/* Left Side - Logo & Navigation */}
         <div className="flex items-center space-x-4 md:space-x-6">
           {/* Logo */}

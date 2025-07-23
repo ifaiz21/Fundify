@@ -5,7 +5,7 @@ const Submitted2 = () => {
   const navigate = useNavigate()
   const handleSubmitRequest = (event) => {
     event.preventDefault()
-    navigate("/payment") // Navigate back to payment page instead of home
+    navigate("/explore") // Navigate back to payment page instead of home
   }
 
   return (

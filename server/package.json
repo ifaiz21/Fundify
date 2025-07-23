@@ -26,7 +26,8 @@
     "mongoose": "^8.15.1",
     "multer": "^2.0.1",
     "nanoid": "^3.3.11",
-    "nodemailer": "^7.0.5"
+    "nodemailer": "^7.0.5",
+    "stripe": "^18.3.0"
   },
   "description": "",
   "devDependencies": {

@@ -16,14 +16,15 @@ const userRoutes = require('./routes/users');
 const contactusRoutes = require('./routes/contactus');
 const donationsRoutes = require('./routes/donations');
 const campaignUpdatesRoutes = require('./routes/campaignUpdates');
-const newsletterRoutes = require('./routes/newsletter');
-const kycRoutes = require('./routes/kycRoutes');
+const newsletterRoutes = require('./routes/newsletter'); // Import newsletter routes
+const kycRoutes = require('./routes/kycRoutes'); // Import KYC routes
+const mongoURI = process.env.MONGO_URI; // <--- This must match EXACTLY!
+const payment = require('./routes/paymentRoute');
 
 dns.setDefaultResultOrder('ipv4first');
 
 const app = express();
 const PORT = process.env.PORT || 5000;
-const mongoURI = process.env.MONGO_URI; // <--- Access after dotenv is loaded
 
 app.get("/",(req,res)=>{
   res.status(200).json({message:"working"})
@@ -74,6 +75,7 @@ app.use('/api/donations', donationsRoutes);
 app.use('/api/campaigns-updates', campaignUpdatesRoutes);
 app.use('/api/newsletter', newsletterRoutes);
 app.use('/api/kyc', kycRoutes);
+app.use('/api/v1', payment);
 
 // Catch-all for undefined routes
 app.use((req, res, next) => {
