@@ -15,7 +15,7 @@ const Chatbot = ({ onClose }) => {
   const messagesEndRef = useRef(null);
 
   // Generate a unique session ID for the user's current chat session.
-  const [sessionId, setSessionId] = useState(() => {
+  const [sessionId] = useState(() => {
     const storedSessionId = localStorage.getItem('chatbotSessionId');
     if (storedSessionId) {
       console.log("Chatbot: Using stored session ID:", storedSessionId);
