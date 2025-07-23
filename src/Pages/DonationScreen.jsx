@@ -20,7 +20,7 @@ const DonationScreen = () => {
     useEffect(() => {
         if (location.state && location.state.campaignId) {
             setCampaignId(location.state.campaignId);
-            setDonationType("Project specific");
+            setDonationType("Project Specific");
         }
     }, [location.state]);
 
