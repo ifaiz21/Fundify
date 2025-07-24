@@ -78,7 +78,7 @@ const AdminCampaignReviewPage = () => {
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">{campaign.title}</h1>
                     <p className="text-sm text-gray-500 mb-4">Status: <span className="font-semibold text-yellow-600">{campaign.status}</span></p>
 
-                    <img src={`https://server-fundify.up.railway.app/${campaign.imageUrl}`} alt={campaign.title} className="w-full h-64 object-cover rounded-md mb-6" />
+                    <img src={`https://server-fundify.up.railway.app/uploads/${campaign.imageUrl}`} alt={campaign.title} className="w-full h-64 object-cover rounded-md mb-6" />
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
