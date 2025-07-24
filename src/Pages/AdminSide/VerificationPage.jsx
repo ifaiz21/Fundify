@@ -171,7 +171,7 @@ const VerificationPage = () => {
     };
 
     const handleViewCampaign = (campaignId) => {
-        navigate(`/project/${campaignId}`);
+         navigate(`/admin/campaign/review/${campaignId}`);
     };
 
     // MODIFIED: handleApproveRejectKYC now accepts optional comments

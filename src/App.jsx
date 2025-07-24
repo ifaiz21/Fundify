@@ -59,6 +59,7 @@ import { UserProvider } from './context/UserContext';
 import Payment from './components/Payment';
 import StripePaymentScreen from './Pages/Payment/StripePaymentScreen'
 import NotificationsPage from "./Pages/NotificationsPage";
+import CampaignReviewPage from "./Pages/AdminSide/CampaignReviewPage";
 
 //KYC
 import KYCLivenessVerification from './Pages/KYC/KYCLivenessVerification'; // Already imported
@@ -176,6 +177,7 @@ function App() {
           <Route path="/payments" element={<Payment />} />
           <Route path="/payment1" element={<StripePaymentScreen />}/>
           <Route path="/notifications" element={<NotificationsPage />} />
+          <Route path="/admin/campaign/review/:id" element={<CampaignReviewPage />} />
 
           <Route path="/billing" element={<Billing showSuccess={showSuccess} showError={showError} />} />
 
