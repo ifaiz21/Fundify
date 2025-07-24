@@ -1,14 +1,18 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
+import { useDispatch } from 'react-redux';
+import { loginSuccess } from '../store';
 import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
 import SideLayout from "./Layout/SideLayout";
 import GoogleSignInButton from '../components/Google-Sign-In';
+import { showSuccessMessage, showErrorMessage } from '../utils/toast';
 
 const LoginPage = () => {
   const navigate = useNavigate();
   const location = useLocation();
+  const dispatch = useDispatch();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -48,10 +52,13 @@ const LoginPage = () => {
         password,
       });
 
-      const { token, role } = response.data;
+      const { token, role, user } = response.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
+
+      dispatch(loginSuccess(user)); 
+      showSuccessMessage("Login successful!");
 
       if (role === "admin") {
         navigate("/admin-dashboard");
@@ -60,7 +67,9 @@ const LoginPage = () => {
       }
     } catch (err) {
       console.error("Login failed:", err.response?.data);
-      setError(err.response?.data?.message || "Login failed. Try again.");
+      const errorMessage = err.response?.data?.message || "Login failed. Please check your credentials.";
+      setError(errorMessage);
+      showErrorMessage(errorMessage);
     }
   };
 
