@@ -136,11 +136,6 @@ const Chatbot = ({ onClose }) => {
     }
   };
 
-  // Function to toggle emoji picker visibility
-  const toggleEmojiPicker = () => {
-    setShowEmojiPicker(prev => !prev);
-  };
-
   // Function to add emoji to input field
   const addEmojiToInput = (emoji) => {
     setInput(prevInput => prevInput + emoji);
