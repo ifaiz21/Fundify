@@ -26,7 +26,7 @@ const Chatbot = ({ onClose }) => {
 
   // Common emojis for the picker
   const emojis = [
-    "😊", "😂", "👍", "❤️", "�",
+    "😊", "😂", "👍", "❤️", "🙏",
     "🎉", "💡", "🚀", "🌟", "🔥",
     "👋", "✅", "❌", "🤔", "😊"
   ];
@@ -147,18 +147,17 @@ const Chatbot = ({ onClose }) => {
   };
 
   return (
-    // Outer container for responsiveness and positioning
-    <div className="fixed inset-0 sm:right-8 sm:top-1/2 sm:-translate-y-1/2 z-50 flex justify-center items-end sm:items-center font-inter p-4 sm:p-0">
-      {/* Chatbox container - Responsive width and height */}
-      <div className="relative w-full h-full max-w-[380px] max-h-[600px] bg-[#222B45] rounded-3xl shadow-xl flex flex-col overflow-hidden border border-white/10">
-        {/* Chatbot Header */}
+    <div className="fixed right-8 top-1/2 -translate-y-1/2 z-50 flex justify-center items-center font-inter">
+      {/* Increased height to h-[600px] and overall width to w-[380px] */}
+      <div className="relative w-[380px] h-[600px] bg-[#222B45] rounded-3xl shadow-xl flex flex-col overflow-hidden border border-white/10">
+        {/* Chatbot Header - Dark background, white text */}
         <div className="flex flex-col p-4 bg-[#111827] border-b border-[#313B5B]">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
               {/* Fundify Logo in a circle with active indicator */}
               <div className="relative w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden flex-shrink-0">
                 <img
-                  src="/Images/fundify-logo.jpeg" // Path to your Fundify logo (ensure this is correct)
+                  src="/Images/Chatbot-Logo.jpeg"
                   onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/40x40/transparent/white?text=LOGO_ERR"; }}
                   alt="Fundify Logo"
                   className="w-full h-full object-cover rounded-full"
@@ -197,14 +196,13 @@ const Chatbot = ({ onClose }) => {
         {/* Chat Messages Area - Darker background for chat body and hidden scrollbar */}
         <div className="flex-1 overflow-y-auto p-4 space-y-4 bg-[#1f2937] scrollbar-hide">
           {/* Predefined question buttons - conditionally rendered and left-aligned */}
-          {!hasInteracted && ( // Only show if no interaction has occurred
+          {!hasInteracted && (
             <div className="flex flex-col items-start space-y-2 mb-4">
               {predefinedQuestions.map((question, index) => (
                 <button
                   key={index}
                   onClick={() => handleSendMessage(question)}
-                  // Styling for predefined questions: dark background, white text, bold, oval, bold white border
-                  className="bg-[#222B45] text-white px-4 py-2 rounded-full shadow-md border-2 border-white font-bold hover:bg-[#3D527B] transition-colors duration-200 text-sm max-w-[85%]"
+                  className="bg-[#222B45] text-white px-4 py-2 rounded-full shadow-md border-2 border-white hover:bg-[#3D527B] transition-colors duration-200 text-sm max-w-[85%]"
                 >
                   {question}
                 </button>
@@ -247,11 +245,11 @@ const Chatbot = ({ onClose }) => {
           {/* Input field wrapper with smiley icon */}
           <div className="flex-1 flex items-center bg-[#2C3759] text-white rounded-full border border-[#3D527B] px-3 py-2">
             <button
-              onClick={toggleEmojiPicker}
-              className="flex-shrink-0 p-1 -ml-1 focus:outline-none" // Adjusted padding/margin for positioning
+              onClick={() => setShowEmojiPicker(!showEmojiPicker)}
+              className="flex-shrink-0 p-1 -ml-1 focus:outline-none"
             >
               <img
-                src="/Images/smiley-icon.png" // Path to your smiley icon (ensure this is correct)
+                src="/Images/smiley-icon.png"
                 onError={(e) => { e.target.onerror = null; e.target.src="https://placehold.co/24x24/transparent/white?text=😊"; }}
                 alt="Smiley Icon"
                 className="w-5 h-5 object-contain cursor-pointer"
@@ -259,7 +257,7 @@ const Chatbot = ({ onClose }) => {
             </button>
             <input
               type="text"
-              className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none pl-2 pr-1" // Removed input's own border/bg, adjusted padding
+              className="flex-1 bg-transparent text-white placeholder-gray-400 focus:outline-none pl-2 pr-1"
               placeholder="Type something..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
