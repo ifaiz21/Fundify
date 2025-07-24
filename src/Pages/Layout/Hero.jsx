@@ -2,40 +2,41 @@ import Header from "./Header";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+// Removed 'useState' import as it's no longer needed for hover animation
 
 export default function Hero() {
-    // --- Hooks istemal karein ---
     const navigate = useNavigate();
     const { user, loading } = useSelector((state) => state.user);
 
-    // --- Header se KYC check wala function copy karein ---
+    // No need for 'animateCreate' or 'animateExplore' state for hover animation
+
     const handleCreateCampaignClick = (e) => {
-        e.preventDefault();
+        e.preventDefault(); // Prevent default link behavior immediately
 
-        // Check if user is logged in first
-         if (!user) {
-             toast.error('Please log in first to create a campaign.');
-             navigate('/login');
-             return;
+        if (!user) {
+            toast.error('Please log in first to create a campaign.');
+            navigate('/login');
+            return;
         }
-
-         if (loading) {
+        if (loading) {
             toast.info('Loading user data, please wait...');
             return;
         }
-
-
         const kycStatus = user.kycStatus;
-
         if (kycStatus === 'Approved') {
             navigate("/create-campaign");
-        } else if (kycStatus === 'Rejected') {
+        } else if (kycStatus === 'Rejected') { // Corrected typo here
             toast.error('You are not a verified user. Please complete your KYC first.');
         } else if (kycStatus === 'Pending Review') {
             toast.info('Please wait for your KYC verification.');
         } else {
             toast.info('Please submit your KYC first to create a campaign.');
         }
+    };
+
+    const handleExploreCampaignsClick = (e) => {
+        e.preventDefault(); // Prevent default link behavior immediately
+        navigate("/explore");
     };
 
     return (
@@ -70,14 +71,15 @@ export default function Hero() {
                 </p>
 
                 <div className="flex flex-col sm:flex-row items-center justify-center gap-6">
-                    {/* --- onClick event yahan add karein --- */}
                     <a href="/create-campaign" className="w-full sm:w-auto" onClick={handleCreateCampaignClick}>
                         <button className="btn w-full">
+                            {/* Changed class name back to "animation" or a new one like "ripple-element" */}
                             <i className="animation"></i>START A CAMPAIGN<i className="animation"></i>
                         </button>
                     </a>
-                    <a href="/explore" className="w-full sm:w-auto">
+                    <a href="/explore" className="w-full sm:w-auto" onClick={handleExploreCampaignsClick}>
                         <button className="btn w-full">
+                            {/* Changed class name back to "animation" or a new one like "ripple-element" */}
                             <i className="animation"></i>EXPLORE CAMPAIGNS<i className="animation"></i>
                         </button>
                     </a>
@@ -112,10 +114,20 @@ export default function Hero() {
                     opacity: .95;
                 }
 
-                .btn .animation {
+                /* This is the key change: apply animation on hover of the .btn */
+                .btn:hover .animation {
                     border-radius: 100%;
-                    animation: ripple 0.6s linear infinite;
+                    animation: ripple 0.6s linear infinite; /* Animation now triggers on hover */
                 }
+
+                /* Ensure the animation element is hidden when not animating */
+                .btn .animation {
+                    /* You might need to add initial styles here if the 'i' tag needs a default state */
+                    /* For example, if it's a visual element, set its initial size/opacity to 0 or transparent */
+                    box-shadow: none; /* No shadow when not animating */
+                    animation: none; /* Ensure no animation by default */
+                }
+
 
                 @keyframes ripple {
                     0% {

@@ -108,6 +108,8 @@ function UserProfileSettings() {
             setShowConfirmLogout(true);
         } else if (itemName === "My Campaigns") {
             navigate("/my-campaigns");
+        } else if (itemName === "Billing"){
+            navigate("/billing");
         } else if (itemName === "Notifications") {
             navigate("/notifications");
         }
