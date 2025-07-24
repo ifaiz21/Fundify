@@ -18,7 +18,7 @@ const AdminCampaignReviewPage = () => {
                 
                 // Aapke paas pehle se hi campaign details fetch karne ka endpoint hai
                 const { data } = await axios.get(`${API_URL}/api/campaigns/${id}`, config);
-                console.log("Backend se campaign ka data:", data);
+                console.log("Backend -> campaign data:", data);
                 setCampaign(data);
             } catch (error) {
                 console.error("Failed to fetch campaign details", error);
@@ -78,8 +78,37 @@ const AdminCampaignReviewPage = () => {
                     </button>
                     <h1 className="text-3xl font-bold text-gray-800 mb-2">{campaign.title}</h1>
                     <p className="text-sm text-gray-500 mb-4">Status: <span className="font-semibold text-yellow-600">{campaign.status}</span></p>
+                    
+                    <div className="mb-6">
+                    <h3 className="text-xl font-bold text-gray-800 mb-4 border-b pb-2">Campaign Media</h3>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
+                        {campaign.mediaUrls && campaign.mediaUrls.map((url, index) => {
+                            const fullUrl = `https://server-fundify.up.railway.app${url}`;
+                            const isVideo = url.endsWith('.mp4') || url.endsWith('.webm');
 
-                    <img src={`https://server-fundify.up.railway.app/uploads/${campaign.imageUrl}`} alt={campaign.title} className="w-full h-64 object-cover rounded-md mb-6" />
+                            return (
+                                <div key={index} className="bg-gray-200 rounded-lg overflow-hidden shadow-sm">
+                                    {isVideo ? (
+                                        <video 
+                                            src={fullUrl} 
+                                            controls 
+                                            className="w-full h-48 object-cover"
+                                            aria-label={`Campaign video ${index + 1}`}
+                                        >
+                                            Your browser does not support the video tag.
+                                        </video>
+                                    ) : (
+                                        <img 
+                                            src={fullUrl} 
+                                            alt={`Campaign media ${index + 1}`} 
+                                            className="w-full h-48 object-cover" 
+                                        />
+                                    )}
+                                </div>
+                            );
+                        })}
+                    </div>
+                    </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                         <div>
