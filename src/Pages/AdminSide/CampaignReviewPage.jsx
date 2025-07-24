@@ -18,6 +18,7 @@ const AdminCampaignReviewPage = () => {
                 
                 // Aapke paas pehle se hi campaign details fetch karne ka endpoint hai
                 const { data } = await axios.get(`${API_URL}/api/campaigns/${id}`, config);
+                console.log("Backend se campaign ka data:", data);
                 setCampaign(data);
             } catch (error) {
                 console.error("Failed to fetch campaign details", error);
