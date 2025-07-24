@@ -47,7 +47,7 @@ export default function Hero() {
                     backgroundImage: `url('/Images/hero.png')`,
                 }}
             >
-                <div className="absolute inset-0 bg-black/60" />
+                <div className="absolute inset-0 bg-black/80" />
             </div>
 
             {/* Header overlay */}

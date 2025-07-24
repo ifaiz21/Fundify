@@ -10,15 +10,18 @@ export default function Header({ hideHome }) {
     const [showDropdown, setShowDropdown] = useState(false);
     const [showConfirmLogout, setShowConfirmLogout] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isScrolled, setIsScrolled] = useState(false);
+    // NEW: State to track if mouse is over the header
+    const [isHeaderHovered, setIsHeaderHovered] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
 
-    // --- Change: Data ab Redux se aa raha hai, UserContext se nahin ---
     const { user, isAuthenticated, loading } = useSelector((state) => state.user);
     const { unreadCount } = useSelector((state) => state.notifications);
 
     const dropdownRef = useRef(null);
     const mobileMenuRef = useRef(null);
+    const headerRef = useRef(null); // NEW: Ref for the header element
 
     const avatarSrc = user?.profilePictureUrl ? `https://server-fundify.up.railway.app/${user.profilePictureUrl}` : "/Images/default-avatar.png";
 
@@ -37,8 +40,25 @@ export default function Header({ hideHome }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    // Scroll effect for header background (keep this if you want both scroll AND hover)
+    useEffect(() => {
+        const handleScroll = () => {
+            if (window.scrollY > 50) { // Adjust 50px as needed for when it should change
+                setIsScrolled(true);
+            } else {
+                setIsScrolled(false);
+            }
+        };
+
+        window.addEventListener("scroll", handleScroll);
+
+        return () => {
+            window.removeEventListener("scroll", handleScroll);
+        };
+    }, []);
+
     const handleLogout = () => {
-        dispatch(logoutSuccess()); // <-- Change: Dispatch Redux action
+        dispatch(logoutSuccess());
         setShowConfirmLogout(false);
         navigate("/login");
         toast.success("Successfully logged out");
@@ -71,23 +91,30 @@ export default function Header({ hideHome }) {
 
     return (
         <>
-            <header className="flex items-center justify-between px-4 py-3 bg-transparent relative md:px-6 z-50">
+            <header
+                ref={headerRef} // Assign the ref to the header
+                onMouseEnter={() => setIsHeaderHovered(true)} // Handle mouse enter
+                onMouseLeave={() => setIsHeaderHovered(false)} // Handle mouse leave
+                className={`flex items-center justify-between px-4 py-3 relative w-full z-50 transition-all duration-300
+                    ${isScrolled || isHeaderHovered ? 'bg-gray-500 bg-opacity-40 shadow-md' : 'bg-transparent'}` // Updated conditional classes
+                }
+            >
                 <div className="flex items-center space-x-4 md:space-x-6">
                     <img src="/Images/logo.png" alt="Fundify Logo" className="w-10 h-10 cursor-pointer md:w-12 md:h-12" onClick={() => navigate('/')} />
-                    <nav className="hidden md:flex md:space-x-6">
-                        {!hideHome && <a href="/" className="text-white hover:text-gray-300">Home</a>}
-                        <a href="/explore" onClick={handleDonateClick} className="text-white hover:text-gray-300">Donate</a>
-                        <a href="/about" className="text-white hover:text-gray-300">About Us</a>
+                    <nav className="hidden md:flex md:space-x-2">
+                        {!hideHome && <a href="/" className="px-3 py-2 rounded-lg text-white font-semibold hover:bg-[#4A5D45] transition-colors duration-200">Home</a>} {/* Added font-semibold */}
+                        <a href="/explore" onClick={handleDonateClick} className="px-3 py-2 rounded-lg text-white font-semibold hover:bg-[#4A5D45] transition-colors duration-200">Donate</a> {/* Added font-semibold */}
+                        <a href="/about" className="px-3 py-2 rounded-lg text-white font-semibold hover:bg-[#4A5D45] transition-colors duration-200">About Us</a> {/* Added font-semibold */}
                     </nav>
                 </div>
 
                 <div className="flex items-center space-x-4 md:space-x-6">
-                    <a href="/create-campaign" className="hidden text-white hover:text-gray-300 md:block" onClick={handleCreateCampaignClick}>Create Campaign</a>
-                    <a href="/contact" className="hidden text-white hover:text-gray-300 md:block">Contact Us</a>
+                    <a href="/create-campaign" className="hidden px-3 py-2 rounded-lg text-white font-semibold hover:bg-[#4A5D45] transition-colors duration-200 md:block" onClick={handleCreateCampaignClick}>Create Campaign</a> {/* Added font-semibold */}
+                    <a href="/contact" className="hidden px-3 py-2 rounded-lg text-white font-semibold hover:bg-[#4A5D45] transition-colors duration-200 md:block">Contact Us</a> {/* Added font-semibold */}
 
                     {isAuthenticated ? (
                         <div className="flex items-center space-x-2 sm:space-x-4">
-                            <button onClick={() => navigate('/notifications')} className="relative text-white p-2 rounded-full hover:bg-white/20 focus:outline-none">
+                            <button onClick={() => navigate('/notifications')} className="relative text-white p-2 rounded-full hover:bg-[#4A5D45] transition-colors duration-200 focus:outline-none">
                                 <BellIcon className="h-6 w-6" />
                                 {unreadCount > 0 && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>}
                             </button>
@@ -98,8 +125,8 @@ export default function Header({ hideHome }) {
                                 </button>
                                 {showDropdown && (
                                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
-                                        <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={(e) => { e.preventDefault(); navigate('/user-profile'); setShowDropdown(false); }}>My Profile</a>
-                                        <a href="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-indigo-50" onClick={(e) => { e.preventDefault(); navigate('/notifications'); setShowDropdown(false); }}>
+                                        <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/user-profile'); setShowDropdown(false); }}>My Profile</a>
+                                        <a href="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/notifications'); setShowDropdown(false); }}>
                                             <span>Notifications</span>
                                             {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
                                         </a>
@@ -109,11 +136,11 @@ export default function Header({ hideHome }) {
                             </div>
                         </div>
                     ) : (
-                        <a href="/login" className="hidden text-white hover:text-gray-300 md:block">Login / Sign Up</a>
+                        <a href="/login" className="hidden px-3 py-2 rounded-lg text-white font-semibold hover:bg-[#4A5D45] transition-colors duration-200 md:block">Login / Sign Up</a> /* Added font-semibold */
                     )}
 
                     <div className="md:hidden">
-                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white focus:outline-none">
+                        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} className="text-white p-2 rounded-lg focus:outline-none hover:bg-[#4A5D45] transition-colors duration-200">
                             {isMobileMenuOpen ? <XMarkIcon className="h-8 w-8" /> : <Bars3Icon className="h-8 w-8" />}
                         </button>
                     </div>
@@ -123,12 +150,12 @@ export default function Header({ hideHome }) {
             {isMobileMenuOpen && (
                 <div ref={mobileMenuRef} className="fixed inset-0 bg-black bg-opacity-90 z-40 md:hidden">
                     <div className="flex flex-col items-center pt-20 pb-8 space-y-6 text-white text-xl">
-                        {!hideHome && <a href="/" className="hover:text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>Home</a>}
-                        <a href="/explore" onClick={handleDonateClick} className="hover:text-gray-300">Donate</a>
-                        <a href="/about" className="hover:text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>About Us</a>
-                        <a href="/create-campaign" onClick={handleCreateCampaignClick} className="hover:text-gray-300">Create Campaign</a>
-                        <a href="/contact" className="hover:text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</a>
-                        {!isAuthenticated && <a href="/login" className="hover:text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>Login / Sign Up</a>}
+                        {!hideHome && <a href="/" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Home</a>}
+                        <a href="/explore" onClick={handleDonateClick} className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold">Donate</a>
+                        <a href="/about" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>About Us</a>
+                        <a href="/create-campaign" onClick={handleCreateCampaignClick} className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold">Create Campaign</a>
+                        <a href="/contact" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</a>
+                        {!isAuthenticated && <a href="/login" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Login / Sign Up</a>}
                     </div>
                 </div>
             )}

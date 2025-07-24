@@ -1,9 +1,9 @@
 // src/Pages/Layout/HeaderLayout.jsx
 import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux'; // <-- Change: Import Redux hooks
-import { logoutSuccess } from '../../store'; // <-- Change: Import logout action
-import { fetchNotifications } from '../../features/notificationSlice'; // <-- Change: Import notification action
+import { useSelector, useDispatch } from 'react-redux';
+import { logoutSuccess } from '../../store';
+import { fetchNotifications } from '../../features/notificationSlice';
 import { showSuccessMessage } from '../../utils/toast';
 import { Bars3Icon, XMarkIcon, BellIcon } from '@heroicons/react/24/outline';
 
@@ -12,19 +12,16 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
     const [showConfirmLogout, setShowConfirmLogout] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const navigate = useNavigate();
-    const dispatch = useDispatch(); // <-- Change: Initialize useDispatch
+    const dispatch = useDispatch();
 
-    // --- Change: Get user and notification data from Redux store ---
     const { user, isAuthenticated, loading } = useSelector((state) => state.user);
     const { unreadCount } = useSelector((state) => state.notifications);
 
     const dropdownRef = useRef(null);
     const mobileMenuRef = useRef(null);
 
-    // --- Change: Use 'user' object from Redux for avatar ---
     const avatarSrc = user?.profilePictureUrl ? `https://server-fundify.up.railway.app/${user.profilePictureUrl}` : "/Images/default-avatar.png";
 
-    // Fetch notifications when user is authenticated
     useEffect(() => {
         if (isAuthenticated) {
             dispatch(fetchNotifications());
@@ -43,7 +40,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
     }, []);
 
     const handleLogout = () => {
-        dispatch(logoutSuccess()); // <-- Change: Dispatch Redux action for logout
+        dispatch(logoutSuccess());
         setShowConfirmLogout(false);
         navigate("/login");
         showSuccessMessage("You have been logged out successfully!");
@@ -82,19 +79,24 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                         <img src="/Images/fundify-transparent-logo.png" alt="Fundify Logo" className="w-10 h-10 mr-1 cursor-pointer md:w-12 md:h-12 md:mr-2" onClick={() => navigate('/')} />
                     </div>
                     <nav className="hidden md:flex md:space-x-6 md:text-[#000000]">
-                        <Link to="/" className="hover:text-[#485842] transition duration-300">Home</Link>
-                        {!hideDonate && <a href="/explore" onClick={handleDonateClick} className="hover:underline">Donate</a>}
-                        {!hideAboutUs && <Link to="/about" className="hover:underline">About Us</Link>}
+                        {/* Home Link */}
+                        <Link to="/" className="px-3 py-2 rounded-md transition-colors duration-200 hover:bg-[#4A5D45] hover:text-white">Home</Link>
+                        {/* Donate Link */}
+                        {!hideDonate && <a href="/explore" onClick={handleDonateClick} className="px-3 py-2 rounded-md transition-colors duration-200 hover:bg-[#4A5D45] hover:text-white">Donate</a>}
+                        {/* About Us Link */}
+                        {!hideAboutUs && <Link to="/about" className="px-3 py-2 rounded-md transition-colors duration-200 hover:bg-[#4A5D45] hover:text-white">About Us</Link>}
                     </nav>
                 </div>
 
                 <div className="flex items-center space-x-2 sm:space-x-4 md:space-x-6">
-                    {!hideCreate && <Link to="/create-campaign" className="hidden text-[#000000] hover:underline md:block" onClick={handleCreateCampaignClick}>Create Campaign</Link>}
-                    {!hideContact && <Link to="/contact" className="hidden text-[#000000] hover:underline md:block">Contact Us</Link>}
+                    {/* Create Campaign Link */}
+                    {!hideCreate && <Link to="/create-campaign" className="hidden px-3 py-2 rounded-md transition-colors duration-200 hover:bg-[#4A5D45] hover:text-white md:block" onClick={handleCreateCampaignClick}>Create Campaign</Link>}
+                    {/* Contact Us Link */}
+                    {!hideContact && <Link to="/contact" className="hidden px-3 py-2 rounded-md transition-colors duration-200 hover:bg-[#4A5D45] hover:text-white md:block">Contact Us</Link>}
 
                     {isAuthenticated ? (
                         <div className="flex items-center space-x-2 sm:space-x-4">
-                            {/* --- Notification Bell Icon Added --- */}
+                            {/* Notification Bell Icon */}
                             <button onClick={() => navigate('/notifications')} className="relative text-gray-600 p-2 rounded-full hover:bg-gray-200 focus:outline-none">
                                 <BellIcon className="h-6 w-6" />
                                 {unreadCount > 0 && (
@@ -111,7 +113,6 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
                                         {!hideProfile && <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>My Profile</Link>}
                                         
-                                        {/* --- Notification Link Added to Dropdown --- */}
                                         <Link to="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>
                                             <span>Notifications</span>
                                             {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
@@ -123,7 +124,8 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                             </div>
                         </div>
                     ) : (
-                        <Link to="/login" className="hidden text-[#000000] hover:underline md:block">Login / Sign Up</Link>
+                        // Login / Sign Up Link
+                        <Link to="/login" className="hidden px-3 py-2 rounded-md transition-colors duration-200 hover:bg-[#4A5D45] hover:text-white md:block">Login / Sign Up</Link>
                     )}
 
                     <div className="md:hidden">
@@ -134,72 +136,73 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                 </div>
             </header>
 
-      {/* Mobile Menu Overlay - hidden by default, slides in from top/side */}
-      {isMobileMenuOpen && (
-        <div
-          ref={mobileMenuRef}
-          className="fixed inset-0 bg-white bg-opacity-95 z-40 md:hidden animate-fade-in-down" // Using white background for consistency with HeaderLayout
-        >
-          {/* Close button inside the mobile menu overlay */}
-          <div className="flex justify-end p-4">
-            <button
-              onClick={() => setIsMobileMenuOpen(false)} // Explicitly close the menu
-              className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
-              aria-label="Close main menu"
-            >
-              <XMarkIcon className="h-8 w-8" />
-            </button>
-          </div>
-          <div className="flex flex-col items-center pt-20 pb-8 space-y-6 text-[#000000] text-xl">
-            <Link to="/" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
-            {!hideDonate && (
-              <a href="/explore" onClick={handleDonateClick} className="hover:text-[#485842]">Donate</a>
+            {/* Mobile Menu Overlay - hidden by default, slides in from top/side */}
+            {isMobileMenuOpen && (
+                <div
+                    ref={mobileMenuRef}
+                    className="fixed inset-0 bg-white bg-opacity-95 z-40 md:hidden animate-fade-in-down"
+                >
+                    {/* Close button inside the mobile menu overlay */}
+                    <div className="flex justify-end p-4">
+                        <button
+                            onClick={() => setIsMobileMenuOpen(false)}
+                            className="text-[#000000] focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-opacity-50"
+                            aria-label="Close main menu"
+                        >
+                            <XMarkIcon className="h-8 w-8" />
+                        </button>
+                    </div>
+                    <div className="flex flex-col items-center pt-20 pb-8 space-y-6 text-[#000000] text-xl">
+                        {/* Mobile Menu Links - Added hover effects here too for consistency */}
+                        <Link to="/" className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200" onClick={() => setIsMobileMenuOpen(false)}>Home</Link>
+                        {!hideDonate && (
+                            <a href="/explore" onClick={handleDonateClick} className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200">Donate</a>
+                        )}
+                        {!hideAboutUs && (
+                            <Link to="/about" className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
+                        )}
+                        {!hideCreate && (
+                            <Link to="/create-campaign" onClick={handleCreateCampaignClick} className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200">
+                                Create Campaign
+                            </Link>
+                        )}
+                        {!hideContact && (
+                            <Link to="/contact" className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
+                        )}
+                        {!isAuthenticated && (
+                            <Link to="/login" className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200" onClick={() => setIsMobileMenuOpen(false)}>
+                                Login / Sign Up
+                            </Link>
+                        )}
+                    </div>
+                </div>
             )}
-            {!hideAboutUs && (
-              <Link to="/about" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>About Us</Link>
-            )}
-            {!hideCreate && (
-              <Link to="/create-campaign" onClick={handleCreateCampaignClick} className="hover:text-[#485842]">
-                Create Campaign
-              </Link>
-            )}
-            {!hideContact && (
-              <Link to="/contact" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</Link>
-            )}
-            {!isAuthenticated && (
-              <Link to="/login" className="hover:text-[#485842]" onClick={() => setIsMobileMenuOpen(false)}>
-                Login / Sign Up
-              </Link>
-            )}
-          </div>
-        </div>
-      )}
 
-      {/* Logout Confirmation Modal */}
-      {showConfirmLogout && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm text-center">
-            <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
-            <p className="mb-6">Are you sure you want to log out?</p>
-            <div className="flex justify-center space-x-4">
-              <button
-                onClick={() => setShowConfirmLogout(false)}
-                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleLogout}
-                className="bg-[#4A5D45] text-white px-4 py-2 rounded hover:bg-red-500"
-              >
-                Confirm
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-    </>
-  );
+            {/* Logout Confirmation Modal */}
+            {showConfirmLogout && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+                    <div className="bg-white rounded-lg shadow-lg p-6 w-11/12 max-w-sm text-center">
+                        <h2 className="text-lg font-semibold mb-4">Confirm Logout</h2>
+                        <p className="mb-6">Are you sure you want to log out?</p>
+                        <div className="flex justify-center space-x-4">
+                            <button
+                                onClick={() => setShowConfirmLogout(false)}
+                                className="bg-gray-300 hover:bg-gray-400 text-black px-4 py-2 rounded"
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={handleLogout}
+                                className="bg-[#4A5D45] text-white px-4 py-2 rounded hover:bg-red-500"
+                            >
+                                Confirm
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        </>
+    );
 };
 
 export default HeaderLayout;

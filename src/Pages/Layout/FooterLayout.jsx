@@ -3,72 +3,74 @@ import { Link } from "react-router-dom";
 
 const FooterLayout = () => {
   return (
-    <footer className="bg-[#485842] text-white py-8 rounded-t-xl">
-      <div className="container mx-auto px-4 md:px-6">
-        {/* Adjusted grid for responsiveness */}
-        {/* On mobile (default), stack columns. On medium screens (md), make it 2 columns, on large (lg), 3 columns. */}
-        <div className="grid grid-cols-1 gap-8 sm:grid-cols-2 lg:grid-cols-3"> {/* Changed gap and added sm: breakpoint */}
+    // Background adjusted to be very slightly lighter: #4B5945
+    <footer className="bg-[#4B5945] text-white py-12 px-4 md:px-6">
+      <div className="container mx-auto">
+        <div className="grid grid-cols-1 gap-12 md:grid-cols-3 lg:grid-cols-4 items-start"> {/* Adjusted grid-cols for centering */}
 
-          {/* Logo Column */}
-          {/* Changed flex-cols to flex and items-center for better centering on mobile */}
-          <div className="flex flex-col items-center justify-center md:items-start md:justify-start w-auto text-center md:text-left">
-            <Link to="/" className="mb-2">
-              <div className="flex flex-col items-center">
-                {/* Adjusted logo size for better responsiveness */}
-                <img src="./Images/logo.png" alt="Fundify" className="h-28 w-32 mb-0 mt-4 md:h-22 md:w-36 md:mt-4" /> {/* Slightly reduced mobile size, kept original for MD+ */}
+          {/* Logo Column - Centered on mobile, left-aligned on desktop */}
+          {/* On larger screens, this column might naturally align due to other content */}
+          <div className="flex flex-col items-center md:items-start text-center md:text-left mb-6 md:mb-0">
+            <Link to="/" className="mb-4">
+              <div className="flex flex-col items-center md:items-start">
+                {/* Logo made a little bigger in length (width) */}
+                <img src="./Images/logo.png" alt="Fundify" className="h-35 w-40 md:h-32 md:w-30" />
               </div>
             </Link>
-            {/* Optional: Add a short tagline or mission statement here for brand context on mobile 
-            <p className="text-sm text-gray-300 mt-2 px-4 md:px-0">Empowering impactful campaigns and fostering community support.</p> */}
           </div>
 
-          {/* About & Terms Columns */}
-          {/* On mobile, these will stack. On larger screens, they'll be side-by-side. */}
-          <div className="flex flex-col sm:flex-row space-y-8 sm:space-y-0 sm:space-x-12 justify-center sm:justify-start"> {/* Adjusted spacing and direction for responsiveness */}
-            {/* About Column */}
-            <div className="flex flex-col items-center sm:items-start"> {/* Centered on mobile, left-aligned on tablet/desktop */}
-              <h3 className="text-sm font-semibold mb-4 uppercase">About</h3>
-              <ul className="space-y-2 text-center sm:text-left">
+          {/* Navigation Columns - Now centered using auto margins and flex properties */}
+          {/* md:col-span-2 ensures it takes 2 columns in the 3-column grid for md screens */}
+          {/* lg:col-start-2 lg:col-span-2 on large screens centers it between other elements */}
+          <div className="flex flex-col sm:flex-row justify-center sm:justify-around gap-10 sm:gap-16 md:col-span-2 lg:col-start-2 lg:col-span-2">
+
+            {/* About Column - Centered content */}
+            <div className="flex flex-col items-center"> {/* Changed to items-center to center content within its column */}
+              {/* Heading color changed to white, keeping bold, removed ml-2 for better centering */}
+              <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-white">About</h3>
+              <ul className="space-y-3 text-center"> {/* Changed to text-center to align list items */}
                 <li>
-                  <Link to="/about" className="text-sm text-gray-300 hover:text-white">About Us</Link>
+                  {/* For centering, links need to be inline-block or have specific width if they are block */}
+                  <Link to="/about" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">About Us</Link>
                 </li>
                 <li>
-                  <Link to="/faq" className="text-sm text-gray-300 hover:text-white">FAQ</Link>
+                  <Link to="/faq" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">FAQ</Link>
                 </li>
                 <li>
-                  <Link to="/contact" className="text-sm text-gray-300 hover:text-white">Contact Us</Link>
+                  <Link to="/contact" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">Contact Us</Link>
                 </li>
                 <li>
-                  <Link to="/how-to" className="text-sm text-gray-300 hover:text-white">How-to</Link>
+                  <Link to="/how-to" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">How-to</Link>
                 </li>
               </ul>
             </div>
 
-            {/* Terms Column */}
-            <div className="flex flex-col items-center sm:items-start"> {/* Centered on mobile, left-aligned on tablet/desktop */}
-              <h3 className="text-sm font-semibold mb-4 uppercase">Support</h3>
-              <ul className="space-y-2 text-center sm:text-left">
+            {/* Support Column - Centered content */}
+            <div className="flex flex-col items-center"> {/* Changed to items-center to center content within its column */}
+              {/* Heading color changed to white, keeping bold, removed ml-2 for better centering */}
+              <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-white">Support</h3>
+              <ul className="space-y-3 text-center"> {/* Changed to text-center to align list items */}
                 <li>
-                  <Link to="/trust-safety" className="text-sm text-gray-300 hover:text-white">Trust and Safety</Link>
+                  <Link to="/trust-safety" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">Trust and Safety</Link>
                 </li>
                 <li>
-                  <Link to="/privacy-policy" className="text-sm text-gray-300 hover:text-white">Privacy Policy</Link>
+                  <Link to="/privacy-policy" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">Privacy Policy</Link>
                 </li>
                 <li>
-                  <Link to="/terms-of-use" className="text-sm text-gray-300 hover:text-white">Terms of Use</Link>
+                  <Link to="/terms-of-use" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">Terms of Use</Link>
                 </li>
                 <li>
-                  <Link to="/cookie-policy" className="text-sm text-gray-300 hover:text-white">Cookie Policy</Link>
+                  <Link to="/cookie-policy" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">Cookie Policy</Link>
                 </li>
               </ul>
             </div>
           </div>
 
-          {/* Office Column */}
-          {/* Centered on mobile, right-aligned on desktop */}
-          <div className="text-center md:text-right flex flex-col items-center md:items-end"> {/* Added flex for vertical centering on mobile if needed */}
-            <h3 className="text-sm font-semibold mb-4 uppercase">Our Office</h3>
-            <address className="not-italic text-sm text-gray-300">
+          {/* Office Column - Centered on mobile, right-aligned on desktop */}
+          {/* This column might naturally align due to other content */}
+          <div className="text-center md:text-right flex flex-col items-center md:items-end">
+            <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-[#B2C9AD]">Our Office</h3>
+            <address className="not-italic text-base text-white space-y-1">
               <p>University of Management and Technology,</p>
               <p>C-II, Johar Town Lahore, Pakistan.</p>
               <p>ZIP 54782</p>
@@ -77,8 +79,8 @@ const FooterLayout = () => {
         </div>
 
         {/* Copyright Section */}
-        <div className="text-center text-gray-400 text-sm mt-8 pt-4 border-t border-gray-700">
-          <p>© 2025 Fundify. All rights reserved.</p>
+        <div className="text-center text-gray-300 text-sm mt-12 pt-6 border-t border-gray-600">
+          <p>© {new Date().getFullYear()} Fundify. All rights reserved.</p>
         </div>
       </div>
     </footer>
