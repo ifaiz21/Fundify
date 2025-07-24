@@ -166,7 +166,7 @@ function UserProfileSettings() {
                                     </div>
                                 </div>
                                 <div className="w-32 h-32 rounded-full overflow-hidden border-2 border-gray-300 cursor-pointer group relative flex-shrink-0 order-1 sm:order-2 mb-4 sm:mb-0" onClick={() => fileInputRef.current.click()}>
-                                    <img src={profileImagePreview} alt="Profile" className="w-full h-full object-cover" onError={(e) => { e.target.src = "/Images/default-avatar.png"; }} />
+                                    <img src={profileImagePreview} alt="Profile" className="w-full h-full object-cover" onError={(e) => { e.target.src = "/Images/fundify-transparent-logo.png"; }} />
                                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center text-white text-sm opacity-0 group-hover:opacity-100 transition-opacity rounded-full">
                                         Change
                                     </div>
