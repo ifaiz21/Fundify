@@ -40,6 +40,15 @@ const CampaignCreation02 = () => {
 
   const handleChange = (e) => {
     const { name, value, type, checked } = e.target
+
+    if (name === "goalAmount" && Number(value) < 0) {
+        setFormData((prev) => ({
+            ...prev,
+            [name]: "0",
+        }));
+        return; 
+    }
+
     setFormData((prev) => ({
       ...prev,
       [name]: type === "checkbox" ? checked : value,
@@ -122,6 +131,7 @@ const CampaignCreation02 = () => {
                           onChange={handleChange}
                           className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
                           placeholder="0"
+                          min="5000"
                           required
                         />
                       </div>

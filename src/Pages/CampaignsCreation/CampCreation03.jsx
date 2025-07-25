@@ -3,6 +3,7 @@
 import { useRef } from "react"
 import { useState, useEffect } from "react"
 import { useNavigate, useLocation } from "react-router-dom"
+import { showErrorMessage } from '../../utils/toast';
 import Header from "../Layout/HeaderLayout"
 import Footer from "../Layout/FooterLayout"
 
@@ -109,6 +110,10 @@ const CampaignCreation03 = () => {
   const handleSubmit = (e) => {
     e.preventDefault()
 
+     if (formData.mediaFile.length === 0) {
+        showErrorMessage("Please upload at least one photo or video for your campaign.");
+        return;
+    }
     // Prepare data to send to the next page
     const combinedDataForNextStep = {
       ...campaignDataFromPreviousSteps, // Data from CampCreation01 and 02
@@ -218,7 +223,7 @@ const CampaignCreation03 = () => {
                     </div>
 
                     <div>
-                      <label className="block text-sm font-medium text-[#4B5842] mb-1">Add a Photo/Video</label>
+                      <label className="block text-sm font-medium text-[#4B5842] mb-1">Add a Photo/Video<span className="text-red-500">*</span></label>
                       <input
                         type="file"
                         ref={fileInputRef}
@@ -274,7 +279,7 @@ const CampaignCreation03 = () => {
                             ))}
                           </div>
                         ) : (
-                          <div className="flex flex-col items-center justify-center text-white">
+                          <div className="flex flex-col items-center justify-center font-medium text-[#4B5842]">
                             <p>Click or drag files here</p>
                             <svg
                               xmlns="http://www.w3.org/2000/svg"

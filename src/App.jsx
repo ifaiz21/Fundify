@@ -6,7 +6,6 @@ import 'react-toastify/dist/ReactToastify.css';
 import WebFont from 'webfontloader';
 import { useDispatch } from 'react-redux';
 import { loadUser } from './actions/userActions';
-// Import Stripe libraries
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
 
@@ -56,7 +55,6 @@ import MyCampaigns from './Pages/MyCampaigns';
 //import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
-import Payment from './components/Payment';
 import StripePaymentScreen from './Pages/Payment/StripePaymentScreen'
 import NotificationsPage from "./Pages/NotificationsPage";
 import CampaignReviewPage from "./Pages/AdminSide/CampaignReviewPage";
@@ -174,7 +172,6 @@ function App() {
           <Route path="/admin/campaigns" element={<CampaignsPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/verifications" element={<VerificationPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/feedbacks" element={<FeedbacksPage showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/payments" element={<Payment />} />
           <Route path="/payment1" element={<StripePaymentScreen />}/>
           <Route path="/notifications" element={<NotificationsPage />} />
           <Route path="/admin/campaign/review/:id" element={<CampaignReviewPage />} />

@@ -61,7 +61,6 @@ const DonationScreen = () => {
         
         // Navigate directly to the Stripe payment form.
         navigate("/payment1");
-        // --- MODIFICATION END ---
         
         // The original fetch logic will be moved to the payment component after successful payment.
         setIsLoading(false);
@@ -151,7 +150,11 @@ const DonationScreen = () => {
                                                 type="number"
                                                 min="1"
                                                 value={donationAmount}
-                                                onChange={(e) => setDonationAmount(e.target.value === "" ? "" : parseInt(e.target.value))}
+                                                onChange={(e) => { const value = e.target.value;
+                                                    if (value === "" || Math.sign(Number(value)) !== -1) {
+                                                        setDonationAmount(value);
+                                                    }
+                                                }}   
                                                 className="form-input mt-3"
                                                 placeholder="Enter your amount"
                                                 required

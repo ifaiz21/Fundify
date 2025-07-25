@@ -103,7 +103,7 @@ function Billing() {
         let isValid = true;
 
         // Validate Account Number
-        const accNum = editedAccountDetails.accountNumber.replace(/\s/g, ''); // Remove spaces for validation
+        const accNum = editedAccountDetails.accountNumber.replace(/\s/g, '');
         if (!/^\d{16}$/.test(accNum)) {
             setAccountNumberError("Account number must be 16 digits.");
             isValid = false;
