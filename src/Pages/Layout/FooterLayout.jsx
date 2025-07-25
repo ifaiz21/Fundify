@@ -27,7 +27,7 @@ const FooterLayout = () => {
             {/* About Column - Centered content */}
             <div className="flex flex-col items-center"> {/* Changed to items-center to center content within its column */}
               {/* Heading color changed to white, keeping bold, removed ml-2 for better centering */}
-              <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-white">About</h3>
+              <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-[#B2C9AD]">About</h3>
               <ul className="space-y-3 text-center"> {/* Changed to text-center to align list items */}
                 <li>
                   {/* For centering, links need to be inline-block or have specific width if they are block */}
@@ -48,7 +48,7 @@ const FooterLayout = () => {
             {/* Support Column - Centered content */}
             <div className="flex flex-col items-center"> {/* Changed to items-center to center content within its column */}
               {/* Heading color changed to white, keeping bold, removed ml-2 for better centering */}
-              <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-white">Support</h3>
+              <h3 className="text-lg font-bold mb-5 uppercase tracking-wider text-[#B2C9AD]">Support</h3>
               <ul className="space-y-3 text-center"> {/* Changed to text-center to align list items */}
                 <li>
                   <Link to="/trust-safety" className="underline inline-block px-3 py-1 rounded-md text-base text-white hover:bg-gray-700 transition-colors duration-200">Trust and Safety</Link>

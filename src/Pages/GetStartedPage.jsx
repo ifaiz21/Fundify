@@ -1,10 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useSelector } from 'react-redux';
+import { toast } from 'react-toastify';
 import Header from "./Layout/HeaderLayout";
 import Footer from "./Layout/FooterLayout";
 
 export default function GetStartedPage() {
   const navigate = useNavigate();
+
+  const { user, isAuthenticated } = useSelector((state) => state.user);
 
   const stories = [
     {
@@ -36,6 +40,24 @@ export default function GetStartedPage() {
       prevIndex === stories.length - 1 ? 0 : prevIndex + 1
     );
   };
+
+   const handleJoinClick = () => {
+        // Pehle check karein ke user login hai ya nahin
+        if (!isAuthenticated) {
+            toast.error("Please log in first to create a campaign");
+            navigate("/login");
+            return;
+        }
+
+        // Ab KYC status check karein
+        if (user && user.kycStatus === 'Approved') {
+            navigate("/create-campaign");
+        } else {
+            toast.info("Please complete your KYC verification first to create a campaign.");
+            navigate("/kyc-form"); // Agar KYC approved nahin hai to KYC page par bhej dein
+        }
+    };
+
 
   const currentStory = stories[currentStoryIndex];
 
@@ -113,17 +135,10 @@ export default function GetStartedPage() {
         {/* Join Button */}
         <div className="flex justify-center mb-16">
           <button
-            onClick={() => {
-              const isLoggedIn = localStorage.getItem("token");
-              if (isLoggedIn) {
-                navigate("/create-campaign");
-              } else {
-                navigate("/login?message=Please login first to create a campaign");
-              }
-            }}
-            className="join-button bg-[#4A5D45] text-white px-8 py-3 rounded-lg text-lg font-semibold"
+              onClick={handleJoinClick}
+              className="join-button bg-[#4A5D45] text-white px-8 py-3 rounded-lg text-lg font-semibold"
           >
-            Join Fundify
+              Join Fundify
           </button>
         </div>
 
@@ -147,7 +162,7 @@ export default function GetStartedPage() {
 
           <button
             onClick={handlePrev}
-            className="carousel-arrow left-arrow absolute left-2 sm:left-4 top-1/2 -translate-y-1/2 bg-[#4A5D45] text-white p-2 rounded-full"
+            className="carousel-arrow left-arrow absolute left-2 sm:left-1/2 top-1/2 -translate-y-1/2 bg-[#4A5D45] text-white p-2 rounded-full"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <polyline points="15 18 9 12 15 6"></polyline>
@@ -205,21 +220,6 @@ export default function GetStartedPage() {
           box-shadow: 0 10px 15px -3px var(--shadow-color);
         }
 
-        /* Dashed line connector for desktop view */
-        @media (min-width: 768px) {
-          .step-card:not(:last-child)::after {
-            content: '';
-            position: absolute;
-            top: 40%;
-            transform: translateY(-50%);
-            width: 70%;
-            left: 115%;
-            height: 2px;
-            background-image: linear-gradient(to right, var(--fundify-light-green) 50%, transparent 50%);
-            background-size: 15px 2px;
-            background-repeat: repeat-x;
-          }
-        }
 
         /* --- Join Button Styling --- */
         .join-button {

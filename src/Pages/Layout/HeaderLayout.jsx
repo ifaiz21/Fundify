@@ -113,6 +113,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
                                         {!hideProfile && <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>My Profile</Link>}
                                         
+                                        <Link to="/kyc-form" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>KYC Verification</Link>
                                         <Link to="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>
                                             <span>Notifications</span>
                                             {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
@@ -164,6 +165,12 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                         {!hideCreate && (
                             <Link to="/create-campaign" onClick={handleCreateCampaignClick} className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200">
                                 Create Campaign
+                            </Link>
+                        )}
+                        {isAuthenticated && (
+                            <Link 
+                                to="/kyc-form" className="px-4 py-2 rounded-md hover:bg-[#4A5D45] hover:text-white transition-colors duration-200" onClick={() => setIsMobileMenuOpen(false)}>
+                                KYC Verification
                             </Link>
                         )}
                         {!hideContact && (

@@ -126,6 +126,7 @@ export default function Header({ hideHome }) {
                                 {showDropdown && (
                                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
                                         <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/user-profile'); setShowDropdown(false); }}>My Profile</a>
+                                        <a href="/kyc-form" className="block px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/kyc-form'); setShowDropdown(false); }}>KYC Verification</a>
                                         <a href="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/notifications'); setShowDropdown(false); }}>
                                             <span>Notifications</span>
                                             {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
@@ -154,6 +155,15 @@ export default function Header({ hideHome }) {
                         <a href="/explore" onClick={handleDonateClick} className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold">Donate</a>
                         <a href="/about" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>About Us</a>
                         <a href="/create-campaign" onClick={handleCreateCampaignClick} className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold">Create Campaign</a>
+                        {isAuthenticated && (
+                         <a href="/kyc-form" onClick={(e) => {e.preventDefault();
+                                    navigate('/kyc-form');
+                                    setIsMobileMenuOpen(false);
+                                }}
+                                className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold">
+                                KYC Verification
+                            </a>
+                        )}
                         <a href="/contact" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Contact Us</a>
                         {!isAuthenticated && <a href="/login" className="px-4 py-2 rounded-lg hover:bg-gray-700 w-full text-center font-semibold" onClick={() => setIsMobileMenuOpen(false)}>Login / Sign Up</a>}
                     </div>
