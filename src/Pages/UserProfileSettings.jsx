@@ -11,6 +11,28 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { showSuccessMessage, showErrorMessage } from "../utils/toast";
 import axios from 'axios';
 
+const DonationHistoryCard = ({ donation }) => {
+    const campaignImage = donation.campaignId?.mediaUrls?.[0] 
+        ? `https://server-fundify.up.railway.app${donation.campaignId.mediaUrls[0]}`
+        : "https://placehold.co/600x400/e2e8f0/e2e8f0?text=Campaign";
+
+    return (
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 flex flex-col sm:flex-row items-start p-4 space-x-4">
+            <img src={campaignImage} alt={donation.campaignId?.title || 'Campaign'} className="w-full sm:w-32 h-32 sm:h-24 rounded-md object-cover flex-shrink-0" />
+            <div className="flex-grow mt-3 sm:mt-0">
+                <h3 className="font-bold text-lg text-gray-800">{donation.campaignId?.title || 'General Donation'}</h3>
+                <p className="text-green-600 font-semibold text-xl mt-1">PKR {donation.amount.toLocaleString()}</p>
+                <p className="text-xs text-gray-500 mt-2">
+                    {new Date(donation.createdAt).toLocaleString()}
+                </p>
+                <p className="text-xs text-gray-400 mt-1 truncate" title={donation.transactionId}>
+                    Transaction ID: {donation.transactionId}
+                </p>
+            </div>
+        </div>
+    );
+};
+
 function UserProfileSettings() {
     // --- Step 1: Get user data from Redux store ---
     const { user, loading: userLoading } = useSelector((state) => state.user);
@@ -25,7 +47,32 @@ function UserProfileSettings() {
     const [activeMenuItem, setActiveMenuItem] = useState("Profile");
     const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // For loading state during updates
+    const [showConfirmLogout, setShowConfirmLogout] = useState(false);
     const fileInputRef = useRef(null);
+
+    const [donationHistory, setDonationHistory] = useState([]);
+    const [historyLoading, setHistoryLoading] = useState(false);
+
+    useEffect(() => {
+        if (activeMenuItem === "Donation History") {
+            const fetchHistory = async () => {
+                setHistoryLoading(true);
+                try {
+                    const token = localStorage.getItem('token');
+                    const API_URL = process.env.REACT_APP_API_URL;
+                    const { data } = await axios.get(`${API_URL}/api/donations/my-history`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    setDonationHistory(data.donations);
+                } catch (error) {
+                    showErrorMessage("Failed to load donation history.");
+                } finally {
+                    setHistoryLoading(false);
+                }
+            };
+            fetchHistory();
+        }
+    }, [activeMenuItem]);
 
     // --- Step 2: Populate form state when user data loads from Redux ---
     useEffect(() => {
@@ -119,6 +166,7 @@ function UserProfileSettings() {
 
     const handleLogout = () => {
         dispatch(logoutSuccess());
+        setShowConfirmLogout(false);
         navigate("/login");
         showSuccessMessage("Successfully logged out");
     };
@@ -137,8 +185,6 @@ function UserProfileSettings() {
         }
     };
     
-    const [showConfirmLogout, setShowConfirmLogout] = useState(false);
-
     if (userLoading) {
         return <div className="flex flex-col min-h-screen items-center justify-center bg-gray-50"><p>Loading profile...</p></div>;
     }
@@ -261,6 +307,25 @@ function UserProfileSettings() {
                                 )}
                             </div>
                         </>
+                    )}
+                    {/* --- NEW DONATION HISTORY SECTION --- */}
+                    {activeMenuItem === "Donation History" && (
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold mb-6">My Donation History</h1>
+                            {historyLoading ? (
+                                <p className="text-gray-500">Loading your donations...</p>
+                            ) : donationHistory.length > 0 ? (
+                                <div className="space-y-4">
+                                    {donationHistory.map(donation => (
+                                        <DonationHistoryCard key={donation._id} donation={donation} />
+                                    ))}
+                                </div>
+                            ) : (
+                                <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
+                                    <p className="text-gray-500">You haven't made any donations yet.</p>
+                                </div>
+                            )}
+                        </div>
                     )}
                 </main>
             </div>

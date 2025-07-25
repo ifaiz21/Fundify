@@ -59,14 +59,14 @@ function PartnersSection() {
           <div className="flex flex-col md:flex-row">
             <div className="p-8 md:p-10 lg:p-12 md:w-1/2 text-center md:text-left">
               <p className="text-white uppercase tracking-wider mb-2">
-                CALL CENTER
+                CUSTOMER SUPPORT
               </p>
               <p className="text-white text-2xl sm:text-3xl font-light mb-6 sm:mb-8">
-                (XXX) XXXX-XXX
+                (042) 3456-789
               </p>
 
               <p className="text-white uppercase tracking-wider mb-2">EMAIL</p>
-              <p className="text-[#2A5F59] text-2xl sm:text-3xl font-light">
+              <p className="text-white text-2xl sm:text-3xl font-light">
                 contact@fundify.com
               </p>
             </div>
