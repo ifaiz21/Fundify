@@ -95,6 +95,28 @@ function UserProfileSettings() {
         }
     };
 
+    const handleRemoveProfilePicture = async () => {
+        if (!window.confirm("Are you sure you want to remove your profile picture?")) {
+            return;
+        }
+        setIsSaving(true);
+        const token = localStorage.getItem('token');
+        const API_URL = process.env.REACT_APP_API_URL;
+        try {
+            await axios.delete(`${API_URL}/api/users/profile-picture`, {
+                headers: { 'Authorization': `Bearer ${token}` }
+            });
+            showSuccessMessage("Profile picture removed!");
+            dispatch(loadUser()); // User data ko refresh karein
+            setSelectedProfileImage(null);
+            setProfileImagePreview('/Images/default-avatar.png'); // Preview ko default par set karein
+        } catch (error) {
+            showErrorMessage(error.response?.data?.message || "Failed to remove picture.");
+        } finally {
+            setIsSaving(false);
+        }
+    };
+
     const handleLogout = () => {
         dispatch(logoutSuccess());
         navigate("/login");
@@ -163,6 +185,11 @@ function UserProfileSettings() {
                                         {selectedProfileImage && (
                                             <button onClick={handleProfilePictureSave} disabled={isSaving} className="bg-[#4A5D45] text-white py-2 px-4 rounded text-sm hover:bg-[#3d4f3a]">
                                                 {isSaving ? 'Saving...' : 'Save Photo'}
+                                            </button>
+                                        )}
+                                        {user.profilePictureUrl && !selectedProfileImage && (
+                                            <button onClick={handleRemoveProfilePicture} disabled={isSaving} className="bg-red-600 text-white py-2 px-4 rounded text-sm hover:bg-red-700">
+                                                {isSaving ? 'Removing...' : 'Remove Photo'}
                                             </button>
                                         )}
                                     </div>
