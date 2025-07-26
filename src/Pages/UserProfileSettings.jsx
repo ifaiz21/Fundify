@@ -182,6 +182,8 @@ function UserProfileSettings() {
             navigate("/billing");
         } else if (itemName === "Notifications") {
             navigate("/notifications");
+        } else if (itemName === "donationHistory"){
+            setDonationHistory();
         }
     };
     
