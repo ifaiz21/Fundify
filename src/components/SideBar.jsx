@@ -14,8 +14,13 @@ function SideBar({ activeItem, onItemClick, handleLogout }) {
     },
     { name: "My Campaigns", icon: (
         <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-          <path strokeLinecap="round" strokeLinejoin="round" d="M15.536 8.464a5 5 0 010 7.072m2.828-9.9c.78-.783 2.046-.783 2.829 0s.783 2.046 0 2.829L19 12l1.414 1.414c.783.783.783 2.046 0 2.829s-2.046.783-2.829 0l-1.414-1.414L15.536 12l-1.414-1.414-1.414-1.414 1.414-1.414 1.414-1.414z" />
-          <path strokeLinecap="round" strokeLinejoin="round" d="M8.464 15.536a5 5 0 010-7.072m-2.828 9.9c-.78.783-2.046.783-2.829 0s-.783-2.046 0-2.829L5 12 3.586 10.586c-.783-.783-.783-2.046 0-2.829s2.046-.783 2.829 0L8.464 12l1.414 1.414 1.414 1.414-1.414 1.414-1.414 1.414z" />
+          <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
+        </svg>
+      )
+    },
+    { name: "Donation History", icon: (
+        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
         </svg>
       )
     },
