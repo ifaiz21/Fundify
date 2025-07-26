@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
+import { loginSuccess } from '../features/userSlice';
 import { loadUser } from '../actions/userActions';
 import { logoutSuccess } from '../store';
 import HeaderLayout from "./Layout/HeaderLayout";
@@ -57,6 +58,10 @@ function UserProfileSettings() {
 
     const [donationHistory, setDonationHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(false);
+
+    const handleAccountUpdate = (updatedUserData) => {
+        dispatch(loginSuccess(updatedUserData));
+    };
 
     useEffect(() => {
         if (activeMenuItem === "Donation History") {
@@ -310,12 +315,7 @@ function UserProfileSettings() {
                     
                     {activeMenuItem === "My Campaigns" && (
                         <div>
-                            <h1 className="text-xl sm:text-2xl font-bold mb-6">My Campaigns</h1>
-                            {/* Yahan par aap apne campaigns ka component ya content daal sakte hain */}
                              <MyCampaigns user={user} />
-                            <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
-                                <p className="text-gray-500">Your campaigns will be shown here.</p>
-                            </div>
                         </div>
                     )}
                     {/* --- NEW DONATION HISTORY SECTION --- */}
@@ -339,12 +339,7 @@ function UserProfileSettings() {
                     )}
                     {activeMenuItem === "Billing" && (
                         <div>
-                            <h1 className="text-xl sm:text-2xl font-bold mb-6">Billing Information</h1>
-                            {/* Yahan par aap billing ka component ya content daal sakte hain */}
-                            <Billing user={user} />
-                            <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
-                                <p className="text-gray-500">Your billing details will be shown here.</p>
-                            </div>
+                            <Billing user={user} onAccountUpdate={handleAccountUpdate}  />
                         </div>
                     )}
                     
