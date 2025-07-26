@@ -223,7 +223,7 @@ function UserProfileSettings() {
                 <main className="flex-grow container mx-auto px-4 py-6">
                     {activeMenuItem === "Profile" && (
                         <>
-                            <h1 className="text-xl sm:text-2xl font-bold mb-6">Profile Settings</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold mb-6">Profile Settings</h1>
                             
                             {/* Profile Picture Section */}
                             <div className="bg-white rounded-lg shadow-md p-6 mb-6 flex flex-col sm:flex-row items-center justify-between">
@@ -321,7 +321,7 @@ function UserProfileSettings() {
                     {/* --- NEW DONATION HISTORY SECTION --- */}
                     {activeMenuItem === "Donation History" && (
                         <div>
-                            <h1 className="text-xl sm:text-2xl font-bold mb-6">My Donation History</h1>
+                            <h1 className="text-2xl sm:text-3xl font-bold mb-6">My Donation History</h1>
                             {historyLoading ? (
                                 <p className="text-gray-500">Loading your donations...</p>
                             ) : donationHistory.length > 0 ? (
