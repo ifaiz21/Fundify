@@ -345,12 +345,7 @@ function UserProfileSettings() {
                     
                     {activeMenuItem === "Notifications" && (
                         <div>
-                            <h1 className="text-xl sm:text-2xl font-bold mb-6">Notifications</h1>
-                            {/* Yahan par aap notifications ka component ya content daal sakte hain */}
                             <NotificationsPage user={user} />
-                            <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
-                                <p className="text-gray-500">Your notifications will be shown here.</p>
-                            </div>
                         </div>
                     )}
                 </main>

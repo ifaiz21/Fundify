@@ -1,10 +1,9 @@
+// src/Pages/NotificationsPage.jsx (Refactored Code)
 import React, { useEffect } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { fetchNotifications } from '../features/notificationSlice';
-import HeaderLayout from './Layout/HeaderLayout';
-import FooterLayout from './Layout/FooterLayout';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { fetchNotifications } from '../features/notificationSlice'; // Make sure this path is correct
 
 // Helper function to format date
 const formatDate = (dateString) => {
@@ -12,27 +11,27 @@ const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString(undefined, options);
 };
 
+// --- YEH AAPKA MAIN REFACTORED COMPONENT HAI ---
 const NotificationsPage = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    
+    // Redux store se notifications ka data lein
     const { items: notifications, loading, unreadCount } = useSelector((state) => state.notifications);
-    const { isAuthenticated } = useSelector((state) => state.user);
 
     useEffect(() => {
-        if (!isAuthenticated) {
-            //navigate('/login');
-            return;
-        }
-
-        // Mark notifications as read when the page is viewed
+        // Notifications ko 'read' mark karne ka function
         const markAsRead = async () => {
+            // Sirf tab call karein jab unread notifications hon
             if (unreadCount > 0) {
                 try {
                     const token = localStorage.getItem('token');
-                    const config = { headers: { 'Authorization': `Bearer ${token}` } };
-                    const API_URL = process.env.REACT_APP_API_URL;
-                    await axios.post(`${API_URL}/api/notifications/read`, {}, config);
-                    // Fetch notifications again to update the unread count to 0
+                    // Ensure you have REACT_APP_API_URL in your .env file
+                    const API_URL = process.env.REACT_APP_API_URL || 'https://server-fundify.up.railway.app';
+                    await axios.post(`${API_URL}/api/notifications/read`, {}, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                    // Unread count ko 0 karne ke liye notifications dobara fetch karein
                     dispatch(fetchNotifications());
                 } catch (error) {
                     console.error("Failed to mark notifications as read", error);
@@ -40,40 +39,39 @@ const NotificationsPage = () => {
             }
         };
 
+        // Component load hotay hi notifications fetch karein
         dispatch(fetchNotifications());
+        // Aur unko read mark karein
         markAsRead();
 
-    }, [dispatch, isAuthenticated, navigate, unreadCount]);
+    }, [dispatch, unreadCount]); // Dependency array se navigate aur isAuthenticated hata diya hai
 
     return (
-        <div className="flex flex-col min-h-screen bg-gray-50">
-            <HeaderLayout />
-            <main className="flex-1 py-8 sm:py-12">
-                <div className="container mx-auto px-4 md:px-6 max-w-4xl">
-                    <h1 className="text-3xl font-bold text-gray-800 mb-6">Notifications</h1>
-                    {loading ? (
-                        <p>Loading notifications...</p>
-                    ) : notifications.length === 0 ? (
-                        <div className="text-center py-12 bg-white rounded-lg shadow-md">
-                            <p className="text-gray-500">You have no notifications.</p>
-                        </div>
-                    ) : (
-                        <div className="space-y-4">
-                            {notifications.map((notif) => (
-                                <div key={notif._id} 
-                                     className={`p-4 rounded-lg shadow-sm transition-colors duration-300 ${notif.isRead ? 'bg-white' : 'bg-green-50 border-l-4 border-green-500'}`}
-                                     onClick={() => notif.link && navigate(notif.link)}
-                                     style={{ cursor: notif.link ? 'pointer' : 'default' }}
-                                >
-                                    <p className="text-gray-800">{notif.message}</p>
-                                    <p className="text-xs text-gray-500 mt-1">{formatDate(notif.createdAt)}</p>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+        // Is component mein ab Header/Footer nahi hain
+        <div>
+            <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 mb-6">Notifications</h1>
+            
+            {loading && notifications.length === 0 ? (
+                <p className="text-center py-10">Loading notifications...</p>
+            ) : notifications.length === 0 ? (
+                <div className="text-center py-12 bg-white rounded-lg shadow-md">
+                    <p className="text-gray-500">You have no notifications.</p>
                 </div>
-            </main>
-            <FooterLayout />
+            ) : (
+                <div className="space-y-4">
+                    {notifications.map((notif) => (
+                        <div 
+                            key={notif._id}
+                            className={`p-4 rounded-lg shadow-sm transition-colors duration-300 ${notif.isRead ? 'bg-white' : 'bg-green-50 border-l-4 border-green-500'}`}
+                            onClick={() => notif.link && navigate(notif.link)}
+                            style={{ cursor: notif.link ? 'pointer' : 'default' }}
+                        >
+                            <p className="text-gray-800">{notif.message}</p>
+                            <p className="text-xs text-gray-500 mt-1">{formatDate(notif.createdAt)}</p>
+                        </div>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

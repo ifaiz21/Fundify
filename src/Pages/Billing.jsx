@@ -273,7 +273,7 @@ function BillingPage({ user, onAccountUpdate }) {
                 </div>
 
                 <div className="flex flex-col sm:flex-row justify-end mt-6 space-y-3 sm:space-y-0 sm:space-x-4">
-                    <button onClick={handleWithdraw} className="bg-gray-600 text-white py-2 px-8 rounded w-full sm:w-auto hover:bg-gray-700 transition-colors">Withdraw</button>
+                    <button onClick={handleWithdraw} className="bg-[#4B5842] text-white py-2 px-8 rounded w-full sm:w-auto hover:bg-gray-700 transition-colors">Withdraw</button>
                     {isPaymentEditMode && (
                         <button onClick={handleAccountSave} disabled={loading} className="bg-[#4A5D45] text-white py-2 px-8 rounded w-full sm:w-auto hover:bg-opacity-90 transition-colors disabled:bg-gray-400">
                             {loading ? 'Saving...' : 'Save Account'}
