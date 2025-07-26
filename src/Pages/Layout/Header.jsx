@@ -11,7 +11,6 @@ export default function Header({ hideHome }) {
     const [showConfirmLogout, setShowConfirmLogout] = useState(false);
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isScrolled, setIsScrolled] = useState(false);
-    // NEW: State to track if mouse is over the header
     const [isHeaderHovered, setIsHeaderHovered] = useState(false);
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -21,7 +20,7 @@ export default function Header({ hideHome }) {
 
     const dropdownRef = useRef(null);
     const mobileMenuRef = useRef(null);
-    const headerRef = useRef(null); // NEW: Ref for the header element
+    const headerRef = useRef(null); 
 
     const avatarSrc = user?.profilePictureUrl ? `https://server-fundify.up.railway.app/${user.profilePictureUrl}` : "/Images/default-avatar.png";
 
@@ -40,10 +39,9 @@ export default function Header({ hideHome }) {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    // Scroll effect for header background (keep this if you want both scroll AND hover)
     useEffect(() => {
         const handleScroll = () => {
-            if (window.scrollY > 50) { // Adjust 50px as needed for when it should change
+            if (window.scrollY > 50) {
                 setIsScrolled(true);
             } else {
                 setIsScrolled(false);
@@ -130,10 +128,6 @@ export default function Header({ hideHome }) {
                                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
                                         <a href="/user-profile" className="block px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/user-profile'); setShowDropdown(false); }}>My Profile</a>
                                         <a href="/kyc-form" className="block px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/kyc-form'); setShowDropdown(false); }}>KYC Verification</a>
-                                        <a href="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-gray-100" onClick={(e) => { e.preventDefault(); navigate('/notifications'); setShowDropdown(false); }}>
-                                            <span>Notifications</span>
-                                            {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
-                                        </a>
                                         <button onClick={() => { setShowConfirmLogout(true); setShowDropdown(false); }} className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50">Logout</button>
                                     </div>
                                 )}

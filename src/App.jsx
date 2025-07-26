@@ -12,7 +12,6 @@ import { loadStripe } from '@stripe/stripe-js';
 // Import all your page and component files
 import LoginPage from "./Pages/LoginPage";
 import SignupPage from "./Pages/SignupPage";
-import Billing from './Pages/Billing';
 import ForgetPassword from "./Pages/PasswordReset/ForgetPassword";
 import EmailVerification from "./Pages/PasswordReset/EmailVerification";
 import PasswordReset from "./Pages/PasswordReset/PasswordReset";
@@ -30,7 +29,7 @@ import Submitted from "./Pages/ContactUs/Submitted";
 import Submitted2 from "./Pages/Payment/Submitted2";
 import DonationScreen from "./Pages/DonationScreen";
 import AboutUs from "./Pages/AboutUs";
-import PaymentScreen from "./Pages/Payment/PaymentScreen";
+import StripePaymentScreen from './Pages/Payment/StripePaymentScreen';
 import CampaignCreation01 from "./Pages/CampaignsCreation/CampCreation01";
 import CampaignCreation02 from "./Pages/CampaignsCreation/CampCreation02";
 import CampaignCreation03 from "./Pages/CampaignsCreation/CampCreation03";
@@ -50,13 +49,9 @@ import WalletPage from "./Pages/AdminSide/Wallet";
 import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
 import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
-import HeaderLayout from "./Pages/Layout/HeaderLayout";
-import MyCampaigns from './Pages/MyCampaigns';
 //import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
-import StripePaymentScreen from './Pages/Payment/StripePaymentScreen'
-import NotificationsPage from "./Pages/NotificationsPage";
 import CampaignReviewPage from "./Pages/AdminSide/CampaignReviewPage";
 
 //KYC
@@ -102,7 +97,7 @@ function App() {
   const showError = (message) => {
     toast.error(message, {
       position: "top-right",
-      autoClose: 5000,
+      autoClose: 4000,
       hideProgressBar: false,
       closeOnClick: true,
       pauseOnHover: true,
@@ -145,7 +140,7 @@ function App() {
           <Route path="/contact" element={<ContactUsPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/donate" element={<DonationScreen showSuccess={showSuccess} showError={showError} />} />
           <Route path="/about" element={<AboutUs showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/payment" element={<PaymentScreen showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/payments" element={<StripePaymentScreen showSuccess={showSuccess} showError={showError}  />}/>
           <Route path="/create-campaign" element={<CampaignCreation01 showSuccess={showSuccess} showError={showError} />} />
           <Route path="/campaign-creation-02" element={<CampaignCreation02 showSuccess={showSuccess} showError={showError} />} />
           <Route path="/campaign-creation-03" element={<CampaignCreation03 showSuccess={showSuccess} showError={showError} />} />
@@ -156,13 +151,12 @@ function App() {
           <Route path="/ProjectView" element={<ProjectView showSuccess={showSuccess} showError={showError} />} />
           <Route path="/campaign-update" element={<CampaignUpdate showSuccess={showSuccess} showError={showError} />} />
           <Route path="/user-profile" element={<UserProfileSettings showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/my-campaigns" element={<MyCampaigns showToast={showSuccess} />} />
 
           {/* NEW KYC Routes */}
           <Route path="/kyc-form" element={<KYCFormPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/kyc-document-upload" element={<KYCDocumentUpload showSuccess={showSuccess} showError={showError} />} />
           <Route path="/kyc-liveness-verification" element={<KYCLivenessVerification showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/kyc-success" element={<KYCSuccessPage />} /> {/* New Route for KYC Success Page */}
+          <Route path="/kyc-success" element={<KYCSuccessPage />} />
 
           {/* Admin Pages */}
           <Route path="/admin-dashboard" element={<AdminDashboard showSuccess={showSuccess} showError={showError} />} />
@@ -171,19 +165,12 @@ function App() {
           <Route path="/admin/wallet" element={<WalletPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/campaigns" element={<CampaignsPage showSuccess={showSuccess} showError={showError} />} />
           <Route path="/admin/verifications" element={<VerificationPage showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/admin/feedbacks" element={<FeedbacksPage showSuccess={showSuccess} showError={showError} />} />
-          <Route path="/payment1" element={<StripePaymentScreen />}/>
-          <Route path="/notifications" element={<NotificationsPage />} />
-          <Route path="/admin/campaign/review/:id" element={<CampaignReviewPage />} />
-
-          <Route path="/billing" element={<Billing showSuccess={showSuccess} showError={showError} />} />
+          <Route path="/admin/feedbacks" element={<FeedbacksPage showSuccess={showSuccess} showError={showError} />} />          <Route path="/admin/campaign/review/:id" element={<CampaignReviewPage showSuccess={showSuccess} showError={showError} />} />
 
           {/* Fallback for other routes which also uses HeaderLayout. 
               Removed passing showToast here as HeaderLayout now imports it directly. */}
           <Route path="*" element={
             <div className="flex flex-col min-h-screen items-center justify-center">
-              {/* HeaderLayout here would be for the 404 page itself, not the main app */}
-              <HeaderLayout /> {/* NO showToast prop here */}
               <h1 className="text-4xl font-bold text-gray-800">404 - Page Not Found</h1>
               <p className="text-gray-600 mt-4">The page you are looking for does not exist.</p>
             </div>

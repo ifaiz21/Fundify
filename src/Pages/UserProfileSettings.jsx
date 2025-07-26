@@ -331,7 +331,7 @@ function UserProfileSettings() {
                         <div>
                             <h1 className="text-2xl sm:text-3xl font-bold mb-6">My Donation History</h1>
                             {historyLoading ? (
-                                <p className="text-gray-500">Loading your donations...</p>
+                                <p className="text-center text-gray-500">Loading your donations...</p>
                             ) : donationHistory.length > 0 ? (
                                 <div className="space-y-4">
                                     {donationHistory.map(donation => (

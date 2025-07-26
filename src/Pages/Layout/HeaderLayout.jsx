@@ -116,13 +116,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                                 {showDropdown && (
                                     <div className="absolute right-0 mt-2 bg-white text-gray-800 rounded-lg shadow-xl py-2 w-48 z-50">
                                         {!hideProfile && <Link to="/user-profile" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>My Profile</Link>}
-                                        
                                         <Link to="/kyc-form" className="block px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>KYC Verification</Link>
-                                        <Link to="/notifications" className="flex justify-between items-center px-5 py-2 text-md hover:bg-indigo-50" onClick={() => setShowDropdown(false)}>
-                                            <span>Notifications</span>
-                                            {unreadCount > 0 && <span className="font-bold bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">{unreadCount}</span>}
-                                        </Link>
-                                        
                                         <button onClick={() => { setShowConfirmLogout(true); setShowDropdown(false); }} className="w-full text-left px-5 py-2 text-md text-red-600 hover:bg-red-50">Logout</button>
                                     </div>
                                 )}
