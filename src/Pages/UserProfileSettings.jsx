@@ -11,6 +11,11 @@ import { Bars3Icon, XMarkIcon } from '@heroicons/react/24/outline';
 import { showSuccessMessage, showErrorMessage } from "../utils/toast";
 import axios from 'axios';
 
+import MyCampaigns from './MyCampaigns';
+import Billing from './Billing';
+import NotificationsPage from './NotificationsPage';
+
+
 const DonationHistoryCard = ({ donation }) => {
     const campaignImage = donation.campaignId?.mediaUrls?.[0] 
         ? `https://server-fundify.up.railway.app${donation.campaignId.mediaUrls[0]}`
@@ -176,15 +181,7 @@ function UserProfileSettings() {
         setIsProfileSidebarOpen(false);
         if (itemName === "Logout") {
             setShowConfirmLogout(true);
-        } else if (itemName === "My Campaigns") {
-            navigate("/my-campaigns");
-        } else if (itemName === "Billing"){
-            navigate("/billing");
-        } else if (itemName === "Notifications") {
-            navigate("/notifications");
-        } else if (itemName === "donationHistory"){
-            setDonationHistory();
-        }
+        }  
     };
     
     if (userLoading) {
@@ -193,7 +190,7 @@ function UserProfileSettings() {
     
     // Agar user logged in nahin hai to login page par redirect karein
     if (!user) {
-        // navigate('/login');
+        //navigate('/login');
         return null; // Return null to prevent rendering anything else
     }
 
@@ -310,6 +307,17 @@ function UserProfileSettings() {
                             </div>
                         </>
                     )}
+                    
+                    {activeMenuItem === "My Campaigns" && (
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold mb-6">My Campaigns</h1>
+                            {/* Yahan par aap apne campaigns ka component ya content daal sakte hain */}
+                             <MyCampaigns user={user} />
+                            <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
+                                <p className="text-gray-500">Your campaigns will be shown here.</p>
+                            </div>
+                        </div>
+                    )}
                     {/* --- NEW DONATION HISTORY SECTION --- */}
                     {activeMenuItem === "Donation History" && (
                         <div>
@@ -327,6 +335,27 @@ function UserProfileSettings() {
                                     <p className="text-gray-500">You haven't made any donations yet.</p>
                                 </div>
                             )}
+                        </div>
+                    )}
+                    {activeMenuItem === "Billing" && (
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold mb-6">Billing Information</h1>
+                            {/* Yahan par aap billing ka component ya content daal sakte hain */}
+                            <Billing user={user} />
+                            <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
+                                <p className="text-gray-500">Your billing details will be shown here.</p>
+                            </div>
+                        </div>
+                    )}
+                    
+                    {activeMenuItem === "Notifications" && (
+                        <div>
+                            <h1 className="text-xl sm:text-2xl font-bold mb-6">Notifications</h1>
+                            {/* Yahan par aap notifications ka component ya content daal sakte hain */}
+                            <NotificationsPage user={user} />
+                            <div className="text-center py-12 bg-white rounded-lg shadow-sm border">
+                                <p className="text-gray-500">Your notifications will be shown here.</p>
+                            </div>
                         </div>
                     )}
                 </main>
