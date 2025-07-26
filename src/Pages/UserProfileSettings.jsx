@@ -1,6 +1,6 @@
 // src/Pages/UserProfileSettings.jsx
 import React, { useState, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from 'react-redux';
 import { loginSuccess } from '../features/userSlice';
 import { loadUser } from '../actions/userActions';
@@ -44,13 +44,14 @@ function UserProfileSettings() {
     const { user, loading: userLoading } = useSelector((state) => state.user);
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
 
     // --- Local state for UI and forms ---
     const [editedProfile, setEditedProfile] = useState({});
     const [isProfileEditMode, setIsProfileEditMode] = useState(false);
     const [selectedProfileImage, setSelectedProfileImage] = useState(null);
     const [profileImagePreview, setProfileImagePreview] = useState(null);
-    const [activeMenuItem, setActiveMenuItem] = useState("Profile");
+    const [activeMenuItem, setActiveMenuItem] = useState(location.state?.defaultTab || 'Profile');
     const [isProfileSidebarOpen, setIsProfileSidebarOpen] = useState(false);
     const [isSaving, setIsSaving] = useState(false); // For loading state during updates
     const [showConfirmLogout, setShowConfirmLogout] = useState(false);
@@ -181,8 +182,15 @@ function UserProfileSettings() {
         showSuccessMessage("Successfully logged out");
     };
 
+    useEffect(() => {
+        if (location.state?.defaultTab) {
+            setActiveMenuItem(location.state.defaultTab);
+        }
+    }, [location.state]);
+
     const handleMenuItemClick = (itemName) => {
         setActiveMenuItem(itemName);
+        navigate(location.pathname, { replace: true });
         setIsProfileSidebarOpen(false);
         if (itemName === "Logout") {
             setShowConfirmLogout(true);

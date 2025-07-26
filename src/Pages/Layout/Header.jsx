@@ -88,6 +88,9 @@ export default function Header({ hideHome }) {
         else toast.info('Please submit your KYC first to create a campaign.');
         setIsMobileMenuOpen(false);
     };
+    const handleNotificationClick = () => {
+        navigate('/user-profile', { state: { defaultTab: 'Notifications' } });
+    };
 
     return (
         <>
@@ -114,7 +117,7 @@ export default function Header({ hideHome }) {
 
                     {isAuthenticated ? (
                         <div className="flex items-center space-x-2 sm:space-x-4">
-                            <button onClick={() => navigate('/notifications')} className="relative text-white p-2 rounded-full hover:bg-[#4A5D45] transition-colors duration-200 focus:outline-none">
+                            <button onClick={handleNotificationClick} className="relative text-white p-2 rounded-full hover:bg-[#4A5D45] transition-colors duration-200 focus:outline-none">
                                 <BellIcon className="h-6 w-6" />
                                 {unreadCount > 0 && <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>}
                             </button>

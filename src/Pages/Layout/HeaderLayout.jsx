@@ -71,6 +71,10 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
         setIsMobileMenuOpen(false);
     };
 
+    const handleNotificationClick = () => {
+        navigate('/user-profile', { state: { defaultTab: 'Notifications' } });
+    };
+
     return (
         <>
             <header className="flex items-center justify-between px-4 py-3 bg-white shadow-md relative md:px-6 z-50">
@@ -97,7 +101,7 @@ const HeaderLayout = ({ hideCreate, hideContact, hideDonate, hideAboutUs, hidePr
                     {isAuthenticated ? (
                         <div className="flex items-center space-x-2 sm:space-x-4">
                             {/* Notification Bell Icon */}
-                            <button onClick={() => navigate('/notifications')} className="relative text-gray-600 p-2 rounded-full hover:bg-gray-200 focus:outline-none">
+                            <button onClick={handleNotificationClick} className="relative text-gray-600 p-2 rounded-full hover:bg-gray-200 focus:outline-none">
                                 <BellIcon className="h-6 w-6" />
                                 {unreadCount > 0 && (
                                     <span className="absolute top-1 right-1 block h-2 w-2 rounded-full bg-red-500"></span>
