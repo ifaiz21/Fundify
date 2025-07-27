@@ -12,6 +12,10 @@ const initialState = {
         email: "",
         phoneNumber: "",
     },
+    documents: {
+        frontIdFile: null,
+        backIdFile: null,
+    },
 };
 
 const kycSlice = createSlice({
@@ -21,12 +25,17 @@ const kycSlice = createSlice({
         updateKycFormData: (state, action) => {
             state.formData = { ...state.formData, ...action.payload };
         },
+        updateKycDocument: (state, action) => {
+            const { fileType, file } = action.payload; // fileType hoga 'frontIdFile' ya 'backIdFile'
+            state.documents[fileType] = file;
+        },
         clearKycData: (state) => {
             state.formData = initialState.formData;
+            state.documents = initialState.documents;
         },
     },
 });
 
-export const { updateKycFormData, clearKycData } = kycSlice.actions;
+export const { updateKycFormData, updateKycDocument ,clearKycData } = kycSlice.actions;
 
 export default kycSlice.reducer;

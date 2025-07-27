@@ -3,7 +3,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { IoChevronBackOutline } from "react-icons/io5";
-import axios from "axios";
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 import { useSelector, useDispatch } from 'react-redux';
 import { updateKycFormData } from '../../features/kycSlice';
@@ -17,7 +16,7 @@ const KYCFormPage = () => {
     const { currentUser, loading: userLoading } = useSelector((state) => state.user);
 
     const [errors, setErrors] = useState({});
-    const [loading, setLoading] = useState(false);
+    const [loading, ] = useState(false);
 
     // 3. User ke data se Redux store ko pre-fill karein (agar zaroori ho)
     useEffect(() => {
@@ -78,49 +77,16 @@ const KYCFormPage = () => {
         return Object.keys(newErrors).length === 0;
     };
 
-    const handleSubmit = async (e) => {
+    const handleNextStep = (e) => {
         e.preventDefault();
-        if (!validateForm()) {
-            showErrorMessage("Please fix the errors in the form.");
-            return;
-        }
-
-        setLoading(true);
-        const token = localStorage.getItem('token');
-        if (!token) {
-            showErrorMessage("Authentication required. Please log in.");
-            navigate("/login");
-            setLoading(false);
-            return;
-        }
-
-        try {
-            // Data ab Redux store se aa raha hai
-            const response = await axios.post(
-                "https://server-fundify.up.railway.app/api/kyc/submit",
-                {
-                    fullName: formData.fullName,
-                    dateOfBirth: formData.dateOfBirth,
-                    address: formData.address,
-                    documentNumber: formData.idNumber,
-                    documentType: formData.documentType,
-                    email: formData.email,
-                    phoneNumber: formData.phoneNumber,
-                },
-                {
-                    headers: { Authorization: `Bearer ${token}` },
-                }
-            );
-
-            if (response.status === 201) {
-                showSuccessMessage("KYC information submitted! Redirecting to document upload.");
-                navigate("/kyc-document-upload");
-            }
-        } catch (error) {
-            console.error("KYC form submission error:", error.response?.data || error.message);
-            showErrorMessage(`An error occurred: ${error.response?.data?.message || error.message}`);
-        } finally {
-            setLoading(false);
+        
+        // 1. Sirf form ko validate karein
+        if (validateForm()) {
+            // 2. Agar valid hai, to agle page par navigate karein. Koi API call nahi hogi.
+            showSuccessMessage("Information saved. Proceeding to next step.");
+            navigate("/kyc-document-upload");
+        } else {
+            showErrorMessage("Please fix the errors before proceeding.");
         }
     };
 
@@ -171,7 +137,7 @@ const KYCFormPage = () => {
                 <div className="flex h-full items-center justify-center py-12">
                     <div className="form-container w-full max-w-md mx-auto">
                         <p className="title text-[#4b5849]">Know Your Customer (KYC) Information</p>
-                        <form className="form" onSubmit={handleSubmit} noValidate>
+                        <form className="form" onSubmit={handleNextStep} noValidate>
                             <h3 className="text-lg font-semibold text-gray-700 mb-2">Personal Information</h3>
                             <div>
                                 <input type="text" name="fullName" value={formData.fullName} onChange={handleChange} placeholder="Full Name" className={`input ${errors.fullName ? 'input-error' : ''}`} required />
@@ -209,7 +175,7 @@ const KYCFormPage = () => {
                                 {errors.phoneNumber && <p className="error-text">{errors.phoneNumber}</p>}
                             </div>
                             <button type="submit" className="form-btn mt-6" disabled={loading}>
-                                {loading ? "Submitting..." : "Submit"}
+                                {loading ? "Saving..." : "Save & Continue"}
                             </button>
                         </form>
                     </div>

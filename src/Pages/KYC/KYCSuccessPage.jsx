@@ -27,7 +27,7 @@ function KYCSuccessPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-4">KYC Details Received!</h1>
           <p className="text-gray-600 mb-6">
             Your KYC details have been successfully received by FUNDIFY.
-            Please allow (15 to 20 minutes) for review and approval.
+            Please allow (1-2 working days) for review and approval.
           </p>
           <Link
             to="/user-profile"

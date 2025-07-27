@@ -3,27 +3,31 @@
 import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
+import { useSelector, useDispatch } from 'react-redux';
+import { clearKycData } from '../../features/kycSlice';
 
 function KYCLivenessVerification() {
-  const navigate = useNavigate();
-  const videoRef = useRef(null);
-  const canvasRef = useRef(null);
-  const [stream, setStream] = useState(null);
-  const [capturedImage, setCapturedImage] = useState(null);
-  const [isCameraActive, setIsCameraActive] = useState(false);
-  const [loading, setLoading] = useState(false);
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-  // Memoize stopCamera
-  const stopCamera = useCallback(() => {
-    if (stream) {
-      console.log("Stopping camera stream.");
-      stream.getTracks().forEach(track => track.stop());
-      setStream(null);
-    }
-    setIsCameraActive(false);
-  }, [stream]); // stopCamera depends on 'stream'
+    const { formData: kycFormData, documents } = useSelector((state) => state.kyc);
 
-  const startCamera = async () => {
+    const videoRef = useRef(null);
+    const canvasRef = useRef(null);
+    const [stream, setStream] = useState(null);
+    const [capturedImage, setCapturedImage] = useState(null);
+    const [isCameraActive, setIsCameraActive] = useState(false);
+    const [loading, setLoading] = useState(false);
+
+    const stopCamera = useCallback(() => {
+        if (stream) {
+            stream.getTracks().forEach(track => track.stop());
+            setStream(null);
+        }
+        setIsCameraActive(false);
+    }, [stream]);
+
+    const startCamera = async () => {
         setCapturedImage(null);
         try {
             const mediaStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' } });
@@ -32,14 +36,13 @@ function KYCLivenessVerification() {
                 setStream(mediaStream);
                 videoRef.current.oncanplay = () => {
                     setIsCameraActive(true);
-                    videoRef.current.oncanplay = null;
+                    if(videoRef.current) videoRef.current.oncanplay = null; 
                 };
             }
         } catch (err) {
             console.error("Error accessing camera:", err);
             showErrorMessage("Failed to access camera. Please ensure permissions are granted.");
-            setIsCameraActive(false);
-        }
+            setIsCameraActive(false);        }
     };
 
     const captureImage = () => {
@@ -49,6 +52,8 @@ function KYCLivenessVerification() {
             const context = canvas.getContext('2d');
             canvas.width = video.videoWidth;
             canvas.height = video.videoHeight;
+            context.translate(canvas.width, 0);
+            context.scale(-1, 1);
             context.drawImage(video, 0, 0, canvas.width, canvas.height);
             const imageDataUrl = canvas.toDataURL('image/jpeg');
             setCapturedImage(imageDataUrl);
@@ -61,11 +66,19 @@ function KYCLivenessVerification() {
         startCamera();
     };
 
+    // --- 3. YEH SAB SE AHAM CHANGE HAI: MUKAMMAL SUBMISSION ---
     const handleSubmitForVerification = async () => {
         if (!capturedImage) {
             showErrorMessage("Please capture an image first.");
             return;
         }
+        // Check karein ke pichle steps ka data mojood hai
+        if (!kycFormData.fullName || !documents.frontIdFile || !documents.backIdFile) {
+            showErrorMessage("Previous KYC data is missing. Please start over.");
+            navigate('/kyc-form');
+            return;
+        }
+
         setLoading(true);
         const token = localStorage.getItem('token');
         if (!token) {
@@ -74,25 +87,49 @@ function KYCLivenessVerification() {
             setLoading(false);
             return;
         }
+
         try {
-            const blob = await fetch(capturedImage).then(res => res.blob());
-            const formData = new FormData();
-            formData.append('livenessImage', blob, 'liveness.jpeg');
-            const response = await fetch('https://server-fundify.up.railway.app/api/users/kyc/submit-liveness', {
+            // Liveness image ko Blob mein convert karein
+            const livenessBlob = await fetch(capturedImage).then(res => res.blob());
+            
+            // Ek naya FormData object banayein
+            const finalFormData = new FormData();
+
+            // a) Form ka saara text data append karein
+            finalFormData.append('fullName', kycFormData.fullName);
+            finalFormData.append('dateOfBirth', kycFormData.dateOfBirth);
+            finalFormData.append('address', kycFormData.address);
+            finalFormData.append('documentNumber', kycFormData.idNumber);
+            finalFormData.append('documentType', kycFormData.documentType);
+            finalFormData.append('email', kycFormData.email);
+            finalFormData.append('phoneNumber', kycFormData.phoneNumber);
+
+            // b) Documents ki files append karein
+            finalFormData.append('kycDocuments', documents.frontIdFile);
+            finalFormData.append('kycDocuments', documents.backIdFile);
+
+            // c) Liveness image append karein
+            finalFormData.append('livenessImage', livenessBlob, 'liveness.jpeg');
+
+            // d) Mukammal data ko main submit endpoint par bhejein
+            const response = await fetch('https://server-fundify.up.railway.app/api/kyc/submit', {
                 method: 'POST',
                 headers: { 'Authorization': `Bearer ${token}` },
-                body: formData,
+                body: finalFormData, // Ismein ab sab kuch hai
             });
+
             if (response.ok) {
-                showSuccessMessage("Liveness image submitted for verification!");
+                showSuccessMessage("KYC application submitted successfully for verification!");
+                // 4. Kamyab hone par Redux store ko saaf karein
+                dispatch(clearKycData());
                 navigate('/kyc-success');
             } else {
                 const errorData = await response.json();
-                showErrorMessage(`Verification failed: ${errorData.message || 'Unknown error'}`);
+                showErrorMessage(`Submission failed: ${errorData.message || 'Unknown error'}`);
             }
         } catch (err) {
-            console.error("Error submitting for verification:", err);
-            showErrorMessage("An error occurred during submission.");
+            console.error("Error submitting KYC:", err);
+            showErrorMessage("An error occurred during final submission.");
         } finally {
             setLoading(false);
         }
@@ -264,5 +301,4 @@ function KYCLivenessVerification() {
         </div>
     );
 }
-
 export default KYCLivenessVerification;
