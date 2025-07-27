@@ -4,15 +4,12 @@ import React from 'react';
 import { X, Check } from 'lucide-react';
 
 const AdminKYCDetailsModal = ({ kycDetails, onClose, onApprove, onReject }) => {
-    // Apne server ka base URL define karein
     const API_URL = "https://server-fundify.up.railway.app";
 
     if (!kycDetails) return null;
 
-    // Helper function to create full URL
     const createImageUrl = (path) => {
         if (!path) return '';
-        // Windows ke backslash ko forward slash mein badal de
         return `${API_URL}/${path.replace(/\\/g, '/')}`;
     };
 
@@ -40,32 +37,46 @@ const AdminKYCDetailsModal = ({ kycDetails, onClose, onApprove, onReject }) => {
                         {/* --- YEH SAB SE AHAM CHANGE HAI --- */}
                         <div>
                             <p className="font-medium mb-1">Front of ID:</p>
-                            <img 
-                                src={createImageUrl(kycDetails.documentImages[0])} 
-                                alt="Front of ID" 
-                                className="document-image"
-                                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/300x200?text=Not+Found"; }}
-                            />
+                            {/* Pehle check karein ke array aur element mojood hain */}
+                            {kycDetails.documentImages && kycDetails.documentImages[0] ? (
+                                <img 
+                                    src={createImageUrl(kycDetails.documentImages[0])} 
+                                    alt="Front of ID" 
+                                    className="document-image"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/300x200?text=Not+Found"; }}
+                                />
+                            ) : (
+                                <p className="text-gray-500">Not provided.</p>
+                            )}
                         </div>
                         <div>
                             <p className="font-medium mb-1">Back of ID:</p>
-                            <img 
-                                src={createImageUrl(kycDetails.documentImages[1])} 
-                                alt="Back of ID" 
-                                className="document-image"
-                                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/300x200?text=Not+Found"; }}
-                            />
+                            {/* Yahan bhi check karein */}
+                            {kycDetails.documentImages && kycDetails.documentImages[1] ? (
+                                <img 
+                                    src={createImageUrl(kycDetails.documentImages[1])} 
+                                    alt="Back of ID" 
+                                    className="document-image"
+                                    onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/300x200?text=Not+Found"; }}
+                                />
+                            ) : (
+                                <p className="text-gray-500">Not provided.</p>
+                            )}
                         </div>
                     </div>
 
                     <h4 className="text-lg font-bold text-gray-700 mt-6">Liveness Verification:</h4>
                     <div>
-                        <img 
-                            src={createImageUrl(kycDetails.livenessImage)} 
-                            alt="Liveness Verification" 
-                            className="liveness-image"
-                            onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/200x200?text=Not+Found"; }}
-                        />
+                        {kycDetails.livenessImage ? (
+                            <img 
+                                src={createImageUrl(kycDetails.livenessImage)} 
+                                alt="Liveness Verification" 
+                                className="liveness-image"
+                                onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/200x200?text=Not+Found"; }}
+                            />
+                        ) : (
+                            <p className="text-gray-500">Not provided.</p>
+                        )}
                     </div>
                 </div>
                 <div className="flex justify-end p-5 border-t border-gray-200 space-x-3 sticky bottom-0 bg-white">
