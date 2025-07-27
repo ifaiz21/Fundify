@@ -37,10 +37,10 @@ const AdminKYCDetailsModal = ({ kycDetails, onClose, onApprove, onReject }) => {
                         {/* --- YEH SAB SE AHAM CHANGE HAI --- */}
                         <div>
                             <p className="font-medium mb-1">Front of ID:</p>
-                            {/* Pehle check karein ke array aur element mojood hain */}
-                            {kycDetails.documentImages && kycDetails.documentImages[0] ? (
+                            {/* Sahi field name 'documentFrontUrl' istemal karein */}
+                            {kycDetails.documentFrontUrl ? (
                                 <img 
-                                    src={createImageUrl(kycDetails.documentImages[0])} 
+                                    src={createImageUrl(kycDetails.documentFrontUrl)} 
                                     alt="Front of ID" 
                                     className="document-image"
                                     onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/300x200?text=Not+Found"; }}
@@ -51,10 +51,10 @@ const AdminKYCDetailsModal = ({ kycDetails, onClose, onApprove, onReject }) => {
                         </div>
                         <div>
                             <p className="font-medium mb-1">Back of ID:</p>
-                            {/* Yahan bhi check karein */}
-                            {kycDetails.documentImages && kycDetails.documentImages[1] ? (
+                            {/* Sahi field name 'documentBackUrl' istemal karein */}
+                            {kycDetails.documentBackUrl ? (
                                 <img 
-                                    src={createImageUrl(kycDetails.documentImages[1])} 
+                                    src={createImageUrl(kycDetails.documentBackUrl)} 
                                     alt="Back of ID" 
                                     className="document-image"
                                     onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/300x200?text=Not+Found"; }}
@@ -67,9 +67,10 @@ const AdminKYCDetailsModal = ({ kycDetails, onClose, onApprove, onReject }) => {
 
                     <h4 className="text-lg font-bold text-gray-700 mt-6">Liveness Verification:</h4>
                     <div>
-                        {kycDetails.livenessImage ? (
+                        {/* Sahi field name 'livenessImageUrl' istemal karein */}
+                        {kycDetails.livenessImageUrl ? (
                             <img 
-                                src={createImageUrl(kycDetails.livenessImage)} 
+                                src={createImageUrl(kycDetails.livenessImageUrl)} 
                                 alt="Liveness Verification" 
                                 className="liveness-image"
                                 onError={(e) => { e.target.onerror = null; e.target.src = "https://placehold.co/200x200?text=Not+Found"; }}
