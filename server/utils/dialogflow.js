@@ -4,6 +4,7 @@ const { SessionsClient } = require("@google-cloud/dialogflow-cx");
 // Fallback to JSON file if environment variables fail
 let dialogflowClient;
 
+//updated chatbot response
 try {
   dialogflowClient = new SessionsClient({
     apiEndpoint: `${process.env.LOCATION}-dialogflow.googleapis.com`,
