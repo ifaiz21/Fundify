@@ -4,6 +4,8 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Header from "../Layout/HeaderLayout";
 import Footer from "../Layout/FooterLayout";
+import { showErrorMessage } from "../../utils/toast";
+
 
 const CampaignCreation04 = () => {
   const navigate = useNavigate();
@@ -49,6 +51,11 @@ const CampaignCreation04 = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault();
+
+     if (!story || story.trim().length < 50) {
+            showErrorMessage("Please write a story of at least 50 characters to continue.");
+            return; 
+    }
     console.log("Story submitted from 04:", story);
 
     const combinedDataForNextStep = {

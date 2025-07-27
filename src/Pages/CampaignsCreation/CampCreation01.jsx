@@ -159,30 +159,18 @@ const CampaignCreation01 = () => {
                           <option value="" disabled>
                             Choose a category
                           </option>
-                          <option value="Art">Art</option>
-                          <option value="Business">Business</option>
-                          <option value="Comics">Comics</option>
-                          <option value="Crafts">Crafts</option>
-                          <option value="Dance">Dance</option>
-                          <option value="Design">Design</option>
-                          <option value="Education">Education</option>
-                          <option value="Fashion">Fashion</option>
-                          <option value="Film & Video">Film & Video</option>
-                          <option value="Food">Food</option>
-                          <option value="Games">Games</option>
-                          <option value="Journalism">Journalism</option>         
+                          <option value="Business & Entrepreneurship">Business & Entrepreneurship</option>
+                          <option value="Creative Arts">Creative Arts</option>
+                          <option value="Education & Publishing">Education & Publishing</option>
+                          <option value="Lifestyle">Lifestyle</option>
+                          <option value="Media & Entertainment">Media & Entertainment</option>
                           <option value="Medical">Medical</option>
-                          <option value="Music">Music</option>
                           <option value="Nonprofit">Nonprofit</option>
-                          <option value="Photography">Photography</option>
-                          <option value="Publishing">Publishing</option>
-                          <option value="Technology">Technology</option>
-                          <option value="Theater">Theater</option>
-                          <option value="Other">Other</option>
+                          <option value="Technology & Innovation">Technology & Innovation</option>       
                         </select>
                         <div className="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
                           <svg
-                            className="h-5 w-5 text-gray-500" // Slightly larger icon
+                            className="h-5 w-5 text-gray-500" 
                             xmlns="http://www.w3.org/2000/svg"
                             viewBox="0 0 20 20"
                             fill="currentColor"

@@ -7,18 +7,15 @@ import Footer from "./Layout/FooterLayout";
 import axios from "axios";
 import { useUser } from '../context/UserContext'; 
 import { Heart } from 'lucide-react';
-import { showSuccessMessage, showErrorMessage } from '../utils/toast'; // Import toast functions
+import { showSuccessMessage, showErrorMessage } from '../utils/toast';
 
 
 // --- CATEGORIES ---
 const allCategories = [
-  { id: "all", label: "All" }, { id: "Art", label: "Art" }, { id: "Business", label: "Business" },
-  { id: "Comics", label: "Comics" }, { id: "Crafts", label: "Crafts" }, { id: "Dance", label: "Dance" },
-  { id: "Design", label: "Design" }, { id: "Education", label: "Education" }, { id: "Fashion", label: "Fashion" },
-  { id: "Film & Video", label: "Film & Video" }, { id: "Food", label: "Food" }, { id: "Games", label: "Games" },
-  { id: "Journalism", label: "Journalism" }, { id: "Medical", label: "Medical" }, { id: "Music", label: "Music" },
-  { id: "Nonprofit", label: "Nonprofit" }, { id: "Photography", label: "Photography" }, { id: "Publishing", label: "Publishing" },
-  { id: "Technology", label: "Technology" }, { id: "Theater", label: "Theater" }, { id: "Other", label: "Other" },
+  { id: "all", label: "All" }, { id: "Creative Art", label: "Creative Art" }, { id: "Business & Entrepreneurship", label: "Business & Entrepreneurship" },
+  { id: "Education & Publishing", label: "Education & Publishing" }, { id: "Lifestyle", label: "Lifestyle" },
+  { id: "Media & Entertainment", label: "Media & Entertainment" },{ id: "Medical", label: "Medical" },
+  { id: "Nonprofit", label: "Nonprofit" }, { id: "Technology & Innovation", label: "Technology & Innovation" },
 ];
 
 const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
