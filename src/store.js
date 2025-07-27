@@ -3,12 +3,14 @@ import { configureStore } from '@reduxjs/toolkit';
 // Dono slices se unke reducers ko import karein
 import userReducer from './features/userSlice';
 import notificationReducer from './features/notificationSlice';
+import kycReducer from './features/kycSlice';
 
 const store = configureStore({
   reducer: {
     // Redux store ko batayein ke kaun sa reducer state ke kis hisse ko manage karega
     user: userReducer,
     notifications: notificationReducer,
+    kyc: kycReducer,
   },
 });
 
