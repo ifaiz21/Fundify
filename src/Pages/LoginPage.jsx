@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useDispatch } from 'react-redux';
-import { setAuthUser } from '../features/authSlice';
-//import { loginSuccess } from '../store';
+import { loginSuccess } from '../store';
 import { IoChevronBackOutline } from "react-icons/io5";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import axios from "axios";
@@ -53,13 +52,12 @@ const LoginPage = () => {
         password,
       });
 
-      console.log("DATA FROM LOGIN API:", response.data);
       const { token, role, user } = response.data;
 
       localStorage.setItem("token", token);
       localStorage.setItem("role", role);
 
-      dispatch(setAuthUser(user));  
+      dispatch(loginSuccess(user)); 
       showSuccessMessage("Login successful!");
 
       if (role === "admin") {
