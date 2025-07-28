@@ -1,14 +1,14 @@
 // src/App.jsx
-import React, { useEffect, useState } from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
 import WebFont from 'webfontloader';
 import { useDispatch } from 'react-redux';
-//import { loadUser } from './actions/userActions';
+import { loadUser } from './actions/userActions';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import { setAuthUser } from './features/authSlice';
+//import { setAuthUser } from './features/authSlice';
 
 // Import all your page and component files
 import LoginPage from "./Pages/LoginPage";
@@ -52,7 +52,7 @@ import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
 //import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
-//import { UserProvider } from './context/UserContext';
+import { UserProvider } from './context/UserContext';
 import CampaignReviewPage from "./Pages/AdminSide/CampaignReviewPage";
 
 //KYC
@@ -63,41 +63,13 @@ import KYCSuccessPage from './Pages/KYC/KYCSuccessPage'; // Import the new KYCSu
 
 
 function App() {
+
   const dispatch = useDispatch();
-  const [loading, setLoading] = useState(true);
 
-
-  useEffect(() => {
-     const fetchUserOnLoad = async () => {
-      const token = localStorage.getItem('token');
-      try {
-        if (token) {
-          const response = await fetch('https://server-fundify.up.railway.app/api/auth/profile', {
-            headers: { 'Authorization': `Bearer ${token}` },
-          });
-
-          if (response.ok) {
-            const userData = await response.json();
-            dispatch(setAuthUser(userData));
-          } else {
-            // Agar token invalid hai to usay remove karein aur logout karein
-            localStorage.removeItem('token');
-            dispatch(setAuthUser(null));
-          }
-        }
-      } catch (error) {
-        // Error par bhi logout karein
-        console.error('Failed to fetch user on load:', error);
-        localStorage.removeItem('token');
-        dispatch(setAuthUser(null));
-      } finally {
-        // YEH BLOCK HAMESHA CHALEGA
-        // Chahe token ho, na ho, ya error aye, check poora hone par loading band ho jayegi.
-        setLoading(false);
-      }
-    };
-    fetchUserOnLoad();
-  }, [dispatch]);
+    useEffect(() => {
+        // Dispatch the loadUser action when the app component mounts
+        dispatch(loadUser());
+    }, [dispatch]);
 
     // Create a stripePromise with your publishable key
   const stripePromise = loadStripe(process.env.REACT_APP_STRIPE_PUBLISHABLE_KEY);
@@ -135,16 +107,8 @@ function App() {
     });
   };
 
-  // Step 3: Jab tak loading ho, loading screen dikhayein
-  if (loading) {
-    return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#F0FFF0' }}>
-        <h2 style={{ fontFamily: 'Poppins, sans-serif', color: '#4B5842' }}>Loading Fundify...</h2>
-      </div>
-    );
-  }
-
   return (
+    <UserProvider>
       <Router>
        {/* Wrap the Routes with the Elements provider */}
       <Elements stripe={stripePromise}>
@@ -215,8 +179,11 @@ function App() {
         </Routes>
         </Elements>
         <ConditionalChatWrapper />
-        <ToastContainer />
       </Router>
+
+      {/* ToastContainer must be rendered once at the root of your app */}
+      <ToastContainer />
+    </UserProvider>
   );
 }
 
