@@ -17,9 +17,10 @@ function ProjectView() {
   const [totalBackersCount, setTotalBackersCount] = useState(0); // State for total backers count
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  const [daysToGo, setDaysToGo] = useState("--"); // State for days to go
   const location = useLocation();
   const navigate = useNavigate();
-  const [prediction, setPrediction] = useState(null); //Model api
+  const [prediction, setPrediction] = useState(null); // Model API
   const { userProfile, setUserProfile } = useUser(); // Get user context
 
   const queryParams = new URLSearchParams(location.search);
@@ -27,6 +28,17 @@ function ProjectView() {
 
   // Check if the current campaign is saved by the user
   const isCampaignSaved = userProfile.savedCampaigns?.includes(campaignId);
+
+  // Calculate days to go
+  const calculateDaysToGo = (endDate) => {
+    if (endDate) {
+      const today = new Date();
+      const differenceInTime = new Date(endDate).getTime() - today.getTime();
+      const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+      return differenceInDays > 0 ? differenceInDays : 0;
+    }
+    return "--";
+  };
 
   useEffect(() => {
     if (campaignId && campaignId.length === 24) {
@@ -44,9 +56,9 @@ function ProjectView() {
             const predictionResponse = await axios.post(
               "https://fundify-ml-api-production.up.railway.app/predict",
               {
-                goalAmount: response.data.goalAmount,
-                category: response.data.category,
-                duration: response.data.duration,
+                goalAmount: response.data.goalAmount || 0,
+                category: response.data.category || "",
+                duration: response.data.duration || 0,
               }
             );
             console.log("Prediction response:", predictionResponse.data);
@@ -111,14 +123,16 @@ function ProjectView() {
       currency: "PKR",
       maximumFractionDigits: 0,
     })
-      .format(amount)
+      .format(amount || 0)
       .replace("PKR", "Rs."); // Removes the default Rupee symbol
   };
 
   // Calculates campaign progress percentage
   const progress = campaignData
     ? Math.min(
-        Math.round((campaignData.raised / campaignData.goalAmount) * 100),
+        Math.round(
+          ((campaignData.raised || 0) / (campaignData.goalAmount || 1)) * 100
+        ),
         100
       )
     : 0;
@@ -167,9 +181,7 @@ function ProjectView() {
         }
       } else {
         const errorData = await response.json();
-        showErrorMessage(
-          `Failed to save/unsave campaign: ${errorData.message}`
-        );
+        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`);
       }
     } catch (error) {
       console.error("Error toggling saved campaign:", error);
@@ -177,13 +189,12 @@ function ProjectView() {
     }
   };
 
-  // DonorsSidebar component (nested for readability, could be moved to separate file)
+  // DonorsSidebar component
   const DonorsSidebar = () => (
     <div className="donors-sidebar">
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col items-center mb-4">
           <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-2">
-            {/* User icon SVG */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="32"
@@ -200,7 +211,6 @@ function ProjectView() {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          {/* Placeholder for organizer name */}
           <h3 className="text-lg font-bold">
             {campaignData ? campaignData.name : "Organizer Name"}
           </h3>
@@ -210,7 +220,6 @@ function ProjectView() {
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex items-center mb-4">
-          {/* Users group icon SVG */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -228,7 +237,6 @@ function ProjectView() {
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          {/* Display dynamic total backers count */}
           <span className="text-sm font-medium">
             {totalBackersCount} people just donated
           </span>
@@ -238,8 +246,7 @@ function ProjectView() {
           {recentDonors.length > 0 ? (
             recentDonors.map((donor, index) => (
               <div key={index} className="flex justify-between items-center">
-                <div className="font-medium text-lg">Rs</div>{" "}
-                {/* Display "Rs" for Pakistani Rupees */}
+                <div className="font-medium text-lg">Rs</div>
                 <div className="text-right">
                   <div className="font-medium text-lg">
                     {formatCurrency(donor.amount)}
@@ -282,16 +289,13 @@ function ProjectView() {
     if (campaignData && campaignData._id) {
       navigate("/donate", { state: { campaignId: campaignData._id } });
     } else {
-      showErrorMessage(
-        "Campaign data not loaded yet. Cannot proceed to donation."
-      );
+      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.");
     }
   };
 
   // Handles sharing campaign link (copies to clipboard)
   const handleShare = () => {
     const campaignUrl = window.location.href;
-    // Using document.execCommand('copy') for better cross-browser support in some sandbox environments
     const el = document.createElement("textarea");
     el.value = campaignUrl;
     document.body.appendChild(el);
@@ -301,7 +305,6 @@ function ProjectView() {
     showSuccessMessage("Campaign link copied to clipboard!");
   };
 
-  // Loading state UI
   if (loading) {
     return (
       <>
@@ -314,7 +317,6 @@ function ProjectView() {
     );
   }
 
-  // Error state UI
   if (error) {
     return (
       <>
@@ -333,7 +335,6 @@ function ProjectView() {
     );
   }
 
-  // No campaign data found UI
   if (!campaignData) {
     return (
       <>
@@ -346,7 +347,6 @@ function ProjectView() {
     );
   }
 
-  // Main component rendering
   return (
     <>
       <HeaderLayout />
@@ -372,7 +372,7 @@ function ProjectView() {
                 e.target.onerror = null;
                 e.target.src =
                   "https://placehold.co/800x400/CCCCCC/333333?text=No+Image";
-              }} // Fallback image on error
+              }}
             />
 
             <p className="text-gray-700 mb-4">{campaignData.description}</p>
@@ -384,7 +384,6 @@ function ProjectView() {
               </span>
               <span className="mx-2">•</span>
               <span className="flex items-center">
-                {/* Location icon SVG */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -417,7 +416,7 @@ function ProjectView() {
                 </div>
                 {/* Display the percentage funded */}
                 <div className="text-sm font-bold text-green-600">
-                  {Math.min(progress, 100).toFixed(0)}% Funded
+                  {progress}% Funded
                 </div>
                 <div className="text-sm font-bold text-blue-600">
                   Success Prediction:{" "}
@@ -436,13 +435,11 @@ function ProjectView() {
               {/* Backers and Days Left */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <div className="text-2xl font-bold">{totalBackersCount}</div>{" "}
-                  {/* Dynamic backers count */}
+                  <div className="text-2xl font-bold">{totalBackersCount}</div>
                   <div className="text-sm text-gray-600">backers</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">--</div>{" "}
-                  {/* Placeholder for days left (not implemented in backend) */}
+                  <div className="text-2xl font-bold">{daysToGo}</div>
                   <div className="text-sm text-gray-600">days to go</div>
                 </div>
               </div>
@@ -526,7 +523,7 @@ function ProjectView() {
                   {/* Story Section - Conditional Rendering */}
                   <div className="story-section">
                     <h2 className="text-xl font-bold mb-4">Story</h2>
-                    {campaignData.story ? ( // Check if story content exists
+                    {campaignData.story ? (
                       <>
                         {campaignData.mediaUrls &&
                           campaignData.mediaUrls.length > 1 && (
@@ -538,15 +535,13 @@ function ProjectView() {
                           )}
                         <div
                           className="space-y-4 text-gray-700"
-                          dangerouslySetInnerHTML={{
-                            __html: campaignData.story,
-                          }}
+                          dangerouslySetInnerHTML={{ __html: campaignData.story }}
                         ></div>
                       </>
                     ) : (
                       <p className="text-gray-500 italic">
                         No story available for this campaign yet.
-                      </p> // Fallback message
+                      </p>
                     )}
                   </div>
                 </div>
@@ -560,9 +555,7 @@ function ProjectView() {
             {activeTab === "updates" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <h2 className="text-xl font-bold mb-6">
-                    Updates on the Project
-                  </h2>
+                  <h2 className="text-xl font-bold mb-6">Updates on the Project</h2>
 
                   {campaignUpdates.length > 0 ? (
                     campaignUpdates.map((update) => (
@@ -577,7 +570,6 @@ function ProjectView() {
 
                           <div className="flex items-center mb-4">
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
-                              {/* User icon SVG for update author */}
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="20"
@@ -597,12 +589,9 @@ function ProjectView() {
                             <div>
                               <div className="font-medium">
                                 {campaignData.name}
-                              </div>{" "}
-                              {/* Assuming campaignData.name is the creator of updates */}
+                              </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(
-                                  update.createdAt
-                                ).toLocaleDateString()}
+                                {new Date(update.createdAt).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
@@ -610,30 +599,26 @@ function ProjectView() {
                           <div className="border-t border-b border-gray-200 py-4 my-4">
                             <div
                               className="mb-4"
-                              dangerouslySetInnerHTML={{
-                                __html: update.content,
-                              }}
+                              dangerouslySetInnerHTML={{ __html: update.content }}
                             ></div>
 
-                            {update.mediaUrls &&
-                              update.mediaUrls.length > 0 && (
-                                <img
-                                  src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`}
-                                  alt="Update Media"
-                                  className="w-full h-auto rounded-md mb-4"
-                                />
-                              )}
+                            {update.mediaUrls && update.mediaUrls.length > 0 && (
+                              <img
+                                src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`}
+                                alt="Update Media"
+                                className="w-full h-auto rounded-md mb-4"
+                              />
+                            )}
 
-                            {update.listItems &&
-                              update.listItems.length > 0 && (
-                                <ul className="list-disc pl-5 space-y-1">
-                                  {update.listItems.map((item, index) => (
-                                    <li key={index} className="text-gray-700">
-                                      {item}
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
+                            {update.listItems && update.listItems.length > 0 && (
+                              <ul className="list-disc pl-5 space-y-1">
+                                {update.listItems.map((item, index) => (
+                                  <li key={index} className="text-gray-700">
+                                    {item}
+                                  </li>
+                                ))}
+                              </ul>
+                            )}
                           </div>
                         </div>
                       </div>
