@@ -68,27 +68,33 @@ function App() {
 
 
   useEffect(() => {
-    const fetchUserOnLoad = async () => {
+     const fetchUserOnLoad = async () => {
       const token = localStorage.getItem('token');
-      if (token) {
-        try {
+      try {
+        if (token) {
           const response = await fetch('https://server-fundify.up.railway.app/api/auth/profile', {
             headers: { 'Authorization': `Bearer ${token}` },
           });
+
           if (response.ok) {
             const userData = await response.json();
-            dispatch(setAuthUser(userData)); // SAHI ACTION DISPATCH KAREIN
+            dispatch(setAuthUser(userData));
           } else {
+            // Agar token invalid hai to usay remove karein aur logout karein
             localStorage.removeItem('token');
             dispatch(setAuthUser(null));
           }
-        } catch (error) {
-          console.error('Failed to fetch user on load:', error);
-          dispatch(setAuthUser(null));
         }
+      } catch (error) {
+        // Error par bhi logout karein
+        console.error('Failed to fetch user on load:', error);
+        localStorage.removeItem('token');
+        dispatch(setAuthUser(null));
+      } finally {
+        // YEH BLOCK HAMESHA CHALEGA
+        // Chahe token ho, na ho, ya error aye, check poora hone par loading band ho jayegi.
+        setLoading(false);
       }
-            setLoading(false);
-
     };
     fetchUserOnLoad();
   }, [dispatch]);
