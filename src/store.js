@@ -23,5 +23,3 @@ export default store;
 // Actions ko bhi store se export kar sakte hain taake import karna aasan ho
 export * from './features/userSlice';
 export * from './features/notificationSlice';
-//export * from './features/campaignSlice';
-//export * from './features/authSlice';

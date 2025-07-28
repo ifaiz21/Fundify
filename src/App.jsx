@@ -66,31 +66,25 @@ function App() {
   const dispatch = useDispatch();
 
   useEffect(() => {
-    const fetchAndSetUser = async () => {
+    const fetchUserOnLoad = async () => {
       const token = localStorage.getItem('token');
       if (token) {
         try {
-          // Backend se user profile get karein
           const response = await fetch('https://server-fundify.up.railway.app/api/auth/profile', {
             headers: { 'Authorization': `Bearer ${token}` },
           });
-
           if (response.ok) {
             const userData = await response.json();
-            // User data milne par Redux state update karein
-            dispatch(setAuthUser(userData));
+            dispatch(setAuthUser(userData)); // SAHI ACTION DISPATCH KAREIN
           } else {
-            // Agar token invalid hai to logout karein
             localStorage.removeItem('token');
-            dispatch(setAuthUser(null)); // Redux state ko bhi clear karein
           }
         } catch (error) {
-          console.error('Failed to fetch user profile:', error);
+          console.error('Failed to fetch user on load:', error);
         }
       }
     };
-
-    fetchAndSetUser();
+    fetchUserOnLoad();
   }, [dispatch]);
 
     // Create a stripePromise with your publishable key
