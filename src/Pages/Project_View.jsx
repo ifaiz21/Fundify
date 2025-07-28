@@ -19,6 +19,7 @@ function ProjectView() {
   const [error, setError] = useState(null)
   const location = useLocation()
   const navigate = useNavigate()
+  const [prediction, setPrediction] = useState(null);   //Model api 
   const { userProfile, setUserProfile } = useUser(); // Get user context
 
   const queryParams = new URLSearchParams(location.search)
@@ -29,20 +30,37 @@ function ProjectView() {
 
   useEffect(() => {
     if (campaignId) {
-      const fetchCampaignDetails = async () => {
-        try {
-          setLoading(true)
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`)
-          setCampaignData(response.data)
-          setError(null)
-        } catch (err) {
-          console.error("Error fetching campaign details:", err)
-          setError("Failed to load campaign details. Please try again later.")
-          setCampaignData(null)
-        } finally {
-          setLoading(false)
-        }
+        const fetchCampaignDetails = async () => {
+    try {
+      setLoading(true);
+      const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`);
+      setCampaignData(response.data);
+  
+      // Call ML API for prediction
+      try {
+        const predictionResponse = await axios.post(  
+          "https://fundify-ml-api-production.up.railway.app/predict",
+          {
+            goalAmount: response.data.goalAmount,
+            category: response.data.category,
+            duration: response.data.duration // replace if you calculate this from start/end dates
+          }
+        );
+        setPrediction(predictionResponse.data.success_probability);
+      } catch (apiError) {
+        console.error("Prediction API error:", apiError);
+        setPrediction(null);
       }
+  
+      setError(null);
+    } catch (err) {
+      console.error("Error fetching campaign details:", err);
+      setError("Failed to load campaign details. Please try again later.");
+      setCampaignData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
 
       const fetchCampaignUpdates = async () => {
         try {
@@ -335,6 +353,9 @@ function ProjectView() {
                   {/* Display the percentage funded */}
                   <div className="text-sm font-bold text-green-600">
                     {Math.min(progress, 100).toFixed(0)}% Funded
+                  </div>
+                  <div className="text-sm font-bold text-blue-600">
+                    Success Prediction: {prediction !== null ? `${prediction}%` : "Calculating..."}
                   </div>
                 </div>
 
