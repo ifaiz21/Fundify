@@ -11,8 +11,6 @@ const Chatbot = ({ onClose }) => {
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
   // State to show/hide the "Typing..." indicator
   const [isTyping, setIsTyping] = useState(false);
-  // New state: controls visibility of predefined questions after first interaction
-  const [hasInteracted, setHasInteracted] = useState(false);
 
   // Common emojis for the picker
   const emojis = [
@@ -74,9 +72,6 @@ const Chatbot = ({ onClose }) => {
   // Function to handle sending a user message
   const handleSendMessage = async (messageText) => {
     if (messageText.trim() === "") return;
-
-    // Set hasInteracted to true as soon as a message is sent
-    setHasInteracted(true);
 
     const newUserMessage = { text: messageText, sender: "user" };
     setMessages((prevMessages) => [...prevMessages, newUserMessage]);
@@ -218,20 +213,6 @@ const Chatbot = ({ onClose }) => {
 
         {/* Chat Messages Area - Darker background for chat body and hidden scrollbar */}
         <div className="flex-1 overflow-y-auto p-2 sm:p-4 space-y-2 sm:space-y-4 bg-[#1f2937] scrollbar-hide">
-          {/* Predefined question buttons - conditionally rendered and left-aligned */}
-          {!hasInteracted && (
-            <div className="flex flex-col items-start space-y-1 sm:space-y-2 mb-2 sm:mb-4">
-              {predefinedQuestions.map((question, index) => (
-                <button
-                  key={index}
-                  onClick={() => handleSendMessage(question)}
-                  className="bg-[#222B45] text-white px-2 sm:px-4 py-1 sm:py-2 rounded-full shadow-md border-2 border-white hover:bg-[#3D527B] transition-colors duration-200 text-xs sm:text-sm max-w-[85%]"
-                >
-                  {question}
-                </button>
-              ))}
-            </div>
-          )}
 
           {messages.map((message, index) => (
             <div
