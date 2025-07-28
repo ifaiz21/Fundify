@@ -31,7 +31,7 @@ function CampaignCard({ campaign, onSelectForDonation }) {
     const dispatch = useDispatch();
     const { isAuthenticated, userProfile } = useSelector(state => state.auth);
     const isCampaignSaved = userProfile?.savedCampaigns?.includes(campaign._id);
-    const safeRaised = Number(campaign.raised) || 0;
+    const safeRaised = Number(campaign.raisedAmount) || 0;
     const safeGoal = Number(campaign.goalAmount) || 1;
     const progressPercentage = Math.min((safeRaised / safeGoal) * 100, 100);
    // const { userProfile, setUserProfile } = useUser();
