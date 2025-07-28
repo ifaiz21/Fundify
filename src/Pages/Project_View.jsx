@@ -1,30 +1,30 @@
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { useLocation, useNavigate } from "react-router-dom"
-import HeaderLayout from "./Layout/HeaderLayout"
-import FooterLayout from "./Layout/FooterLayout"
-import axios from "axios"
-import { useUser } from '../context/UserContext'; 
-import { Heart } from 'lucide-react'; 
-import { showSuccessMessage, showErrorMessage } from "../utils/toast"
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
+import HeaderLayout from "./Layout/HeaderLayout";
+import FooterLayout from "./Layout/FooterLayout";
+import axios from "axios";
+import { useUser } from "../context/UserContext";
+import { Heart } from "lucide-react";
+import { showSuccessMessage, showErrorMessage } from "../utils/toast";
 
 function ProjectView() {
-  const [activeTab, setActiveTab] = useState("campaign")
-  const [campaignData, setCampaignData] = useState(null)
-  const [campaignUpdates, setCampaignUpdates] = useState([])
-  const [recentDonors, setRecentDonors] = useState([]) 
-  const [totalBackersCount, setTotalBackersCount] = useState(0) 
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
-  const [daysToGo, setDaysToGo] = useState("--"); 
-  const location = useLocation()
-  const navigate = useNavigate()
-  const [prediction, setPrediction] = useState(null);    
-  const { userProfile, setUserProfile } = useUser(); 
+  const [activeTab, setActiveTab] = useState("campaign");
+  const [campaignData, setCampaignData] = useState(null);
+  const [campaignUpdates, setCampaignUpdates] = useState([]);
+  const [recentDonors, setRecentDonors] = useState([]);
+  const [totalBackersCount, setTotalBackersCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const [daysToGo, setDaysToGo] = useState("--");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [prediction, setPrediction] = useState(null);
+  const { userProfile, setUserProfile } = useUser();
 
-  const queryParams = new URLSearchParams(location.search)
-  const campaignId = queryParams.get("id")
+  const queryParams = new URLSearchParams(location.search);
+  const campaignId = queryParams.get("id");
 
   const isCampaignSaved = userProfile.savedCampaigns?.includes(campaignId);
 
@@ -45,7 +45,9 @@ function ProjectView() {
       const fetchCampaignDetails = async () => {
         try {
           setLoading(true);
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`);
+          const response = await axios.get(
+            `https://server-fundify.up.railway.app/api/campaigns/${campaignId}`
+          );
           setCampaignData(response.data);
           setDaysToGo(calculateDaysToGo(response.data.endDate));
 
@@ -55,7 +57,7 @@ function ProjectView() {
               {
                 goalAmount: response.data.goalAmount,
                 category: response.data.category,
-                duration: response.data.duration
+                duration: response.data.duration,
               }
             );
             setPrediction(predictionResponse.data.success_probability);
@@ -76,34 +78,42 @@ function ProjectView() {
 
       const fetchCampaignUpdates = async () => {
         try {
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`)
-          setCampaignUpdates(response.data)
+          const response = await axios.get(
+            `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`
+          );
+          setCampaignUpdates(response.data);
         } catch (err) {
-          console.error("Error fetching campaign updates:", err)
-          setCampaignUpdates([])
+          console.error(
+            "Error fetching campaign updates:",
+            err.response ? err.response.status : err.message
+          );
+          setCampaignUpdates([]); // Fallback to empty array
         }
-      }
+      };
 
       const fetchRecentDonors = async () => {
         try {
-          const response = await axios.get(`https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`)
-          setRecentDonors(response.data.recentDonors)
-          setTotalBackersCount(response.data.totalBackers)
+          const response = await axios.get(
+            `https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`
+          );
+          setRecentDonors(response.data.recentDonors);
+          setTotalBackersCount(response.data.totalBackers);
         } catch (err) {
           console.error("Error fetching recent donors:", err);
           setRecentDonors([]);
           setTotalBackersCount(0);
         }
-      }
+      };
 
-      fetchCampaignDetails()
-      fetchCampaignUpdates()
-      fetchRecentDonors()
+      console.log("Campaign ID:", campaignId); // Debug campaignId
+      fetchCampaignDetails();
+      fetchCampaignUpdates();
+      fetchRecentDonors();
     } else {
-      setError("No campaign ID provided in the URL.")
-      setLoading(false)
+      setError("No campaign ID provided in the URL.");
+      setLoading(false);
     }
-  }, [campaignId, location.search])
+  }, [campaignId, location.search]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
@@ -112,48 +122,66 @@ function ProjectView() {
       maximumFractionDigits: 0,
     })
       .format(amount)
-      .replace("PKR", "Rs.")
-  }
+      .replace("PKR", "Rs.");
+  };
 
-  const progress = campaignData ? Math.min(Math.round((campaignData.raised / campaignData.goalAmount) * 100), 100) : 0
+  const progress = campaignData
+    ? Math.min(
+        Math.round((campaignData.raised / campaignData.goalAmount) * 100),
+        100
+      )
+    : 0;
 
   const handleToggleSave = async () => {
     if (!userProfile.isAuthenticated) {
-      showErrorMessage('Please log in to save campaigns.');
+      showErrorMessage("Please log in to save campaigns.");
       return;
     }
     if (!campaignId) {
-      showErrorMessage('Campaign ID is missing. Cannot save.');
+      showErrorMessage("Campaign ID is missing. Cannot save.");
       return;
     }
 
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     try {
-      const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
-        body: JSON.stringify({ campaignId: campaignId }),
-      });
+      const response = await fetch(
+        "https://server-fundify.up.railway.app/api/users/saved-campaigns",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ campaignId: campaignId }),
+        }
+      );
 
       if (response.ok) {
         const result = await response.json();
         if (result.saved) {
-          showSuccessMessage('Campaign saved successfully!');
-          setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaignId] }));
+          showSuccessMessage("Campaign saved successfully!");
+          setUserProfile((prev) => ({
+            ...prev,
+            savedCampaigns: [...(prev.savedCampaigns || []), campaignId],
+          }));
         } else {
-          showSuccessMessage('Campaign unsaved.');
-          setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaignId) }));
+          showSuccessMessage("Campaign unsaved.");
+          setUserProfile((prev) => ({
+            ...prev,
+            savedCampaigns: (prev.savedCampaigns || []).filter(
+              (id) => id !== campaignId
+            ),
+          }));
         }
       } else {
         const errorData = await response.json();
-        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`);
+        showErrorMessage(
+          `Failed to save/unsave campaign: ${errorData.message}`
+        );
       }
     } catch (error) {
-      console.error('Error toggling saved campaign:', error);
-      showErrorMessage('An error occurred while saving/unsaving the campaign.');
+      console.error("Error toggling saved campaign:", error);
+      showErrorMessage("An error occurred while saving/unsaving the campaign.");
     }
   };
 
@@ -178,7 +206,9 @@ function ProjectView() {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
-          <h3 className="text-lg font-bold">{campaignData ? campaignData.name : "Organizer Name"}</h3>
+          <h3 className="text-lg font-bold">
+            {campaignData ? campaignData.name : "Organizer Name"}
+          </h3>
           <p className="text-sm text-gray-600">Project Founder</p>
         </div>
       </div>
@@ -202,7 +232,9 @@ function ProjectView() {
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
-          <span className="text-sm font-medium">{totalBackersCount} people just donated</span>
+          <span className="text-sm font-medium">
+            {totalBackersCount} people just donated
+          </span>
         </div>
 
         <div className="pt-4 space-y-4">
@@ -211,47 +243,59 @@ function ProjectView() {
               <div key={index} className="flex justify-between items-center">
                 <div className="font-medium text-lg">Rs</div>
                 <div className="text-right">
-                  <div className="font-medium text-lg">{formatCurrency(donor.amount)}</div>
+                  <div className="font-medium text-lg">
+                    {formatCurrency(donor.amount)}
+                  </div>
                   <div className="text-sm text-gray-500">{donor.name}</div>
                 </div>
               </div>
             ))
           ) : (
-            <p className="text-gray-500 text-sm text-center">No recent donations yet.</p>
+            <p className="text-gray-500 text-sm text-center">
+              No recent donations yet.
+            </p>
           )}
         </div>
 
         <div className="mt-6 grid grid-cols-2 gap-3">
           <button
-            onClick={() => showErrorMessage("Showing all donors for this project (functionality to be implemented).")}
-            className="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors">
+            onClick={() =>
+              showErrorMessage(
+                "Showing all donors for this project (functionality to be implemented)."
+              )
+            }
+            className="text-center py-3 px-4 border border-gray-300 rounded-md text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors"
+          >
             See all
           </button>
           <button
             onClick={handleBackThisProject}
-            className="text-center py-3 px-4 bg-[#4B5945] rounded-md text-sm font-medium text-white hover:bg-[#3E4B3A] transition-colors">
+            className="text-center py-3 px-4 bg-[#4B5945] rounded-md text-sm font-medium text-white hover:bg-[#3E4B3A] transition-colors"
+          >
             Back this project
           </button>
         </div>
       </div>
     </div>
-  )
+  );
 
   const handleBackThisProject = () => {
     if (campaignData && campaignData._id) {
       navigate("/donate", { state: { campaignId: campaignData._id } });
     } else {
-      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.")
+      showErrorMessage(
+        "Campaign data not loaded yet. Cannot proceed to donation."
+      );
     }
   };
 
   const handleShare = () => {
     const campaignUrl = window.location.href;
-    const el = document.createElement('textarea');
+    const el = document.createElement("textarea");
     el.value = campaignUrl;
     document.body.appendChild(el);
     el.select();
-    document.execCommand('copy');
+    document.execCommand("copy");
     document.body.removeChild(el);
     showSuccessMessage("Campaign link copied to clipboard!");
   };
@@ -265,7 +309,7 @@ function ProjectView() {
         </div>
         <FooterLayout />
       </>
-    )
+    );
   }
 
   if (error) {
@@ -274,11 +318,16 @@ function ProjectView() {
         <HeaderLayout />
         <div className="project-view container mx-auto px-4 py-6 text-center">
           <p className="text-red-600">{error}</p>
-          <button onClick={() => window.location.reload()} className="mt-4 bg-[#4A5D45] text-white px-4 py-2 rounded-md hover:bg-[#3E4B3A]">Retry</button>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-[#4A5D45] text-white px-4 py-2 rounded-md hover:bg-[#3E4B3A]"
+          >
+            Retry
+          </button>
         </div>
         <FooterLayout />
       </>
-    )
+    );
   }
 
   if (!campaignData) {
@@ -290,7 +339,7 @@ function ProjectView() {
         </div>
         <FooterLayout />
       </>
-    )
+    );
   }
 
   return (
@@ -298,21 +347,33 @@ function ProjectView() {
       <HeaderLayout />
 
       <div className="project-view container mx-auto px-4 py-6">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">{campaignData.title}</h1>
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">
+          {campaignData.title}
+        </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
             <img
-              src={campaignData.mediaUrls && campaignData.mediaUrls.length > 0 ? `https://server-fundify.up.railway.app/${campaignData.mediaUrls[0]}` : "https://placehold.co/800x400/CCCCCC/333333?text=No+Image"}
+              src={
+                campaignData.mediaUrls && campaignData.mediaUrls.length > 0
+                  ? `https://server-fundify.up.railway.app/${campaignData.mediaUrls[0]}`
+                  : "https://placehold.co/800x400/CCCCCC/333333?text=No+Image"
+              }
               alt={campaignData.title}
               className="w-full h-auto rounded-md shadow-md mb-6"
-              onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/800x400/CCCCCC/333333?text=No+Image'; }}
+              onError={(e) => {
+                e.target.onerror = null;
+                e.target.src =
+                  "https://placehold.co/800x400/CCCCCC/333333?text=No+Image";
+              }}
             />
 
             <p className="text-gray-700 mb-4">{campaignData.description}</p>
 
             <div className="flex items-center text-sm text-gray-600 mb-6">
-              <span>Created {new Date(campaignData.createdAt).toLocaleDateString()}</span>
+              <span>
+                Created {new Date(campaignData.createdAt).toLocaleDateString()}
+              </span>
               <span className="mx-2">•</span>
               <span className="flex items-center">
                 <svg
@@ -338,18 +399,26 @@ function ProjectView() {
           <div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="mb-4">
-                <div className="text-2xl font-bold">{formatCurrency(campaignData.raised)}</div>
-                <div className="text-sm text-gray-600">pledged of {formatCurrency(campaignData.goalAmount)} goal</div>
+                <div className="text-2xl font-bold">
+                  {formatCurrency(campaignData.raised)}
+                </div>
+                <div className="text-sm text-gray-600">
+                  pledged of {formatCurrency(campaignData.goalAmount)} goal
+                </div>
                 <div className="text-sm font-bold text-green-600">
                   {Math.min(progress, 100).toFixed(0)}% Funded
                 </div>
                 <div className="text-sm font-bold text-blue-600">
-                  Success Prediction: {prediction !== null ? `${prediction}%` : "Calculating..."}
+                  Success Prediction:{" "}
+                  {prediction !== null ? `${prediction}%` : "Calculating..."}
                 </div>
               </div>
 
               <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
-                <div className="bg-green-600 h-2 rounded-full" style={{ width: `${progress}%` }}></div>
+                <div
+                  className="bg-green-600 h-2 rounded-full"
+                  style={{ width: `${progress}%` }}
+                ></div>
               </div>
 
               <div className="grid grid-cols-2 gap-4 mb-6">
@@ -365,29 +434,41 @@ function ProjectView() {
 
               <div className="text-right mb-4">
                 <span className="text-sm">
-                  Predicted Status: <span className="font-medium text-green-600">{campaignData.status}</span>
+                  Predicted Status:{" "}
+                  <span className="font-medium text-green-600">
+                    {campaignData.status}
+                  </span>
                 </span>
               </div>
 
               <button
                 onClick={handleBackThisProject}
-                className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200">
+                className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200"
+              >
                 Back this project
               </button>
 
               <button
                 onClick={handleShare}
-                className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-md transition duration-200">
+                className="w-full bg-white border border-gray-300 hover:bg-gray-50 text-gray-700 py-3 rounded-md transition duration-200"
+              >
                 Share
               </button>
 
               <button
                 onClick={handleToggleSave}
-                className={`w-full mt-3 p-3 rounded-md flex items-center justify-center ${isCampaignSaved ? 'bg-red-500 text-white' : 'bg-gray-200 text-gray-600'} hover:opacity-80 transition-colors`}
-                title={isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
+                className={`w-full mt-3 p-3 rounded-md flex items-center justify-center ${
+                  isCampaignSaved
+                    ? "bg-red-500 text-white"
+                    : "bg-gray-200 text-gray-600"
+                } hover:opacity-80 transition-colors`}
+                title={isCampaignSaved ? "Unsave Campaign" : "Save Campaign"}
               >
-                <Heart className="h-5 w-5 mr-2" fill={isCampaignSaved ? 'currentColor' : 'none'} />
-                {isCampaignSaved ? 'Unsave Campaign' : 'Save Campaign'}
+                <Heart
+                  className="h-5 w-5 mr-2"
+                  fill={isCampaignSaved ? "currentColor" : "none"}
+                />
+                {isCampaignSaved ? "Unsave Campaign" : "Save Campaign"}
               </button>
             </div>
           </div>
@@ -427,13 +508,25 @@ function ProjectView() {
                     <h2 className="text-xl font-bold mb-4">Story</h2>
                     {campaignData.story ? (
                       <>
-                        {campaignData.mediaUrls && campaignData.mediaUrls.length > 1 && (
-                          <img src={`https://server-fundify.up.railway.app/${campaignData.mediaUrls[1]}`} alt="Campaign Media" className="w-full h-auto rounded-md mb-6" />
-                        )}
-                        <div className="space-y-4 text-gray-700" dangerouslySetInnerHTML={{ __html: campaignData.story }}></div>
+                        {campaignData.mediaUrls &&
+                          campaignData.mediaUrls.length > 1 && (
+                            <img
+                              src={`https://server-fundify.up.railway.app/${campaignData.mediaUrls[1]}`}
+                              alt="Campaign Media"
+                              className="w-full h-auto rounded-md mb-6"
+                            />
+                          )}
+                        <div
+                          className="space-y-4 text-gray-700"
+                          dangerouslySetInnerHTML={{
+                            __html: campaignData.story,
+                          }}
+                        ></div>
                       </>
                     ) : (
-                      <p className="text-gray-500 italic">No story available for this campaign yet.</p>
+                      <p className="text-gray-500 italic">
+                        No story available for this campaign yet.
+                      </p>
                     )}
                   </div>
                 </div>
@@ -447,11 +540,16 @@ function ProjectView() {
             {activeTab === "updates" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <h2 className="text-xl font-bold mb-6">Updates on the Project</h2>
+                  <h2 className="text-xl font-bold mb-6">
+                    Updates on the Project
+                  </h2>
 
                   {campaignUpdates.length > 0 ? (
                     campaignUpdates.map((update) => (
-                      <div key={update._id} className="mb-8 bg-white rounded-lg shadow-md overflow-hidden">
+                      <div
+                        key={update._id}
+                        className="mb-8 bg-white rounded-lg shadow-md overflow-hidden"
+                      >
                         <div className="p-6">
                           <h3 className="text-lg font-medium mb-3">
                             Update: {update.title}
@@ -476,35 +574,52 @@ function ProjectView() {
                               </svg>
                             </div>
                             <div>
-                              <div className="font-medium">{campaignData.name}</div>
+                              <div className="font-medium">
+                                {campaignData.name}
+                              </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(update.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  update.createdAt
+                                ).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
 
                           <div className="border-t border-b border-gray-200 py-4 my-4">
-                            <div className="mb-4" dangerouslySetInnerHTML={{ __html: update.content }}></div>
+                            <div
+                              className="mb-4"
+                              dangerouslySetInnerHTML={{
+                                __html: update.content,
+                              }}
+                            ></div>
 
-                            {update.mediaUrls && update.mediaUrls.length > 0 && (
-                              <img src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`} alt="Update Media" className="w-full h-auto rounded-md mb-4" />
-                            )}
+                            {update.mediaUrls &&
+                              update.mediaUrls.length > 0 && (
+                                <img
+                                  src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`}
+                                  alt="Update Media"
+                                  className="w-full h-auto rounded-md mb-4"
+                                />
+                              )}
 
-                            {update.listItems && update.listItems.length > 0 && (
-                              <ul className="list-disc pl-5 space-y-1">
-                                {update.listItems.map((item, index) => (
-                                  <li key={index} className="text-gray-700">
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                            {update.listItems &&
+                              update.listItems.length > 0 && (
+                                <ul className="list-disc pl-5 space-y-1">
+                                  {update.listItems.map((item, index) => (
+                                    <li key={index} className="text-gray-700">
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                           </div>
                         </div>
                       </div>
                     ))
                   ) : (
-                    <div className="text-gray-500 text-center py-10">No updates available for this project yet.</div>
+                    <div className="text-gray-500 text-center py-10">
+                      No updates available for this project yet.
+                    </div>
                   )}
                 </div>
 
@@ -519,7 +634,7 @@ function ProjectView() {
 
       <FooterLayout />
     </>
-  )
+  );
 }
 
 export default ProjectView;
