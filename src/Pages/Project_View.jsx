@@ -17,9 +17,10 @@ function ProjectView() {
   const [totalBackersCount, setTotalBackersCount] = useState(0) // State for total backers count
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [daysToGo, setDaysToGo] = useState("--"); // State for days to go
   const location = useLocation()
   const navigate = useNavigate()
-  const [prediction, setPrediction] = useState(null);   //Model api 
+  const [prediction, setPrediction] = useState(null);    //Model api
   const { userProfile, setUserProfile } = useUser(); // Get user context
 
   const queryParams = new URLSearchParams(location.search)
@@ -35,10 +36,21 @@ function ProjectView() {
       setLoading(true);
       const response = await axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}`);
       setCampaignData(response.data);
-  
+
+      // Calculate days to go
+      if (response.data.endDate) {
+        const endDate = new Date(response.data.endDate);
+        const today = new Date();
+        const differenceInTime = endDate.getTime() - today.getTime();
+        const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+        setDaysToGo(differenceInDays > 0 ? differenceInDays : 0); // Display 0 if date has passed or is today
+      } else {
+        setDaysToGo("--"); // If no end date, show --
+      }
+ 
       // Call ML API for prediction
       try {
-        const predictionResponse = await axios.post(  
+        const predictionResponse = await axios.post(   
           "https://fundify-ml-api-production.up.railway.app/predict",
           {
             goalAmount: response.data.goalAmount,
@@ -51,7 +63,7 @@ function ProjectView() {
         console.error("Prediction API error:", apiError);
         setPrediction(null);
       }
-  
+ 
       setError(null);
     } catch (err) {
       console.error("Error fetching campaign details:", err);
@@ -371,7 +383,7 @@ function ProjectView() {
                     <div className="text-sm text-gray-600">backers</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">--</div> {/* Placeholder for days left (not implemented in backend) */}
+                    <div className="text-2xl font-bold">{daysToGo}</div> {/* Display calculated days to go */}
                     <div className="text-sm text-gray-600">days to go</div>
                   </div>
                 </div>
