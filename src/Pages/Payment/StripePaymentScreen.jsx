@@ -90,6 +90,12 @@ const StripePaymentScreen = () => {
             payBtn.current.disabled = false;
             return;
         }
+        if (!user || !user.email) {
+            showErrorMessage("User details not found. Please try logging in again.");
+            setIsProcessing(false);
+            // payBtn.current.disabled = false; // Agar payBtn define hai
+            return; // Function ko yahin rok dein
+        }
 
         try {
             const token = getAuthToken();
