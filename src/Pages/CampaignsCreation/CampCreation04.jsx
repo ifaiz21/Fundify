@@ -16,7 +16,8 @@ const CampaignCreation04 = () => {
   const [isItalic, setIsItalic] = useState(false);
   const [isUnderline, setIsUnderline] = useState(false);
   const [textAlign, setTextAlign] = useState("left");
-
+   
+  const [duration, setDuration] = useState("");
   const [campaignDataFromPreviousSteps, setCampaignDataFromPreviousSteps] = useState({});
 
   useEffect(() => {
@@ -25,6 +26,9 @@ const CampaignCreation04 = () => {
       console.log("CampaignCreation04 - Data received from 03:", location.state.campaignData);
       if (location.state.campaignData.storyContent) {
         setStory(location.state.campaignData.storyContent);
+      }
+      if (location.state.campaignData.duration) {
+        setDuration(location.state.campaignData.duration);
       }
     }
   }, [location.state]);
@@ -56,11 +60,18 @@ const CampaignCreation04 = () => {
             showErrorMessage("Please write a story of at least 50 characters to continue.");
             return; 
     }
+    const durationNum = parseInt(duration, 10);
+    if (!duration || isNaN(durationNum) || durationNum <= 0) {
+        showErrorMessage("Please enter a valid campaign duration (a number greater than 0).");
+        return;
+    }
     console.log("Story submitted from 04:", story);
+    console.log("Duration submitted from 04:", duration);
 
     const combinedDataForNextStep = {
       ...campaignDataFromPreviousSteps, // This now correctly contains 'previewURLs' (Data URLs) from 03
       storyContent: story,
+      duration: durationNum,
     };
     console.log("CampaignCreation04 - Data sent to 05:", combinedDataForNextStep);
 
@@ -68,7 +79,13 @@ const CampaignCreation04 = () => {
   };
 
   const handleBack = () => {
-    navigate("/campaign-creation-03", { state: { campaignData: campaignDataFromPreviousSteps } });
+    const currentData = {
+        ...campaignDataFromPreviousSteps,
+        storyContent: story,
+        duration: duration,
+    };
+
+    navigate("/campaign-creation-03", { state: { campaignData: currentData } });
   };
  
   return (
@@ -251,6 +268,22 @@ const CampaignCreation04 = () => {
                       textAlign: textAlign,
                     }}
                   ></textarea>
+                  {/* ADDED: Campaign Duration Input */}
+                  <div className="p-4 border-t border-gray-200">
+                      <label htmlFor="duration" className="block text-sm font-medium text-gray-700 mb-1">
+                          Campaign Duration (in days)
+                      </label>
+                      <input
+                          type="number"
+                          id="duration"
+                          name="duration"
+                          value={duration}
+                          onChange={(e) => setDuration(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-[#4B5842]"
+                          placeholder="e.g., 30"
+                          min="1"
+                      />
+                  </div>
 
                   {/* Action Buttons */}
                   <div className="flex border-t border-gray-200">

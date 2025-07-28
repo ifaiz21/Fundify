@@ -19,6 +19,7 @@ const CampaignCreation05 = () => {
     location: '',
     category: '',
     goalAmount: 0,
+    duration: 0,
     isAdult: false,
     canVerifyID: false,
     canVerifyProject: false,
@@ -132,6 +133,7 @@ const CampaignCreation05 = () => {
     formDataToSend.append('location', fullCampaignData.location);
     formDataToSend.append('category', fullCampaignData.category);
     formDataToSend.append('goalAmount', Number(fullCampaignData.goalAmount));
+    formDataToSend.append('duration', Number(fullCampaignData.duration));
     formDataToSend.append('isAdultContent', fullCampaignData.isAdult);
     formDataToSend.append('isIDVerifiedRequired', fullCampaignData.canVerifyID);
     formDataToSend.append('isProjectVerifiedRequired', fullCampaignData.canVerifyProject);
@@ -235,6 +237,9 @@ const CampaignCreation05 = () => {
                       ? Number(fullCampaignData.goalAmount).toLocaleString()
                       : "0"}
                   </p>
+                  <p>
+                    <strong>Duration:</strong> {fullCampaignData.duration} days 
+                  </p>
                 </div>
 
                 <h2 className="text-2xl font-semibold text-[#4A5D45] mt-6 mb-4 border-b pb-2">
