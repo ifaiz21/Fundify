@@ -1,16 +1,19 @@
 import React, {  useState, useEffect, useRef } from 'react';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CardNumberElement, CardCvcElement, CardExpiryElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 import Header from "../Layout/HeaderLayout";
 import Footer from "../Layout/FooterLayout";
+import { updateCampaignOnDonation } from '../features/campaignsSlice';
+
 
 const StripePaymentScreen = () => {
     const navigate = useNavigate();
     const stripe = useStripe();
     const elements = useElements();
+    const dispatch = useDispatch();
     
     // State from both files
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -24,7 +27,7 @@ const StripePaymentScreen = () => {
     });
     const [errors, setErrors] = useState({});
     // Get user and donation details
-    const { user } = useSelector((state) => state.user);
+    const { userProfile: user } = useSelector((state) => state.auth);
     const donationDetails = JSON.parse(sessionStorage.getItem('donationDetails'));
 
     useEffect(() => {
@@ -146,11 +149,22 @@ const StripePaymentScreen = () => {
                 };
 
                 // Use axios to post to your original donations endpoint
-                await axios.post(`${API_URL}/api/donations`, donationDataForDB, config);
+                await axios.post(`${process.env.REACT_APP_API_URL}/api/donations`, donationDataForDB, {
+                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
+                });
 
                 showSuccessMessage('Payment Successful & Donation Recorded!');
                 sessionStorage.removeItem('donationDetails');
-                navigate('/submit-2');
+                //navigate('/submit-2');
+
+                dispatch(updateCampaignOnDonation({
+                    campaignId: donationDetails.campaignId,
+                    donationAmount: donationDetails.amount
+                }));
+
+                sessionStorage.removeItem('donationDetails');
+
+                navigate(`/ProjectView?id=${donationDetails.campaignId}`);
             }
         } catch (error) {
             setIsProcessing(false);
