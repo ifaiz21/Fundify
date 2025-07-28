@@ -1,19 +1,17 @@
 import React, {  useState, useEffect, useRef } from 'react';
-import { useSelector, useDispatch } from 'react-redux';
+import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 import { CardNumberElement, CardCvcElement, CardExpiryElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 import Header from "../Layout/HeaderLayout";
 import Footer from "../Layout/FooterLayout";
-import { updateCampaignOnDonation } from '../../features/campaignsSlice';
-
+//import './Payment.css'; // Use the CSS from your new Payment.jsx
 
 const StripePaymentScreen = () => {
     const navigate = useNavigate();
     const stripe = useStripe();
     const elements = useElements();
-    const dispatch = useDispatch();
     
     // State from both files
     const [showConfirmation, setShowConfirmation] = useState(false);
@@ -25,15 +23,15 @@ const StripePaymentScreen = () => {
         postalCode: "",
         cardholderName: "",
     });
-    const [errors, setErrors] = useState({});
+
     // Get user and donation details
-    const { userProfile: user } = useSelector((state) => state.auth);
+    const { user } = useSelector((state) => state.user);
     const donationDetails = JSON.parse(sessionStorage.getItem('donationDetails'));
 
     useEffect(() => {
         if (!donationDetails) {
             showErrorMessage("Donation details not found. Please start again.");
-            navigate('/donate');
+            //navigate('/donate');
         }
     }, [donationDetails, navigate]);
     
@@ -42,43 +40,15 @@ const StripePaymentScreen = () => {
     const handleInputChange = (e) => {
         const { id, value } = e.target;
         setFormData((prev) => ({ ...prev, [id]: value }));
-        if (errors[id]) {
-            setErrors(prev => ({ ...prev, [id]: null }));
-        }
-    };
-    const validateForm = () => {
-        const newErrors = {};
-        
-        // Cardholder Name Validation
-        if (!formData.cardholderName.trim()) {
-            newErrors.cardholderName = "Cardholder's name is required.";
-        } else if (!/^[A-Za-z\s]+$/.test(formData.cardholderName)) {
-            newErrors.cardholderName = "Name can only contain letters and spaces.";
-        }
-
-        // Billing Details Validation
-        if (!formData.address.trim()) newErrors.address = "Address is required.";
-        if (!formData.city.trim()) newErrors.city = "City is required.";
-        if (!formData.state.trim()) newErrors.state = "State is required.";
-
-        // Postal Code Validation
-        if (!formData.postalCode.trim()) {
-            newErrors.postalCode = "Postal code is required.";
-        } else if (!/^\d{5}$/.test(formData.postalCode)) {
-            newErrors.postalCode = "Please enter a valid 5-digit postal code.";
-        }
-
-        setErrors(newErrors);
-        return Object.keys(newErrors).length === 0;
     };
 
     const submitHandler = (e) => {
         e.preventDefault();
-        if (validateForm()) {
-            setShowConfirmation(true);
-        } else {
-            showErrorMessage("Please correct the errors in the form.");
+        if (!formData.address || !formData.city || !formData.cardholderName) {
+            showErrorMessage("Please fill in all required billing details.");
+            return;
         }
+        setShowConfirmation(true);
     };
 
     const handleConfirmPayment = async () => {
@@ -89,12 +59,6 @@ const StripePaymentScreen = () => {
             setIsProcessing(false);
             payBtn.current.disabled = false;
             return;
-        }
-        if (!user || !user.email) {
-            showErrorMessage("User details not found. Please try logging in again.");
-            setIsProcessing(false);
-            // payBtn.current.disabled = false; // Agar payBtn define hai
-            return; // Function ko yahin rok dein
         }
 
         try {
@@ -155,22 +119,11 @@ const StripePaymentScreen = () => {
                 };
 
                 // Use axios to post to your original donations endpoint
-                await axios.post(`${process.env.REACT_APP_API_URL}/api/donations`, donationDataForDB, {
-                    headers: { 'Authorization': `Bearer ${getAuthToken()}` }
-                });
+                await axios.post(`${API_URL}/api/donations`, donationDataForDB, config);
 
                 showSuccessMessage('Payment Successful & Donation Recorded!');
                 sessionStorage.removeItem('donationDetails');
-                //navigate('/submit-2');
-
-                dispatch(updateCampaignOnDonation({
-                    campaignId: donationDetails.campaignId,
-                    donationAmount: donationDetails.amount
-                }));
-
-                sessionStorage.removeItem('donationDetails');
-
-                navigate(`/ProjectView?id=${donationDetails.campaignId}`);
+                navigate('/submit-2');
             }
         } catch (error) {
             setIsProcessing(false);
@@ -234,23 +187,21 @@ const StripePaymentScreen = () => {
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div className="md:col-span-2">
                                                 <label htmlFor="address" className="form-label">Address line</label>
-                                                <input type="text" id="address" value={formData.address} onChange={handleInputChange} className={`form-input ${errors.address ? 'border-red-500' : ''}`} />
-                                                {errors.address && <p className="text-red-500 text-xs mt-1">{errors.address}</p>}
+                                                <input type="text" id="address" value={formData.address} onChange={handleInputChange} className="form-input" required />
                                             </div>
                                             <div>
                                                 <label htmlFor="city" className="form-label">City</label>
-                                                <input type="text" id="city" value={formData.city} onChange={handleInputChange} className={`form-input ${errors.city ? 'border-red-500' : ''}`} />
-                                                {errors.city && <p className="text-red-500 text-xs mt-1">{errors.city}</p>}
+                                                <input type="text" id="city" value={formData.city} onChange={handleInputChange} className="form-input" required />
                                             </div>
                                             <div>
                                                 <label htmlFor="state" className="form-label">State / Province</label>
-                                                <input type="text" id="state" value={formData.state} onChange={handleInputChange} className={`form-input ${errors.state ? 'border-red-500' : ''}`} />
-                                                {errors.state && <p className="text-red-500 text-xs mt-1">{errors.state}</p>}                                            </div>
+                                                <input type="text" id="state" value={formData.state} onChange={handleInputChange} className="form-input" required />
+                                            </div>
                                             <div>
                                                 <label htmlFor="postalCode" className="form-label">Postal code</label>
-                                                <input type="text" id="postalCode" value={formData.postalCode} onChange={handleInputChange} className={`form-input ${errors.postalCode ? 'border-red-500' : ''}`} />
-                                                {errors.postalCode && <p className="text-red-500 text-xs mt-1">{errors.postalCode}</p>}                                            </div>
+                                                <input type="text" id="postalCode" value={formData.postalCode} onChange={handleInputChange} className="form-input" required />
                                             </div>
+                                        </div>
                                     </div>
                                     
                                     {/* Card Details Section with Stripe Elements */}
@@ -259,8 +210,8 @@ const StripePaymentScreen = () => {
                                         <div className="space-y-4">
                                             <div>
                                                 <label htmlFor="cardholderName" className="form-label">Cardholder's name</label>
-                                                <input type="text" id="cardholderName" value={formData.cardholderName} onChange={handleInputChange} className={`form-input ${errors.cardholderName ? 'border-red-500' : ''}`} placeholder="Enter your name" />
-                                                {errors.cardholderName && <p className="text-red-500 text-xs mt-1">{errors.cardholderName}</p>}                                            </div>
+                                                <input type="text" id="cardholderName" value={formData.cardholderName} onChange={handleInputChange} className="form-input" placeholder="Enter your name" required />
+                                            </div>
                                             {/* Stripe Card Number */}
                                             <div>
                                                 <label className="form-label">Card number</label>
