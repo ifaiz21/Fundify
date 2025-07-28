@@ -53,6 +53,7 @@ const LoginPage = () => {
         password,
       });
 
+      console.log("DATA FROM LOGIN API:", response.data);
       const { token, role, user } = response.data;
 
       localStorage.setItem("token", token);
