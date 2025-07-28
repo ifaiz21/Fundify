@@ -1,5 +1,5 @@
 // src/App.jsx
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
@@ -64,6 +64,8 @@ import KYCSuccessPage from './Pages/KYC/KYCSuccessPage'; // Import the new KYCSu
 
 function App() {
   const dispatch = useDispatch();
+  const [loading, setLoading] = useState(true);
+
 
   useEffect(() => {
     const fetchUserOnLoad = async () => {
@@ -78,11 +80,15 @@ function App() {
             dispatch(setAuthUser(userData)); // SAHI ACTION DISPATCH KAREIN
           } else {
             localStorage.removeItem('token');
+            dispatch(setAuthUser(null));
           }
         } catch (error) {
           console.error('Failed to fetch user on load:', error);
+          dispatch(setAuthUser(null));
         }
       }
+            setLoading(false);
+
     };
     fetchUserOnLoad();
   }, [dispatch]);
@@ -122,6 +128,15 @@ function App() {
       progress: undefined,
     });
   };
+
+  // Step 3: Jab tak loading ho, loading screen dikhayein
+  if (loading) {
+    return (
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh', backgroundColor: '#F0FFF0' }}>
+        <h2 style={{ fontFamily: 'Poppins, sans-serif', color: '#4B5842' }}>Loading Fundify...</h2>
+      </div>
+    );
+  }
 
   return (
       <Router>
