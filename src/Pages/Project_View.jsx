@@ -41,7 +41,8 @@ function ProjectView() {
   };
 
   useEffect(() => {
-    if (campaignId) {
+    if (campaignId && campaignId.length === 24) {
+      console.log("Campaign ID:", campaignId);
       const fetchCampaignDetails = async () => {
         try {
           setLoading(true);
@@ -53,16 +54,20 @@ function ProjectView() {
 
           try {
             const predictionResponse = await axios.post(
-              "https://fundify-ml-api-production.up.railway.app/predict",
+              "https://fundify-ml-api-produ-llway.app/predict",
               {
                 goalAmount: response.data.goalAmount,
                 category: response.data.category,
                 duration: response.data.duration,
               }
             );
+            console.log("Prediction response:", predictionResponse.data);
             setPrediction(predictionResponse.data.success_probability);
           } catch (apiError) {
-            console.error("Prediction API error:", apiError);
+            console.error(
+              "Prediction API error:",
+              apiError.response ? apiError.response.data : apiError.message
+            );
             setPrediction(null);
           }
 
@@ -78,16 +83,16 @@ function ProjectView() {
 
       const fetchCampaignUpdates = async () => {
         try {
-          const response = await axios.get(
-            `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`
-          );
+          const url = `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`;
+          console.log("Fetching updates from:", url);
+          const response = await axios.get(url);
           setCampaignUpdates(response.data);
         } catch (err) {
           console.error(
             "Error fetching campaign updates:",
             err.response ? err.response.status : err.message
           );
-          setCampaignUpdates([]); // Fallback to empty array
+          setCampaignUpdates([]);
         }
       };
 
@@ -105,12 +110,11 @@ function ProjectView() {
         }
       };
 
-      console.log("Campaign ID:", campaignId); // Debug campaignId
       fetchCampaignDetails();
       fetchCampaignUpdates();
       fetchRecentDonors();
     } else {
-      setError("No campaign ID provided in the URL.");
+      setError("Invalid or no campaign ID provided.");
       setLoading(false);
     }
   }, [campaignId, location.search]);
