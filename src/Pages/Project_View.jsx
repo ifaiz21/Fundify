@@ -5,35 +5,39 @@ import { useLocation, useNavigate } from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
 import axios from "axios";
-import { useUser } from "../context/UserContext"; // Import useUser for saved campaigns
-import { Heart } from "lucide-react"; // Import Heart icon
-import { showSuccessMessage, showErrorMessage } from "../utils/toast"; // Import toast functions directly
+import { useUser } from "../context/UserContext";
+import { Heart } from "lucide-react";
+import { showSuccessMessage, showErrorMessage } from "../utils/toast";
 
 function ProjectView() {
   const [activeTab, setActiveTab] = useState("campaign");
   const [campaignData, setCampaignData] = useState(null);
   const [campaignUpdates, setCampaignUpdates] = useState([]);
-  const [recentDonors, setRecentDonors] = useState([]); // State for recent donors
-  const [totalBackersCount, setTotalBackersCount] = useState(0); // State for total backers count
+  const [recentDonors, setRecentDonors] = useState([]);
+  const [totalBackersCount, setTotalBackersCount] = useState(0);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [daysToGo, setDaysToGo] = useState("--"); // State for days to go
+  const [daysToGo, setDaysToGo] = useState("--");
   const location = useLocation();
   const navigate = useNavigate();
-  const [prediction, setPrediction] = useState(null); // Model API
-  const { userProfile, setUserProfile } = useUser(); // Get user context
+  const [prediction, setPrediction] = useState(null);
+  const { userProfile, setUserProfile } = useUser();
 
   const queryParams = new URLSearchParams(location.search);
   const campaignId = queryParams.get("id");
 
-  // Check if the current campaign is saved by the user
   const isCampaignSaved = userProfile.savedCampaigns?.includes(campaignId);
 
-  // Calculate days to go
   const calculateDaysToGo = (endDate) => {
+    console.log("End Date received:", endDate); // Debug
     if (endDate) {
+      const end = new Date(endDate);
       const today = new Date();
-      const differenceInTime = new Date(endDate).getTime() - today.getTime();
+      if (isNaN(end.getTime())) {
+        console.error("Invalid end date format:", endDate);
+        return "--";
+      }
+      const differenceInTime = end.getTime() - today.getTime();
       const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
       return differenceInDays > 0 ? differenceInDays : 0;
     }
@@ -49,6 +53,7 @@ function ProjectView() {
           const response = await axios.get(
             `https://server-fundify.up.railway.app/api/campaigns/${campaignId}`
           );
+          console.log("Campaign Details Response:", response.data); // Debug
           setCampaignData(response.data);
           setDaysToGo(calculateDaysToGo(response.data.endDate));
 
@@ -83,6 +88,7 @@ function ProjectView() {
           const url = `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`;
           console.log("Fetching updates from:", url);
           const response = await axios.get(url);
+          console.log("Updates Response:", response.data); // Debug
           setCampaignUpdates(response.data);
         } catch (err) {
           console.error(
@@ -98,8 +104,11 @@ function ProjectView() {
           const response = await axios.get(
             `https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`
           );
+          console.log("Recent Donors Response:", response.data); // Debug
           setRecentDonors(response.data.recentDonors);
-          setTotalBackersCount(response.data.totalBackers);
+          const newTotalBackers = response.data.totalBackers || 0;
+          setTotalBackersCount(newTotalBackers);
+          console.log("Total Backers Count:", newTotalBackers);
         } catch (err) {
           console.error("Error fetching recent donors:", err);
           setRecentDonors([]);
@@ -116,7 +125,6 @@ function ProjectView() {
     }
   }, [campaignId, location.search]);
 
-  // Formats currency to PKR
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -124,10 +132,9 @@ function ProjectView() {
       maximumFractionDigits: 0,
     })
       .format(amount || 0)
-      .replace("PKR", "Rs."); // Removes the default Rupee symbol
+      .replace("PKR", "Rs.");
   };
 
-  // Calculates campaign progress percentage
   const progress = campaignData
     ? Math.min(
         Math.round(
@@ -137,7 +144,6 @@ function ProjectView() {
       )
     : 0;
 
-  // Handles saving/unsaving campaigns to user profile
   const handleToggleSave = async () => {
     if (!userProfile.isAuthenticated) {
       showErrorMessage("Please log in to save campaigns.");
@@ -181,7 +187,9 @@ function ProjectView() {
         }
       } else {
         const errorData = await response.json();
-        showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`);
+        showErrorMessage(
+          `Failed to save/unsave campaign: ${errorData.message}`
+        );
       }
     } catch (error) {
       console.error("Error toggling saved campaign:", error);
@@ -189,7 +197,6 @@ function ProjectView() {
     }
   };
 
-  // DonorsSidebar component
   const DonorsSidebar = () => (
     <div className="donors-sidebar">
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
@@ -284,16 +291,16 @@ function ProjectView() {
     </div>
   );
 
-  // Handles navigation to donation screen
   const handleBackThisProject = () => {
     if (campaignData && campaignData._id) {
       navigate("/donate", { state: { campaignId: campaignData._id } });
     } else {
-      showErrorMessage("Campaign data not loaded yet. Cannot proceed to donation.");
+      showErrorMessage(
+        "Campaign data not loaded yet. Cannot proceed to donation."
+      );
     }
   };
 
-  // Handles sharing campaign link (copies to clipboard)
   const handleShare = () => {
     const campaignUrl = window.location.href;
     const el = document.createElement("textarea");
@@ -352,14 +359,12 @@ function ProjectView() {
       <HeaderLayout />
 
       <div className="project-view container mx-auto px-4 py-6">
-        {/* Campaign Title and Description */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
           {campaignData.title}
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
-            {/* Main Campaign Image */}
             <img
               src={
                 campaignData.mediaUrls && campaignData.mediaUrls.length > 0
@@ -377,7 +382,6 @@ function ProjectView() {
 
             <p className="text-gray-700 mb-4">{campaignData.description}</p>
 
-            {/* Campaign Meta Info */}
             <div className="flex items-center text-sm text-gray-600 mb-6">
               <span>
                 Created {new Date(campaignData.createdAt).toLocaleDateString()}
@@ -404,7 +408,6 @@ function ProjectView() {
             </div>
           </div>
 
-          {/* Campaign Summary Sidebar */}
           <div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="mb-4">
@@ -414,7 +417,6 @@ function ProjectView() {
                 <div className="text-sm text-gray-600">
                   pledged of {formatCurrency(campaignData.goalAmount)} goal
                 </div>
-                {/* Display the percentage funded */}
                 <div className="text-sm font-bold text-green-600">
                   {progress}% Funded
                 </div>
@@ -424,7 +426,6 @@ function ProjectView() {
                 </div>
               </div>
 
-              {/* Progress Bar */}
               <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
                 <div
                   className="bg-green-600 h-2 rounded-full"
@@ -432,7 +433,6 @@ function ProjectView() {
                 ></div>
               </div>
 
-              {/* Backers and Days Left */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
                   <div className="text-2xl font-bold">{totalBackersCount}</div>
@@ -444,7 +444,6 @@ function ProjectView() {
                 </div>
               </div>
 
-              {/* Predicted Status */}
               <div className="text-right mb-4">
                 <span className="text-sm">
                   Predicted Status:{" "}
@@ -454,7 +453,6 @@ function ProjectView() {
                 </span>
               </div>
 
-              {/* Action Buttons */}
               <button
                 onClick={handleBackThisProject}
                 className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200"
@@ -469,7 +467,6 @@ function ProjectView() {
                 Share
               </button>
 
-              {/* Save/Unsave Button with Heart icon */}
               <button
                 onClick={handleToggleSave}
                 className={`w-full mt-3 p-3 rounded-md flex items-center justify-center ${
@@ -489,7 +486,6 @@ function ProjectView() {
           </div>
         </div>
 
-        {/* Campaign Tabs (Campaign and Updates) */}
         <div className="campaign-tabs bg-white rounded-md shadow-sm">
           <div className="border-b border-gray-200">
             <nav className="flex">
@@ -520,7 +516,6 @@ function ProjectView() {
             {activeTab === "campaign" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  {/* Story Section - Conditional Rendering */}
                   <div className="story-section">
                     <h2 className="text-xl font-bold mb-4">Story</h2>
                     {campaignData.story ? (
@@ -535,7 +530,9 @@ function ProjectView() {
                           )}
                         <div
                           className="space-y-4 text-gray-700"
-                          dangerouslySetInnerHTML={{ __html: campaignData.story }}
+                          dangerouslySetInnerHTML={{
+                            __html: campaignData.story,
+                          }}
                         ></div>
                       </>
                     ) : (
@@ -555,7 +552,9 @@ function ProjectView() {
             {activeTab === "updates" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
-                  <h2 className="text-xl font-bold mb-6">Updates on the Project</h2>
+                  <h2 className="text-xl font-bold mb-6">
+                    Updates on the Project
+                  </h2>
 
                   {campaignUpdates.length > 0 ? (
                     campaignUpdates.map((update) => (
@@ -591,7 +590,9 @@ function ProjectView() {
                                 {campaignData.name}
                               </div>
                               <div className="text-xs text-gray-500">
-                                {new Date(update.createdAt).toLocaleDateString()}
+                                {new Date(
+                                  update.createdAt
+                                ).toLocaleDateString()}
                               </div>
                             </div>
                           </div>
@@ -599,26 +600,30 @@ function ProjectView() {
                           <div className="border-t border-b border-gray-200 py-4 my-4">
                             <div
                               className="mb-4"
-                              dangerouslySetInnerHTML={{ __html: update.content }}
+                              dangerouslySetInnerHTML={{
+                                __html: update.content,
+                              }}
                             ></div>
 
-                            {update.mediaUrls && update.mediaUrls.length > 0 && (
-                              <img
-                                src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`}
-                                alt="Update Media"
-                                className="w-full h-auto rounded-md mb-4"
-                              />
-                            )}
+                            {update.mediaUrls &&
+                              update.mediaUrls.length > 0 && (
+                                <img
+                                  src={`https://server-fundify.up.railway.app/${update.mediaUrls[0]}`}
+                                  alt="Update Media"
+                                  className="w-full h-auto rounded-md mb-4"
+                                />
+                              )}
 
-                            {update.listItems && update.listItems.length > 0 && (
-                              <ul className="list-disc pl-5 space-y-1">
-                                {update.listItems.map((item, index) => (
-                                  <li key={index} className="text-gray-700">
-                                    {item}
-                                  </li>
-                                ))}
-                              </ul>
-                            )}
+                            {update.listItems &&
+                              update.listItems.length > 0 && (
+                                <ul className="list-disc pl-5 space-y-1">
+                                  {update.listItems.map((item, index) => (
+                                    <li key={index} className="text-gray-700">
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
                           </div>
                         </div>
                       </div>
