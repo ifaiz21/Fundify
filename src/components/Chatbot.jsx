@@ -14,15 +14,6 @@ const Chatbot = ({ onClose }) => {
   // New state: controls visibility of predefined questions after first interaction
   const [hasInteracted, setHasInteracted] = useState(false);
 
-  // Define predefined questions for the buttons
-  const predefinedQuestions = [
-    "What is Fundify?",
-    "How do I create a campaign?",
-    "How do I donate?",
-    "What is KYC?",
-    "How can I contact support?",
-  ];
-
   // Common emojis for the picker
   const emojis = [
     "😊",
