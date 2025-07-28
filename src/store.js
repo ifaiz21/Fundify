@@ -4,6 +4,8 @@ import { configureStore } from '@reduxjs/toolkit';
 import userReducer from './features/userSlice';
 import notificationReducer from './features/notificationSlice';
 import kycReducer from './features/kycSlice';
+import campaignsReducer from './features/campaignsSlice';
+import authReducer from './features/authSlice';
 
 const store = configureStore({
   reducer: {
@@ -11,6 +13,8 @@ const store = configureStore({
     user: userReducer,
     notifications: notificationReducer,
     kyc: kycReducer,
+    campaigns: campaignsReducer,
+    auth: authReducer,
   },
 });
 
@@ -19,3 +23,5 @@ export default store;
 // Actions ko bhi store se export kar sakte hain taake import karna aasan ho
 export * from './features/userSlice';
 export * from './features/notificationSlice';
+//export * from './features/campaignSlice';
+//export * from './features/authSlice';
