@@ -1,106 +1,110 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
-import { useSelector, useDispatch } from 'react-redux';
+import { useLocation, useNavigate } from "react-router-dom";
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
 import axios from "axios";
-import { Heart } from "lucide-react";
-import { showSuccessMessage, showErrorMessage } from "../utils/toast";
-import { fetchCampaigns } from "../features/campaignsSlice";
-import { toggleSaveCampaign } from "../features/authSlice";
+import { useUser } from "../context/UserContext"; // Import useUser for saved campaigns
+import { Heart } from "lucide-react"; // Import Heart icon
+import { showSuccessMessage, showErrorMessage } from "../utils/toast"; // Import toast functions directly
 
 function ProjectView() {
-    // Sirf is page ke liye zaroori local state
-    const [activeTab, setActiveTab] = useState("campaign");
-    const [campaignUpdates, setCampaignUpdates] = useState([]);
-    const [recentDonors, setRecentDonors] = useState([]);
-    const [daysToGo, setDaysToGo] = useState("--");
-    const [prediction, setPrediction] = useState(null);
+  const [activeTab, setActiveTab] = useState("campaign");
+  const [campaignData, setCampaignData] = useState(null);
+  const [campaignUpdates, setCampaignUpdates] = useState([]);
+  const [recentDonors, setRecentDonors] = useState([]); // State for recent donors
+  const [totalBackersCount, setTotalBackersCount] = useState(0); // State for total backers count
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
+  const location = useLocation();
+  const navigate = useNavigate();
+  const [prediction, setPrediction] = useState(null); //Model api
+  const { userProfile, setUserProfile } = useUser(); // Get user context
 
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const { id: campaignId } = useParams();
+  const queryParams = new URLSearchParams(location.search);
+  const campaignId = queryParams.get("id");
 
-    // Redux store se data hasil karein
-    const { allCampaigns, status: campaignsStatus, error: campaignsError } = useSelector((state) => state.campaigns);
-    const { isAuthenticated, userProfile } = useSelector((state) => state.auth);
-    
-    // Redux ki list se is page ke liye campaign nikalein
-    const campaignData = allCampaigns.find(c => c._id === campaignId);
-    
-    const isCampaignSaved = userProfile?.savedCampaigns?.includes(campaignId);
-
-  const calculateDaysToGo = (endDate) => {
-    if (endDate) {
-      const today = new Date();
-      const differenceInTime = new Date(endDate).getTime() - today.getTime();
-      const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
-      console.log("End Date:", endDate); // Debug endDate
-      console.log("Days to go:", differenceInDays); // Debug differenceInDays
-      return differenceInDays > 0 ? differenceInDays : 0;
-    }
-    return "--";
-  };
+  // Check if the current campaign is saved by the user
+  const isCampaignSaved = userProfile.savedCampaigns?.includes(campaignId);
 
   useEffect(() => {
-        if (campaignsStatus === 'idle') {
-            dispatch(fetchCampaigns());
+    if (campaignId && campaignId.length === 24) {
+      console.log("Campaign ID:", campaignId);
+      const fetchCampaignDetails = async () => {
+        try {
+          setLoading(true);
+          const response = await axios.get(
+            `https://server-fundify.up.railway.app/api/campaigns/${campaignId}`
+          );
+          setCampaignData(response.data);
+          setDaysToGo(calculateDaysToGo(response.data.endDate));
+
+          try {
+            const predictionResponse = await axios.post(
+              "https://fundify-ml-api-production.up.railway.app/predict",
+              {
+                goalAmount: response.data.goalAmount,
+                category: response.data.category,
+                duration: response.data.duration,
+              }
+            );
+            console.log("Prediction response:", predictionResponse.data);
+            setPrediction(predictionResponse.data.success_probability);
+          } catch (apiError) {
+            console.error("Prediction API error:", apiError.message);
+            setPrediction(null);
+          }
+
+          setError(null);
+        } catch (err) {
+          console.error("Error fetching campaign details:", err);
+          setError("Failed to load campaign details. Please try again later.");
+          setCampaignData(null);
+        } finally {
+          setLoading(false);
         }
-    }, [campaignsStatus, dispatch]);
+      };
 
-    // Effect #2: Jab campaignData Redux se mil jaye, to baaki (secondary) details fetch karna
-    useEffect(() => {
-        // Yeh effect sirf tab chalega jab 'campaignData' mojood ho
-        if (campaignData) {
-            setDaysToGo(calculateDaysToGo(campaignData.endDate));
-
-            const controller = new AbortController();
-            const { signal } = controller;
-
-            const fetchSecondaryData = async () => {
-                try {
-                    // Donors aur Updates ko parallel mein fetch karein
-                    const [donorsResponse, updatesResponse] = await Promise.all([
-                        axios.get(`https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`, { signal }),
-                        axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`, { signal })
-                    ]);
-                    
-                    setRecentDonors(donorsResponse.data.recentDonors);
-                    setCampaignUpdates(updatesResponse.data);
-
-                    // Prediction API call
-                    try {
-                        const predictionResponse = await axios.post(
-                            "https://fundify-ml-api-production.up.railway.app/predict", {
-                                goalAmount: campaignData.goalAmount,
-                                category: campaignData.category,
-                                duration: campaignData.duration,
-                            }, { signal }
-                        );
-                        setPrediction(predictionResponse.data.success_probability);
-                    } catch (predictionError) {
-                        console.error("Prediction API error:", predictionError);
-                        setPrediction(null);
-                    }
-
-                } catch (error) {
-                    if (!axios.isCancel(error)) {
-                        console.error("Error fetching secondary details:", error);
-                    }
-                }
-            };
-            
-            fetchSecondaryData();
-
-            // Cleanup function
-            return () => {
-                controller.abort();
-            };
+      const fetchCampaignUpdates = async () => {
+        try {
+          const url = `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`;
+          console.log("Fetching updates from:", url);
+          const response = await axios.get(url);
+          setCampaignUpdates(response.data);
+        } catch (err) {
+          console.error(
+            "Error fetching campaign updates:",
+            err.response ? err.response.status : err.message
+          );
+          setCampaignUpdates([]);
         }
-    }, [campaignData, campaignId]); // Dependency array ko saaf kar diya gaya hai
+      };
 
+      const fetchRecentDonors = async () => {
+        try {
+          const response = await axios.get(
+            `https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`
+          );
+          setRecentDonors(response.data.recentDonors);
+          setTotalBackersCount(response.data.totalBackers);
+        } catch (err) {
+          console.error("Error fetching recent donors:", err);
+          setRecentDonors([]);
+          setTotalBackersCount(0);
+        }
+      };
+
+      fetchCampaignDetails();
+      fetchCampaignUpdates();
+      fetchRecentDonors();
+    } else {
+      setError("Invalid or no campaign ID provided.");
+      setLoading(false);
+    }
+  }, [campaignId, location.search]);
+
+  // Formats currency to PKR
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
       style: "currency",
@@ -108,9 +112,10 @@ function ProjectView() {
       maximumFractionDigits: 0,
     })
       .format(amount)
-      .replace("PKR", "Rs.");
+      .replace("PKR", "Rs."); // Removes the default Rupee symbol
   };
 
+  // Calculates campaign progress percentage
   const progress = campaignData
     ? Math.min(
         Math.round((campaignData.raised / campaignData.goalAmount) * 100),
@@ -118,31 +123,67 @@ function ProjectView() {
       )
     : 0;
 
-  const handleToggleSave = () => {
-    if (!isAuthenticated) { // Yeh 'isAuthenticated' Redux se aa raha hai
+  // Handles saving/unsaving campaigns to user profile
+  const handleToggleSave = async () => {
+    if (!userProfile.isAuthenticated) {
       showErrorMessage("Please log in to save campaigns.");
       return;
     }
-    dispatch(toggleSaveCampaign(campaignId));
-  };
-  const handleBackThisProject = () => {
-        navigate("/donate", { state: { campaignId } });
-  };
-    if (campaignsStatus === 'loading') {
-        return ( <> <HeaderLayout /> <div className="text-center py-20">Loading Campaign...</div> <FooterLayout /> </>);
-    }
-    if (campaignsStatus === 'failed') {
-        return ( <> <HeaderLayout /> <div className="text-center py-20 text-red-600">{campaignsError}</div> <FooterLayout /> </>);
-    }
-    if (!campaignData) {
-        return ( <> <HeaderLayout /> <div className="text-center py-20">Campaign not found.</div> <FooterLayout /> </>);
+    if (!campaignId) {
+      showErrorMessage("Campaign ID is missing. Cannot save.");
+      return;
     }
 
+    const token = localStorage.getItem("token");
+    try {
+      const response = await fetch(
+        "https://server-fundify.up.railway.app/api/users/saved-campaigns",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({ campaignId: campaignId }),
+        }
+      );
+
+      if (response.ok) {
+        const result = await response.json();
+        if (result.saved) {
+          showSuccessMessage("Campaign saved successfully!");
+          setUserProfile((prev) => ({
+            ...prev,
+            savedCampaigns: [...(prev.savedCampaigns || []), campaignId],
+          }));
+        } else {
+          showSuccessMessage("Campaign unsaved.");
+          setUserProfile((prev) => ({
+            ...prev,
+            savedCampaigns: (prev.savedCampaigns || []).filter(
+              (id) => id !== campaignId
+            ),
+          }));
+        }
+      } else {
+        const errorData = await response.json();
+        showErrorMessage(
+          `Failed to save/unsave campaign: ${errorData.message}`
+        );
+      }
+    } catch (error) {
+      console.error("Error toggling saved campaign:", error);
+      showErrorMessage("An error occurred while saving/unsaving the campaign.");
+    }
+  };
+
+  // DonorsSidebar component (nested for readability, could be moved to separate file)
   const DonorsSidebar = () => (
     <div className="donors-sidebar">
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex flex-col items-center mb-4">
           <div className="w-16 h-16 bg-gray-200 rounded-full flex items-center justify-center mb-2">
+            {/* User icon SVG */}
             <svg
               xmlns="http://www.w3.org/2000/svg"
               width="32"
@@ -159,6 +200,7 @@ function ProjectView() {
               <circle cx="12" cy="7" r="4"></circle>
             </svg>
           </div>
+          {/* Placeholder for organizer name */}
           <h3 className="text-lg font-bold">
             {campaignData ? campaignData.name : "Organizer Name"}
           </h3>
@@ -168,6 +210,7 @@ function ProjectView() {
 
       <div className="bg-white rounded-lg shadow-md p-6 mb-6">
         <div className="flex items-center mb-4">
+          {/* Users group icon SVG */}
           <svg
             xmlns="http://www.w3.org/2000/svg"
             width="20"
@@ -185,8 +228,9 @@ function ProjectView() {
             <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
+          {/* Display dynamic total backers count */}
           <span className="text-sm font-medium">
-            {recentDonors} people just donated
+            {totalBackersCount} people just donated
           </span>
         </div>
 
@@ -194,7 +238,8 @@ function ProjectView() {
           {recentDonors.length > 0 ? (
             recentDonors.map((donor, index) => (
               <div key={index} className="flex justify-between items-center">
-                <div className="font-medium text-lg">Rs</div>
+                <div className="font-medium text-lg">Rs</div>{" "}
+                {/* Display "Rs" for Pakistani Rupees */}
                 <div className="text-right">
                   <div className="font-medium text-lg">
                     {formatCurrency(donor.amount)}
@@ -232,8 +277,21 @@ function ProjectView() {
     </div>
   );
 
+  // Handles navigation to donation screen
+  const handleBackThisProject = () => {
+    if (campaignData && campaignData._id) {
+      navigate("/donate", { state: { campaignId: campaignData._id } });
+    } else {
+      showErrorMessage(
+        "Campaign data not loaded yet. Cannot proceed to donation."
+      );
+    }
+  };
+
+  // Handles sharing campaign link (copies to clipboard)
   const handleShare = () => {
     const campaignUrl = window.location.href;
+    // Using document.execCommand('copy') for better cross-browser support in some sandbox environments
     const el = document.createElement("textarea");
     el.value = campaignUrl;
     document.body.appendChild(el);
@@ -243,28 +301,65 @@ function ProjectView() {
     showSuccessMessage("Campaign link copied to clipboard!");
   };
 
-    if (campaignsStatus === 'loading') {
-      return (
-        <>
-          <HeaderLayout />
-          <div className="text-center py-20">Loading Campaign...</div>
-          <FooterLayout />
-        </>
-      );
-    }
+  // Loading state UI
+  if (loading) {
+    return (
+      <>
+        <HeaderLayout />
+        <div className="project-view container mx-auto px-4 py-6 text-center">
+          <p>Loading campaign details...</p>
+        </div>
+        <FooterLayout />
+      </>
+    );
+  }
 
+  // Error state UI
+  if (error) {
+    return (
+      <>
+        <HeaderLayout />
+        <div className="project-view container mx-auto px-4 py-6 text-center">
+          <p className="text-red-600">{error}</p>
+          <button
+            onClick={() => window.location.reload()}
+            className="mt-4 bg-[#4A5D45] text-white px-4 py-2 rounded-md hover:bg-[#3E4B3A]"
+          >
+            Retry
+          </button>
+        </div>
+        <FooterLayout />
+      </>
+    );
+  }
 
+  // No campaign data found UI
+  if (!campaignData) {
+    return (
+      <>
+        <HeaderLayout />
+        <div className="project-view container mx-auto px-4 py-6 text-center">
+          <p>No campaign data available.</p>
+        </div>
+        <FooterLayout />
+      </>
+    );
+  }
+
+  // Main component rendering
   return (
     <>
       <HeaderLayout />
 
       <div className="project-view container mx-auto px-4 py-6">
+        {/* Campaign Title and Description */}
         <h1 className="text-2xl font-bold text-gray-800 mb-6">
           {campaignData.title}
         </h1>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8">
           <div className="lg:col-span-2">
+            {/* Main Campaign Image */}
             <img
               src={
                 campaignData.mediaUrls && campaignData.mediaUrls.length > 0
@@ -277,17 +372,19 @@ function ProjectView() {
                 e.target.onerror = null;
                 e.target.src =
                   "https://placehold.co/800x400/CCCCCC/333333?text=No+Image";
-              }}
+              }} // Fallback image on error
             />
 
             <p className="text-gray-700 mb-4">{campaignData.description}</p>
 
+            {/* Campaign Meta Info */}
             <div className="flex items-center text-sm text-gray-600 mb-6">
               <span>
                 Created {new Date(campaignData.createdAt).toLocaleDateString()}
               </span>
               <span className="mx-2">•</span>
               <span className="flex items-center">
+                {/* Location icon SVG */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   width="16"
@@ -308,15 +405,17 @@ function ProjectView() {
             </div>
           </div>
 
+          {/* Campaign Summary Sidebar */}
           <div>
             <div className="bg-white rounded-lg shadow-md p-6">
               <div className="mb-4">
                 <div className="text-2xl font-bold">
-                  {formatCurrency(campaignData.raisedAmount)}
+                  {formatCurrency(campaignData.raised)}
                 </div>
                 <div className="text-sm text-gray-600">
                   pledged of {formatCurrency(campaignData.goalAmount)} goal
                 </div>
+                {/* Display the percentage funded */}
                 <div className="text-sm font-bold text-green-600">
                   {Math.min(progress, 100).toFixed(0)}% Funded
                 </div>
@@ -326,6 +425,7 @@ function ProjectView() {
                 </div>
               </div>
 
+              {/* Progress Bar */}
               <div className="w-full bg-gray-200 rounded-full h-2 mb-6">
                 <div
                   className="bg-green-600 h-2 rounded-full"
@@ -333,17 +433,21 @@ function ProjectView() {
                 ></div>
               </div>
 
+              {/* Backers and Days Left */}
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <div className="text-2xl font-bold">{campaignData.totalBackers || 0}</div>
+                  <div className="text-2xl font-bold">{totalBackersCount}</div>{" "}
+                  {/* Dynamic backers count */}
                   <div className="text-sm text-gray-600">backers</div>
                 </div>
                 <div>
-                  <div className="text-2xl font-bold">{daysToGo}</div>
+                  <div className="text-2xl font-bold">--</div>{" "}
+                  {/* Placeholder for days left (not implemented in backend) */}
                   <div className="text-sm text-gray-600">days to go</div>
                 </div>
               </div>
 
+              {/* Predicted Status */}
               <div className="text-right mb-4">
                 <span className="text-sm">
                   Predicted Status:{" "}
@@ -353,6 +457,7 @@ function ProjectView() {
                 </span>
               </div>
 
+              {/* Action Buttons */}
               <button
                 onClick={handleBackThisProject}
                 className="w-full bg-[#4B5945] hover:bg-[#3E4B3A] text-white py-3 rounded-md mb-3 transition duration-200"
@@ -367,6 +472,7 @@ function ProjectView() {
                 Share
               </button>
 
+              {/* Save/Unsave Button with Heart icon */}
               <button
                 onClick={handleToggleSave}
                 className={`w-full mt-3 p-3 rounded-md flex items-center justify-center ${
@@ -386,6 +492,7 @@ function ProjectView() {
           </div>
         </div>
 
+        {/* Campaign Tabs (Campaign and Updates) */}
         <div className="campaign-tabs bg-white rounded-md shadow-sm">
           <div className="border-b border-gray-200">
             <nav className="flex">
@@ -416,9 +523,10 @@ function ProjectView() {
             {activeTab === "campaign" && (
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                 <div className="lg:col-span-2">
+                  {/* Story Section - Conditional Rendering */}
                   <div className="story-section">
                     <h2 className="text-xl font-bold mb-4">Story</h2>
-                    {campaignData.story ? (
+                    {campaignData.story ? ( // Check if story content exists
                       <>
                         {campaignData.mediaUrls &&
                           campaignData.mediaUrls.length > 1 && (
@@ -438,7 +546,7 @@ function ProjectView() {
                     ) : (
                       <p className="text-gray-500 italic">
                         No story available for this campaign yet.
-                      </p>
+                      </p> // Fallback message
                     )}
                   </div>
                 </div>
@@ -469,6 +577,7 @@ function ProjectView() {
 
                           <div className="flex items-center mb-4">
                             <div className="w-10 h-10 rounded-full bg-gray-200 flex items-center justify-center mr-3">
+                              {/* User icon SVG for update author */}
                               <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 width="20"
@@ -488,7 +597,8 @@ function ProjectView() {
                             <div>
                               <div className="font-medium">
                                 {campaignData.name}
-                              </div>
+                              </div>{" "}
+                              {/* Assuming campaignData.name is the creator of updates */}
                               <div className="text-xs text-gray-500">
                                 {new Date(
                                   update.createdAt
