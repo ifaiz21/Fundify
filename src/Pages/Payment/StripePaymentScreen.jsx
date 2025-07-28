@@ -6,7 +6,7 @@ import { CardNumberElement, CardCvcElement, CardExpiryElement, useStripe, useEle
 import { showSuccessMessage, showErrorMessage } from '../../utils/toast';
 import Header from "../Layout/HeaderLayout";
 import Footer from "../Layout/FooterLayout";
-import { updateCampaignOnDonation } from '../features/campaignsSlice';
+import { updateCampaignOnDonation } from '../../features/campaignsSlice';
 
 
 const StripePaymentScreen = () => {
