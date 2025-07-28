@@ -1,32 +1,40 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom"; // useParams yahan se hata diya hai
+import { useSelector, useDispatch } from 'react-redux';
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
 import axios from "axios";
-import { useUser } from "../context/UserContext";
 import { Heart } from "lucide-react";
 import { showSuccessMessage, showErrorMessage } from "../utils/toast";
+import { fetchCampaigns } from "../features/campaignsSlice";
+import { toggleSaveCampaign } from "../features/authSlice";
 
 function ProjectView() {
-  const [activeTab, setActiveTab] = useState("campaign");
-  const [campaignData, setCampaignData] = useState(null);
-  const [campaignUpdates, setCampaignUpdates] = useState([]);
-  const [recentDonors, setRecentDonors] = useState([]);
-  const [totalBackersCount, setTotalBackersCount] = useState(0);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-  const [daysToGo, setDaysToGo] = useState("--");
-  const location = useLocation();
-  const navigate = useNavigate();
-  const [prediction, setPrediction] = useState(null);
-  const { userProfile, setUserProfile } = useUser();
+  // Sirf is page ke liye zaroori local state
+    const [activeTab, setActiveTab] = useState("campaign");
+    const [campaignUpdates, setCampaignUpdates ] = useState([]);
+    const [recentDonors, setRecentDonors] = useState([]);
+    const [daysToGo, setDaysToGo] = useState("--");
+    const [prediction, setPrediction] = useState(null);
 
-  const queryParams = new URLSearchParams(location.search);
-  const campaignId = queryParams.get("id");
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    const location = useLocation(); // URL se query parameter lene ke liye
 
-  const isCampaignSaved = userProfile.savedCampaigns?.includes(campaignId);
+    // --- ID HAASIL KARNE KA SAHI TareeKA ---
+    const queryParams = new URLSearchParams(location.search);
+    const campaignId = queryParams.get("id");
+
+    // --- REDUX SE DATA HASIL KAREIN ---
+    const { allCampaigns, status: campaignsStatus, error: campaignsError } = useSelector((state) => state.campaigns);
+    const { isAuthenticated, userProfile } = useSelector((state) => state.auth);
+    
+    // Redux ki list se is page ke liye campaign nikalein
+    const campaignData = allCampaigns.find(c => c._id === campaignId);
+    
+    const isCampaignSaved = userProfile?.savedCampaigns?.includes(campaignId);
 
   const calculateDaysToGo = (endDate) => {
     console.log("End Date received:", endDate); // Debug
@@ -45,85 +53,65 @@ function ProjectView() {
   };
 
   useEffect(() => {
-    if (campaignId && campaignId.length === 24) {
-      console.log("Campaign ID:", campaignId);
-      const fetchCampaignDetails = async () => {
-        try {
-          setLoading(true);
-          const response = await axios.get(
-            `https://server-fundify.up.railway.app/api/campaigns/${campaignId}`
-          );
-          console.log("Campaign Details Response:", response.data); // Debug
-          setCampaignData(response.data);
-          setDaysToGo(calculateDaysToGo(response.data.endDate));
-
-          try {
-            const predictionResponse = await axios.post(
-              "https://fundify-ml-api-production.up.railway.app/predict",
-              {
-                goalAmount: response.data.goalAmount || 0,
-                category: response.data.category || "",
-                duration: response.data.duration || 0,
-              }
-            );
-            console.log("Prediction response:", predictionResponse.data);
-            setPrediction(predictionResponse.data.success_probability);
-          } catch (apiError) {
-            console.error("Prediction API error:", apiError.message);
-            setPrediction(null);
-          }
-
-          setError(null);
-        } catch (err) {
-          console.error("Error fetching campaign details:", err);
-          setError("Failed to load campaign details. Please try again later.");
-          setCampaignData(null);
-        } finally {
-          setLoading(false);
+        if (campaignsStatus === 'idle') {
+            dispatch(fetchCampaigns());
         }
-      };
+    }, [campaignsStatus, dispatch]);
 
-      const fetchCampaignUpdates = async () => {
-        try {
-          const url = `https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`;
-          console.log("Fetching updates from:", url);
-          const response = await axios.get(url);
-          console.log("Updates Response:", response.data); // Debug
-          setCampaignUpdates(response.data);
-        } catch (err) {
-          console.error(
-            "Error fetching campaign updates:",
-            err.response ? err.response.status : err.message
-          );
-          setCampaignUpdates([]);
-        }
-      };
+    // Effect #2: Jab campaignData mil jaye, to baaki details fetch karna
+    // useEffect #2: Jab campaignData mil jaye, to baaki details fetch karna
+useEffect(() => {
+    if (campaignData) {
+        setDaysToGo(calculateDaysToGo(campaignData.endDate));
 
-      const fetchRecentDonors = async () => {
-        try {
-          const response = await axios.get(
-            `https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`
-          );
-          console.log("Recent Donors Response:", response.data); // Debug
-          setRecentDonors(response.data.recentDonors);
-          const newTotalBackers = response.data.totalBackers || 0;
-          setTotalBackersCount(newTotalBackers);
-          console.log("Total Backers Count:", newTotalBackers);
-        } catch (err) {
-          console.error("Error fetching recent donors:", err);
-          setRecentDonors([]);
-          setTotalBackersCount(0);
-        }
-      };
+        const controller = new AbortController();
+        const { signal } = controller; // Yahan signal banaya gaya
 
-      fetchCampaignDetails();
-      fetchCampaignUpdates();
-      fetchRecentDonors();
-    } else {
-      setError("Invalid or no campaign ID provided.");
-      setLoading(false);
+        const fetchSecondaryData = async () => {
+            try {
+                // Donors aur Updates ko parallel mein fetch karein
+                const [donorsResponse, updatesResponse] = await Promise.all([
+                    // Niche 'signal' ko istemal kiya gaya
+                    axios.get(`https://server-fundify.up.railway.app/api/donations/campaign/${campaignId}/recent?limit=3`, { signal }),
+                    axios.get(`https://server-fundify.up.railway.app/api/campaigns/${campaignId}/updates`, { signal })
+                ]);
+                
+                setRecentDonors(donorsResponse.data.recentDonors);
+                setCampaignUpdates(updatesResponse.data);
+
+                // Prediction API call
+                try {
+                    const predictionResponse = await axios.post(
+                        "https://fundify-ml-api-production.up.railway.app/predict", {
+                            goalAmount: campaignData.goalAmount,
+                            category: campaignData.category,
+                            duration: campaignData.duration,
+                        }, 
+                        { signal } // Yahan bhi 'signal' ko istemal kiya gaya
+                    );
+                    setPrediction(predictionResponse.data.success_probability);
+                } catch (predictionError) {
+                    if (!axios.isCancel(predictionError)) {
+                       console.error("Prediction API error:", predictionError);
+                       setPrediction(null);
+                    }
+                }
+
+            } catch (error) {
+                if (!axios.isCancel(error)) {
+                    console.error("Error fetching secondary details:", error);
+                }
+            }
+        };
+        
+        fetchSecondaryData();
+
+        // Cleanup function
+        return () => {
+            controller.abort();
+        };
     }
-  }, [campaignId, location.search]);
+}, [campaignData, campaignId]);
 
   const formatCurrency = (amount) => {
     return new Intl.NumberFormat("en-IN", {
@@ -144,58 +132,13 @@ function ProjectView() {
       )
     : 0;
 
-  const handleToggleSave = async () => {
-    if (!userProfile.isAuthenticated) {
-      showErrorMessage("Please log in to save campaigns.");
-      return;
-    }
-    if (!campaignId) {
-      showErrorMessage("Campaign ID is missing. Cannot save.");
-      return;
-    }
-
-    const token = localStorage.getItem("token");
-    try {
-      const response = await fetch(
-        "https://server-fundify.up.railway.app/api/users/saved-campaigns",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ campaignId: campaignId }),
+  const handleToggleSave = () => {
+        if (!isAuthenticated) {
+            showErrorMessage("Please log in to save campaigns.");
+            return;
         }
-      );
-
-      if (response.ok) {
-        const result = await response.json();
-        if (result.saved) {
-          showSuccessMessage("Campaign saved successfully!");
-          setUserProfile((prev) => ({
-            ...prev,
-            savedCampaigns: [...(prev.savedCampaigns || []), campaignId],
-          }));
-        } else {
-          showSuccessMessage("Campaign unsaved.");
-          setUserProfile((prev) => ({
-            ...prev,
-            savedCampaigns: (prev.savedCampaigns || []).filter(
-              (id) => id !== campaignId
-            ),
-          }));
-        }
-      } else {
-        const errorData = await response.json();
-        showErrorMessage(
-          `Failed to save/unsave campaign: ${errorData.message}`
-        );
-      }
-    } catch (error) {
-      console.error("Error toggling saved campaign:", error);
-      showErrorMessage("An error occurred while saving/unsaving the campaign.");
-    }
-  };
+        dispatch(toggleSaveCampaign(campaignId));
+    };
 
   const DonorsSidebar = () => (
     <div className="donors-sidebar">
@@ -245,7 +188,7 @@ function ProjectView() {
             <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
           </svg>
           <span className="text-sm font-medium">
-            {totalBackersCount} people just donated
+            {setRecentDonors} people just donated
           </span>
         </div>
 
@@ -292,14 +235,8 @@ function ProjectView() {
   );
 
   const handleBackThisProject = () => {
-    if (campaignData && campaignData._id) {
-      navigate("/donate", { state: { campaignId: campaignData._id } });
-    } else {
-      showErrorMessage(
-        "Campaign data not loaded yet. Cannot proceed to donation."
-      );
-    }
-  };
+        navigate("/donate", { state: { campaignId } });
+    };
 
   const handleShare = () => {
     const campaignUrl = window.location.href;
@@ -312,47 +249,21 @@ function ProjectView() {
     showSuccessMessage("Campaign link copied to clipboard!");
   };
 
-  if (loading) {
-    return (
-      <>
-        <HeaderLayout />
-        <div className="project-view container mx-auto px-4 py-6 text-center">
-          <p>Loading campaign details...</p>
-        </div>
-        <FooterLayout />
-      </>
-    );
-  }
-
-  if (error) {
-    return (
-      <>
-        <HeaderLayout />
-        <div className="project-view container mx-auto px-4 py-6 text-center">
-          <p className="text-red-600">{error}</p>
-          <button
-            onClick={() => window.location.reload()}
-            className="mt-4 bg-[#4A5D45] text-white px-4 py-2 rounded-md hover:bg-[#3E4B3A]"
-          >
-            Retry
-          </button>
-        </div>
-        <FooterLayout />
-      </>
-    );
-  }
-
-  if (!campaignData) {
-    return (
-      <>
-        <HeaderLayout />
-        <div className="project-view container mx-auto px-4 py-6 text-center">
-          <p>No campaign data available.</p>
-        </div>
-        <FooterLayout />
-      </>
-    );
-  }
+  if (campaignsStatus === 'loading') {
+        return ( <> <HeaderLayout /> <div className="text-center py-20">Loading Campaign...</div> <FooterLayout /> </>);
+    }
+    if (campaignsStatus === 'failed') {
+        return ( <> <HeaderLayout /> <div className="text-center py-20 text-red-600">{campaignsError}</div> <FooterLayout /> </>);
+    }
+    if (!campaignData) {
+        // Yeh check zaroori hai, agar data load hone ke baad bhi campaign na mile
+        // 'idle' state mein yeh thori der ke liye nazar aa sakta hai jab tak data fetch na ho
+        if (campaignsStatus === 'succeeded') {
+            return ( <> <HeaderLayout /> <div className="text-center py-20">Campaign not found.</div> <FooterLayout /> </>);
+        }
+        // Jab tak status idle hai, loading dikhayein
+        return ( <> <HeaderLayout /> <div className="text-center py-20">Loading Campaign...</div> <FooterLayout /> </>);
+    }
 
   return (
     <>
@@ -435,7 +346,7 @@ function ProjectView() {
 
               <div className="grid grid-cols-2 gap-4 mb-6">
                 <div>
-                  <div className="text-2xl font-bold">{totalBackersCount}</div>
+                  <div className="text-2xl font-bold">{recentDonors}</div>
                   <div className="text-sm text-gray-600">backers</div>
                 </div>
                 <div>
