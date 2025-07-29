@@ -348,7 +348,7 @@ function ProjectView() {
             <div>
               <div className="bg-white rounded-lg shadow-md p-6">
                 <div className="mb-4">
-                  <div className="text-2xl font-bold">{formatCurrency(campaignData.raised)}</div>
+                  <div className="text-2xl font-bold">{formatCurrency(campaignData.raisedAmount)}</div>
                   <div className="text-sm text-gray-600">pledged of {formatCurrency(campaignData.goalAmount)} goal</div>
                   {/* Display the percentage funded */}
                   <div className="text-sm font-bold text-green-600">
