@@ -1,7 +1,7 @@
 // src/Pages/AdminSide/Users.jsx
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useCallback } from "react"
 import Sidebar from "./SideBar"
 import { Eye, Edit, Trash, Search, Menu, X, AlertTriangle } from "lucide-react"
 import axios from 'axios';
@@ -48,7 +48,8 @@ const UserManagement = () => {
     const [userToDelete, setUserToDelete] = useState(null);
     const itemsPerPage = 5;
 
-    const fetchUsersData = async () => {
+    const fetchUsersData = useCallback(async () => {
+        // Full loader sirf pehli baar dikhayein
         if (!campaignCreators.length && !backers.length) setLoading(true);
         setError(null);
         try {
@@ -93,7 +94,7 @@ const UserManagement = () => {
         } finally {
             setLoading(false);
         }
-    };
+    }, [campaignCreators.length, backers.length]);
 
     useEffect(() => {
         fetchUsersData();
@@ -106,7 +107,7 @@ const UserManagement = () => {
 
         socket.on('disconnect', () => console.log('UserManagement: Disconnected'));
         return () => socket.disconnect();
-    }, );
+    }, [fetchUsersData] );
 
     const handleDeleteClick = (id, type, name) => {
         setUserToDelete({ id, type, name });
