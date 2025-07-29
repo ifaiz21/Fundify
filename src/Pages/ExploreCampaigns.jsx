@@ -22,7 +22,7 @@ const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
 // --- CAMPAIGN CARD COMPONENT ---
 function CampaignCard({ campaign, onSelectForDonation }) {
-    const safeRaised = Number(campaign.raised) || 0;
+    const safeRaised = Number(campaign.raisedAmount) || 0;
     const safeGoal = Number(campaign.goalAmount) || 1;
     const progressPercentage = Math.min((safeRaised / safeGoal) * 100, 100);
     const navigate = useNavigate();
