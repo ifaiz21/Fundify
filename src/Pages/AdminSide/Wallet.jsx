@@ -3,10 +3,9 @@
 import React, { useState, useEffect, useCallback } from "react"
 import Sidebar from "./SideBar"
 import { X, Menu, ArrowDownLeft, ArrowUpRight } from "lucide-react"
-import axios from "axios" // Axios is now used
-import { io } from "socket.io-client" // Socket.IO for real-time updates
+import axios from "axios"
+import { io } from "socket.io-client"
 
-// A new modal for the Transfer Funds functionality
 const TransferFundsModal = ({ isOpen, onClose, onConfirm }) => {
     const [amount, setAmount] = useState('');
     const [description, setDescription] = useState('');
@@ -14,7 +13,6 @@ const TransferFundsModal = ({ isOpen, onClose, onConfirm }) => {
     if (!isOpen) return null;
 
     const handleSubmit = () => {
-        // Basic validation
         if (!amount || isNaN(amount) || amount <= 0) {
             alert("Please enter a valid amount.");
             return;
@@ -84,7 +82,6 @@ const WalletPage = () => {
     const [isTransferModalOpen, setIsTransferModalOpen] = useState(false);
 
     const fetchWalletData = useCallback(async () => {
-        // Only show full-page loader on initial load
         if (!Object.keys(walletStats).length) setLoading(true);
         setError(null);
         try {
@@ -95,7 +92,7 @@ const WalletPage = () => {
                 headers: { 'Authorization': `Bearer ${token}` }
             });
 
-            setWalletStats(response.data.stats);
+            setWalletStats(response.data.stats || {}); // Fallback to empty object if stats is null/undefined
             setTransactions(response.data.transactions || []);
         } catch (err) {
             setError(err.response?.data?.message || "Failed to load wallet data.");
@@ -109,15 +106,10 @@ const WalletPage = () => {
 
         const socket = io('https://server-fundify.up.railway.app/');
         socket.on('connect', () => console.log('WalletPage: Connected to Socket.IO'));
-
-        // Listen for real-time wallet updates from the backend
         socket.on('walletUpdated', (updatedStats) => {
             console.log('Wallet data updated in real-time:', updatedStats);
             setWalletStats(updatedStats);
-            // Optionally, re-fetch transactions to see the new withdrawal/deposit record
-            // fetchWalletData(); 
         });
-
         return () => socket.disconnect();
     }, [fetchWalletData]);
 
@@ -128,9 +120,9 @@ const WalletPage = () => {
                 { amount, description },
                 { headers: { 'Authorization': `Bearer ${token}` } }
             );
-            alert(response.data.message); // Or use a toast notification
-            setWalletStats(response.data.wallet); // Update stats immediately from response
-            fetchWalletData(); // Re-fetch everything to be sure
+            alert(response.data.message);
+            setWalletStats(response.data.wallet);
+            fetchWalletData();
         } catch (err) {
             alert(`Error: ${err.response?.data?.message || "Transfer failed."}`);
         } finally {
@@ -142,7 +134,7 @@ const WalletPage = () => {
         const query = searchQuery.toLowerCase();
         return (
             (transaction.transactionId || '').toLowerCase().includes(query) ||
-            (transaction.campaignId?.title || '').toLowerCase().includes(query) || // Assuming campaignId is populated
+            (transaction.campaignId?.title || '').toLowerCase().includes(query) ||
             (transaction.description || '').toLowerCase().includes(query) ||
             (transaction.type || '').toLowerCase().includes(query)
         );
@@ -182,23 +174,21 @@ const WalletPage = () => {
                     
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
                         <div className="bg-white rounded-lg shadow-sm p-6 space-y-6">
-                            <div><p className="text-sm text-gray-500">Total Balance</p><h3 className="text-3xl font-bold">{walletStats.totalBalance?.toLocaleString()} PKR</h3></div>
-                            <div><p className="text-sm text-gray-500">Available Funds</p><h3 className="text-3xl font-bold">{walletStats.availableFunds?.toLocaleString()} PKR</h3></div>
+                            {/* --- FIX: ADDED OPTIONAL CHAINING --- */}
+                            <div><p className="text-sm text-gray-500">Total Balance</p><h3 className="text-3xl font-bold">{walletStats?.totalBalance?.toLocaleString() || 0} PKR</h3></div>
+                            <div><p className="text-sm text-gray-500">Available Funds</p><h3 className="text-3xl font-bold">{walletStats?.availableFunds?.toLocaleString() || 0} PKR</h3></div>
                             <button onClick={() => setIsTransferModalOpen(true)} className="bg-[#4B5842] text-white px-4 py-2 rounded-md hover:bg-[#3A4433] w-full sm:w-auto">Transfer Funds</button>
                         </div>
                         <div className="bg-white rounded-lg shadow-sm p-6 space-y-3 text-sm">
-                            <div className="flex justify-between items-center"><p className="text-gray-500">Total Withdrawals:</p><p className="font-medium">{walletStats.totalWithdrawals?.toLocaleString()} PKR</p></div>
-                            <div className="flex justify-between items-center"><p className="text-gray-500">Pending Payouts:</p><p className="font-medium">{walletStats.pendingPayouts?.toLocaleString()} PKR</p></div>
+                            <div className="flex justify-between items-center"><p className="text-gray-500">Total Withdrawals:</p><p className="font-medium">{walletStats?.totalWithdrawals?.toLocaleString() || 0} PKR</p></div>
+                            <div className="flex justify-between items-center"><p className="text-gray-500">Pending Payouts:</p><p className="font-medium">{walletStats?.pendingPayouts?.toLocaleString() || 0} PKR</p></div>
                         </div>
                     </div>
 
                     <div className="bg-white rounded-lg shadow-sm overflow-hidden">
                         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 sm:p-6 border-b gap-4">
                             <h2 className="text-lg font-semibold">Wallet Activity</h2>
-                            {/* Time filter can be implemented later if needed */}
                         </div>
-
-                        {/* Mobile View */}
                         <div className="md:hidden">
                             {filteredTransactions.length > 0 ? filteredTransactions.map(tx => (
                                 <div key={tx._id} onClick={() => handleTransactionClick(tx)} className="p-4 border-b last:border-b-0 space-y-2">
@@ -213,8 +203,6 @@ const WalletPage = () => {
                                 </div>
                             )) : <p className="p-4 text-center text-gray-500">No transactions found.</p>}
                         </div>
-
-                        {/* Desktop View */}
                         <div className="hidden md:block overflow-x-auto">
                             <table className="w-full">
                                 <thead className="bg-gray-50"><tr className="text-left text-xs text-gray-500"><th className="px-6 py-3 font-medium">Transaction</th><th className="px-6 py-3 font-medium">Date</th><th className="px-6 py-3 font-medium">Amount</th><th className="px-6 py-3 font-medium">Status</th></tr></thead>
@@ -233,9 +221,7 @@ const WalletPage = () => {
                     </div>
                 </main>
             </div>
-
             <TransferFundsModal isOpen={isTransferModalOpen} onClose={() => setIsTransferModalOpen(false)} onConfirm={handleTransferConfirm} />
-            
             {showModal && selectedTransaction && (
                 <div onClick={() => setShowModal(false)} className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
                     <div onClick={(e) => e.stopPropagation()} className="bg-white rounded-lg shadow-lg w-full max-w-md mx-auto">
