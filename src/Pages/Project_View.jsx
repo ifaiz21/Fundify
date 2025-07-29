@@ -9,6 +9,31 @@ import { useUser } from '../context/UserContext'; // Import useUser for saved ca
 import { Heart } from 'lucide-react'; // Import Heart icon
 import { showSuccessMessage, showErrorMessage } from "../utils/toast" // Import toast functions directly
 
+// Helper function to calculate days left
+const calculateDaysLeft = (endDate) => {
+  // Check karein ke endDate maujood hai ya nahi
+  if (!endDate) {
+    return "--"; // Agar date nahi hai to default value return karein
+  }
+
+  const now = new Date(); // Aaj ki tareekh
+  const end = new Date(endDate); // Campaign ke khatam hone ki tareekh
+
+  // Dono dates ke darmiyan milliseconds ka farq nikalein
+  const differenceInTime = end.getTime() - now.getTime();
+
+  // Agar farq 0 ya us se kam hai, to campaign khatam ho chuki hai
+  if (differenceInTime <= 0) {
+    return 0;
+  }
+
+  // Milliseconds ko dinon mein convert karein
+  // Math.ceil() istemal karein taake agar 1 ghanta bhi baaqi ho to 1 din dikhaye
+  const differenceInDays = Math.ceil(differenceInTime / (1000 * 3600 * 24));
+  
+  return differenceInDays;
+};
+
 function ProjectView() {
   const [activeTab, setActiveTab] = useState("campaign")
   const [campaignData, setCampaignData] = useState(null)
@@ -21,6 +46,7 @@ function ProjectView() {
   const navigate = useNavigate()
   const [prediction, setPrediction] = useState(null);   //Model api 
   const { userProfile, setUserProfile } = useUser(); // Get user context
+  const daysLeft = campaignData ? calculateDaysLeft(campaignData.endDate) : '--';
 
   const queryParams = new URLSearchParams(location.search)
   const campaignId = queryParams.get("id")
@@ -106,7 +132,7 @@ function ProjectView() {
   }
 
   // Calculates campaign progress percentage
-  const progress = campaignData ? Math.min(Math.round((campaignData.raised / campaignData.goalAmount) * 100), 100) : 0
+  const progress = campaignData ? Math.min(Math.round((campaignData.raisedAmount / campaignData.goalAmount) * 100), 100) : 0
 
   // Handles saving/unsaving campaigns to user profile
   const handleToggleSave = async () => {
@@ -371,7 +397,7 @@ function ProjectView() {
                     <div className="text-sm text-gray-600">backers</div>
                   </div>
                   <div>
-                    <div className="text-2xl font-bold">--</div> {/* Placeholder for days left (not implemented in backend) */}
+                    <div className="text-2xl font-bold">{daysLeft}</div> {/* Placeholder for days left (not implemented in backend) */}
                     <div className="text-sm text-gray-600">days to go</div>
                   </div>
                 </div>
