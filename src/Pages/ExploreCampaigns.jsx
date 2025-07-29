@@ -1,18 +1,13 @@
+// src/Pages/ExploreCampaigns.jsx
 "use client";
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-// Redux hooks import karein
-import { useSelector, useDispatch } from 'react-redux';
-
-// Layout, UI components aur utilities
 import Header from "./Layout/HeaderLayout";
 import Footer from "./Layout/FooterLayout";
+import axios from "axios";
+import { useUser } from '../context/UserContext'; 
 import { Heart } from 'lucide-react';
-import { showErrorMessage } from '../utils/toast';
-
-// Redux Thunks (Actions) import karein
-import { fetchCampaigns } from "../features/campaignsSlice";
-import { toggleSaveCampaign } from "../features/authSlice";
+import { showSuccessMessage, showErrorMessage } from '../utils/toast';
 
 
 // --- CATEGORIES ---
@@ -27,33 +22,63 @@ const formatCurrency = (amount) => `Rs. ${amount.toLocaleString()}`;
 
 // --- CAMPAIGN CARD COMPONENT ---
 function CampaignCard({ campaign, onSelectForDonation }) {
-    const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const { isAuthenticated, userProfile } = useSelector(state => state.auth);
-    const isCampaignSaved = userProfile?.savedCampaigns?.includes(campaign._id);
-    const safeRaised = Number(campaign.raisedAmount) || 0;
+    const safeRaised = Number(campaign.raised) || 0;
     const safeGoal = Number(campaign.goalAmount) || 1;
     const progressPercentage = Math.min((safeRaised / safeGoal) * 100, 100);
-   // const { userProfile, setUserProfile } = useUser();
+    const navigate = useNavigate();
+    const { userProfile, setUserProfile } = useUser();
+    const isCampaignSaved = userProfile.savedCampaigns?.includes(campaign._id);
 
     // THIS IS THE CORRECTED FUNCTION
-   const handleToggleSave = (e) => {
-        e.stopPropagation();
-        if (!isAuthenticated) {
-            showErrorMessage('Please log in to save campaigns.');
-            return;
-        }
-        // Poora API logic ab Redux Thunk mein hai, yahan sirf dispatch call hoga
-        dispatch(toggleSaveCampaign(campaign._id));
-    };
+    const handleToggleSave = async (e) => {
+        e.stopPropagation();
+        if (!userProfile.isAuthenticated) {
+            showErrorMessage('Please log in to save campaigns.');
+            return;
+        }
+
+        const token = localStorage.getItem('token');
+        if (!token) {
+            showErrorMessage('You must be logged in to perform this action.');
+            return;
+        }
+
+        try {
+            const response = await fetch('https://server-fundify.up.railway.app/api/users/saved-campaigns', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: JSON.stringify({ campaignId: campaign._id }),
+            });
+
+            if (response.ok) {
+                const result = await response.json();
+                if (result.saved) {
+                    showSuccessMessage('Campaign saved successfully!');
+                    setUserProfile(prev => ({ ...prev, savedCampaigns: [...(prev.savedCampaigns || []), campaign._id] }));
+                } else {
+                    showSuccessMessage('Campaign unsaved.');
+                    setUserProfile(prev => ({ ...prev, savedCampaigns: (prev.savedCampaigns || []).filter(id => id !== campaign._id) }));
+                }
+            } else {
+                const errorData = await response.json();
+                showErrorMessage(`Failed to save/unsave campaign: ${errorData.message}`);
+            }
+        } catch (error) {
+            console.error('Error toggling saved campaign:', error);
+            showErrorMessage('An error occurred while saving/unsaving the campaign.');
+        }
+    };
 
     const handleCardClick = () => {
-        if (onSelectForDonation) {
-            onSelectForDonation(campaign._id);
-        } else {
-            navigate(`/ProjectView?id=${campaign._id}`);
-        }
-    };
+        if (onSelectForDonation) {
+            onSelectForDonation(campaign._id);
+        } else {
+            navigate(`/ProjectView?id=${campaign._id}`);
+        }
+    };
     
     return (
         <div className="campaign-card flex flex-col cursor-pointer" onClick={handleCardClick}>
@@ -119,33 +144,44 @@ function CampaignCard({ campaign, onSelectForDonation }) {
 
 // --- EXPLORE CAMPAIGNS PAGE ---
 export default function ExploreCampaigns() {
-    const dispatch = useDispatch();
-    const navigate = useNavigate();
-    const location = useLocation();
-    const { allCampaigns, status, error } = useSelector((state) => state.campaigns);
+    const [campaigns, setCampaigns] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState(null);
     const [selectedCategory, setSelectedCategory] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [visibleCampaignsCount, setVisibleCampaignsCount] = useState(9);
+    const navigate = useNavigate();
+    const location = useLocation();
     const isSelectForDonationMode = location.state?.purpose === "select-for-donation";
     //const categories = allCategories;
 
     useEffect(() => {
-        // Yeh check karega ke agar data pehle se nahi hai to hi fetch kare
-        if (status === 'idle') {
-            dispatch(fetchCampaigns());
-        }
-    }, [status, dispatch]);
+        const fetchCampaigns = async () => {
+            try {
+                setLoading(true);
+                const response = await axios.get("https://server-fundify.up.railway.app/api/campaigns");
+                const activeCampaigns = (response.data.campaigns || []).filter(
+                    c => c.status === 'Active' || c.status === 'Approved'
+                );
+                setCampaigns(activeCampaigns);
+                setError(null);
+            } catch (err) {
+                console.error("Error fetching campaigns:", err);
+                setError("Failed to load campaigns. Please try again later.");
+                setCampaigns([]);
+            } finally {
+                setLoading(false);
+            }
+        };
+        fetchCampaigns();
+    }, []);
 
-    const filteredCampaigns = allCampaigns.filter((campaign) => {
-        // Pehle campaign status check kar lein
-        const isActive = campaign.status === 'Active' || campaign.status === 'Approved';
-        if (!isActive) return false;
-
-        const matchesCategory = selectedCategory === "all" || campaign.category.toLowerCase() === selectedCategory.toLowerCase();
-        const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                              campaign.description.toLowerCase().includes(searchQuery.toLowerCase());
-        return matchesCategory && matchesSearch;
-    });
+    const filteredCampaigns = campaigns.filter((campaign) => {
+        const matchesCategory = selectedCategory === "all" || campaign.category.toLowerCase() === selectedCategory.toLowerCase();
+        const matchesSearch = campaign.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                              campaign.description.toLowerCase().includes(searchQuery.toLowerCase());
+        return matchesCategory && matchesSearch;
+    });
 
     const loadMore = () => setVisibleCampaignsCount((prev) => prev + 6);
     const handleSelectForDonation = (campaignId) => navigate("/donate", { state: { campaignId } });
@@ -199,12 +235,12 @@ export default function ExploreCampaigns() {
                 </div>
 
                 {/* --- CAMPAIGNS GRID --- */}
-                {status === 'loading' ? (
+                {loading ? (
                     <div className="text-center py-20"><p className="text-xl text-gray-600">Loading Campaigns...</p></div>
-                ) : status === 'failed' ? (
+                ) : error ? (
                     <div className="text-center py-20">
                         <p className="text-red-600 text-xl">{error}</p>
-                        <button onClick={() => dispatch(fetchCampaigns())} className="retry-button">Retry</button>
+                        <button onClick={() => window.location.reload()} className="retry-button">Retry</button>
                     </div>
                 ) : filteredCampaigns.length === 0 ? (
                     <div className="text-center py-20"><p className="text-gray-500 text-lg">No campaigns found matching your criteria.</p></div>
