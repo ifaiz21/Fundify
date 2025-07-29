@@ -3,423 +3,256 @@
 
 import { useState, useEffect } from "react"
 import Sidebar from "./SideBar"
-import { Eye, Edit, Trash, Search } from "lucide-react"
+import { Eye, Edit, Trash, Search, Menu, X, AlertTriangle } from "lucide-react"
 import axios from 'axios';
-import { io } from 'socket.io-client'; // This import is correct for a package
+import { io } from 'socket.io-client';
+
+// A simple, self-contained confirmation modal
+const ConfirmationModal = ({ message, onConfirm, onCancel }) => (
+    <div className="fixed inset-0 bg-black bg-opacity-50 z-40 flex justify-center items-center p-4">
+        <div className="bg-white rounded-lg shadow-xl p-6 w-full max-w-sm">
+            <div className="text-center">
+                <AlertTriangle className="h-12 w-12 text-red-500 mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-gray-800">Are you sure?</h3>
+                <p className="text-sm text-gray-500 mt-2">{message}</p>
+            </div>
+            <div className="mt-6 flex justify-end space-x-3">
+                <button
+                    onClick={onCancel}
+                    className="px-4 py-2 bg-gray-200 text-gray-800 rounded-md hover:bg-gray-300 text-sm font-medium"
+                >
+                    Cancel
+                </button>
+                <button
+                    onClick={onConfirm}
+                    className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 text-sm font-medium"
+                >
+                    Delete
+                </button>
+            </div>
+        </div>
+    </div>
+);
 
 
 const UserManagement = () => {
-    const [, setAllUsers] = useState([]);
     const [campaignCreators, setCampaignCreators] = useState([]);
     const [backers, setBackers] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [creatorsPage, setCreatorsPage] = useState(1);
+    const [backersPage, setBackersPage] = useState(1);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+    const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+    const [userToDelete, setUserToDelete] = useState(null);
+    const itemsPerPage = 5;
 
-    const [creatorsPage, setCreatorsPage] = useState(1)
-    const [backersPage, setBackersPage] = useState(1)
-    const [searchQuery, setSearchQuery] = useState("")
-    const itemsPerPage = 5
-
-    // Extracted fetch logic into a standalone function for reusability
     const fetchUsersData = async () => {
-        setLoading(true);
+        if (!campaignCreators.length && !backers.length) setLoading(true);
         setError(null);
         try {
             const token = localStorage.getItem('token');
-            if (!token) {
-                throw new Error("Authentication token missing. Please log in as admin.");
-            }
+            if (!token) throw new Error("Authentication token missing.");
 
             const response = await axios.get('https://server-fundify.up.railway.app/api/admin/users', {
-                headers: {
-                    Authorization: `Bearer ${token}`
-                }
+                headers: { Authorization: `Bearer ${token}` }
             });
 
-            console.log("Fetched Users Data:", response.data); // Log the raw data
-
             if (Array.isArray(response.data)) {
-                setAllUsers(response.data);
-
                 const creatorsData = [];
                 const backersData = [];
-
                 response.data.forEach(user => {
-                    // CORRECTED LOGIC: Check if createdCampaigns is greater than 0
-                    if (user.createdCampaigns > 0) { 
+                    if (user.createdCampaigns > 0) {
                         creatorsData.push({
                             id: user._id,
                             name: user.name,
                             email: user.email,
-                            // Use the number directly. Adjust text based on count.
-                            campaignName: `${user.createdCampaigns} Campaign${user.createdCampaigns > 1 ? 's' : ''}`, 
-                            fundingGoal: 'N/A', // Dynamic data ke liye mazeed API call ya backend mein pre-aggregation chahiye
+                            campaignsCount: user.createdCampaigns,
                             status: user.verified ? "Verified" : "Pending",
                         });
                     }
-
-                    // CORRECTED LOGIC: Check if backedCampaigns is greater than 0
-                    if (user.backedCampaigns > 0) { 
+                    if (user.backedCampaigns > 0) {
                         backersData.push({
                             id: user._id,
                             name: user.name,
                             email: user.email,
-                            // Use the number directly. Adjust text based on count.
-                            campaignName: `${user.backedCampaigns} Backed Campaign${user.backedCampaigns > 1 ? 's' : ''}`, 
-                            backedAmount: 'N/A', // Dynamic data ke liye mazeed API call ya backend mein pre-aggregation chahiye
+                            campaignsCount: user.backedCampaigns,
                             status: user.verified ? "Verified" : "Pending",
                         });
                     }
                 });
-
                 setCampaignCreators(creatorsData);
                 setBackers(backersData);
-
             } else {
-                console.warn("Users API did not return an array:", response.data);
-                setAllUsers([]);
-                setCampaignCreators([]);
-                setBackers([]);
+                throw new Error("Invalid data format from server.");
             }
         } catch (err) {
             console.error("Error fetching users:", err);
             setError(err.message || "Failed to fetch users data.");
-            setAllUsers([]);
-            setCampaignCreators([]);
-            setBackers([]);
         } finally {
             setLoading(false);
         }
     };
 
     useEffect(() => {
-        fetchUsersData(); // Initial fetch when component mounts
+        fetchUsersData();
+        const socket = io('https://server-fundify.up.railway.app/');
+        socket.on('connect', () => console.log('UserManagement: Connected to Socket.IO'));
+        
+        // Listen for new user registration or any activity update
+        socket.on('newUserRegistered', fetchUsersData);
+        socket.on('userActivityUpdated', fetchUsersData);
 
-        // --- Socket.IO Integration for Real-time Update ---
-        // Ensure this URL matches your backend Socket.IO server URL
-        const socket = io('https://server-fundify.up.railway.app/'); 
+        socket.on('disconnect', () => console.log('UserManagement: Disconnected'));
+        return () => socket.disconnect();
+    }, );
 
-        socket.on('connect', () => {
-            console.log('UserManagement: Connected to Socket.IO server');
-        });
+    const handleDeleteClick = (id, type, name) => {
+        setUserToDelete({ id, type, name });
+        setShowDeleteConfirm(true);
+    };
 
-        // Listen for the 'newUserRegistered' event emitted from the backend (authController)
-        socket.on('newUserRegistered', (newUserData) => {
-            console.log('UserManagement: Received new user signup event:', newUserData);
-            // Refresh the user list to include the newly signed up user
-            fetchUsersData(); // Re-fetch all users to update the lists
-            // You might want to optionally show a local toast here as well, specific to this admin page
-            // props.showToast(`New user: ${newUserData.name} just signed up!`, 'info');
-        });
-
-        socket.on('disconnect', () => {
-            console.log('UserManagement: Disconnected from Socket.IO server');
-        });
-
-        // Clean up socket connection on component unmount
-        return () => {
-            socket.disconnect();
-        };
-        // --- End Socket.IO Integration ---
-
-    }, []); // Empty dependency array ensures this effect runs once on mount
-
-    const filteredCreators = campaignCreators.filter((creator) =>
-        Object.values(creator).some((value) =>
-            String(value).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    );
-
-    const filteredBackers = backers.filter((backer) =>
-        Object.values(backer).some((value) =>
-            String(value).toLowerCase().includes(searchQuery.toLowerCase())
-        )
-    );
-
-    const handleView = (id, type) => {
-        console.log(`View ${type} with ID: ${id}`);
-        // Implement navigation or modal to view user details
-        // navigate(`/admin/users/${id}`); // Example for navigation
-    }
-
-    const handleEdit = (id, type) => {
-        console.log(`Edit ${type} with ID: ${id}`);
-        // Implement navigation or modal to edit user details
-        // navigate(`/admin/users/${id}/edit`); // Example for navigation
-    }
-
-    const handleDelete = async (id, type) => {
-        if (window.confirm(`Are you sure you want to delete this ${type} with ID: ${id}?`)) {
-            try {
-                const token = localStorage.getItem('token');
-                await axios.delete(`https://server-fundify.up.railway.app/api/admin/users/${id}`, {
-                    headers: {
-                        Authorization: `Bearer ${token}`
-                    }
-                });
-                alert(`${type} deleted successfully!`); // Consider using a toast notification here
-                fetchUsersData(); // Re-fetch data to update UI after deletion
-            } catch (err) {
-                console.error(`Error deleting ${type}:`, err);
-                alert(`Failed to delete ${type}. ${err.response?.data?.message || err.message}`); // More descriptive error
-            }
+    const confirmDelete = async () => {
+        if (!userToDelete) return;
+        const { id, type } = userToDelete;
+        try {
+            const token = localStorage.getItem('token');
+            await axios.delete(`https://server-fundify.up.railway.app/api/admin/users/${id}`, {
+                headers: { Authorization: `Bearer ${token}` }
+            });
+            fetchUsersData(); // Re-fetch data to update UI
+        } catch (err) {
+            console.error(`Error deleting ${type}:`, err);
+            alert(`Failed to delete ${type}.`); // Simple alert for error
+        } finally {
+            setShowDeleteConfirm(false);
+            setUserToDelete(null);
         }
-    }
+    };
 
-    const handleSearch = (e) => {
-        setSearchQuery(e.target.value);
-        // Corrected: Reset both creatorsPage and backersPage
-        setCreatorsPage(1); 
-        setBackersPage(1);
-    }
+    const filteredCreators = campaignCreators.filter(c =>
+        c.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        c.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    const filteredBackers = backers.filter(b =>
+        b.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        b.email.toLowerCase().includes(searchQuery.toLowerCase())
+    );
 
-    const totalItemsCreators = filteredCreators.length
-    //const totalPagesCreators = Math.ceil(totalItemsCreators / itemsPerPage)
-    const startIndexCreators = (creatorsPage - 1) * itemsPerPage
-    const endIndexCreators = Math.min(startIndexCreators + itemsPerPage, totalItemsCreators)
-    const currentCreators = filteredCreators.slice(startIndexCreators, endIndexCreators)
+    const currentCreators = filteredCreators.slice((creatorsPage - 1) * itemsPerPage, creatorsPage * itemsPerPage);
+    const currentBackers = filteredBackers.slice((backersPage - 1) * itemsPerPage, backersPage * itemsPerPage);
 
-    const totalItemsBackers = filteredBackers.length
-    //const totalPagesBackers = Math.ceil(totalItemsBackers / itemsPerPage)
-    const startIndexBackers = (backersPage - 1) * itemsPerPage
-    const endIndexBackers = Math.min(startIndexBackers + itemsPerPage, totalItemsBackers)
-    const currentBackers = filteredBackers.slice(startIndexBackers, endIndexBackers)
+    const getStatusClass = (status) => status === 'Verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800';
 
-
-    if (loading) {
-        return (
-            <div className="flex h-screen bg-gray-50">
-                <Sidebar />
-                <div className="flex-1 overflow-auto p-8 flex justify-center items-center">
-                    <p>Loading users data...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="flex h-screen bg-gray-50">
-                <Sidebar />
-                <div className="flex-1 overflow-auto p-8 flex justify-center items-center text-red-600">
-                    <p>Error: {error}</p>
-                    <button 
-                        onClick={fetchUsersData} 
-                        className="ml-4 px-4 py-2 bg-[#4B5842] text-white rounded-md hover:bg-[#3A4433] transition-colors"
-                    >
-                        Reload
-                    </button>
-                </div>
-            </div>
-        );
-    }
-
+    if (loading) return <div className="flex h-screen bg-gray-50"><Sidebar /><div className="flex-1 flex items-center justify-center"><p>Loading users...</p></div></div>;
+    
     return (
-        <div className="flex h-screen bg-gray-50">
-            <Sidebar />
+        <div className="flex min-h-screen bg-gray-50">
+            {showDeleteConfirm && (
+                <ConfirmationModal
+                    message={`This will permanently delete the user '${userToDelete.name}'. This action cannot be undone.`}
+                    onConfirm={confirmDelete}
+                    onCancel={() => setShowDeleteConfirm(false)}
+                />
+            )}
+            <div className={`fixed inset-y-0 left-0 z-30 w-64 transform ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full'} transition-transform md:relative md:translate-x-0`}>
+                <Sidebar />
+                <button onClick={() => setIsSidebarOpen(false)} className="absolute top-4 right-4 text-white md:hidden"><X size={24} /></button>
+            </div>
 
-            <div className="flex-1 overflow-auto">
-                <div className="p-8">
-                    {/* Search Bar */}
-                    <div className="mb-8">
-                        <div className="relative">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-                            <input
-                                type="text"
-                                placeholder="Search by name, email, campaign name or status"
-                                value={searchQuery}
-                                onChange={handleSearch}
-                                className="w-full pl-10 pr-4 py-2 rounded-full bg-white border border-gray-200 focus:outline-none focus:ring-2 focus:ring-[#4B5842] focus:border-transparent"
-                            />
-                        </div>
+            <div className="flex-1 flex flex-col overflow-auto">
+                <header className="md:hidden bg-white shadow-sm p-4 flex items-center"><button onClick={() => setIsSidebarOpen(true)}><Menu /></button><h1 className="text-xl font-bold ml-4">User Management</h1></header>
+                
+                <main className="p-4 sm:p-6 lg:p-8">
+                    <div className="hidden md:flex justify-between items-center mb-6"><h1 className="text-2xl font-bold">User Management</h1></div>
+                    <div className="relative mb-6">
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 h-5 w-5" />
+                        <input type="text" placeholder="Search by name or email..." value={searchQuery} onChange={(e) => { setSearchQuery(e.target.value); setCreatorsPage(1); setBackersPage(1); }} className="w-full pl-10 pr-4 py-2 rounded-full bg-white border" />
                     </div>
+
+                    {error && <div className="mb-4 p-3 bg-red-50 text-red-600 rounded-md text-sm">{error}</div>}
 
                     {/* Campaign Creators Section */}
                     <div className="mb-8">
-                        <h1 className="text-2xl font-bold mb-6">Campaign Creators</h1>
+                        <h2 className="text-xl font-bold mb-4">Campaign Creators</h2>
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                            <div className="overflow-x-auto">
+                            {/* Mobile View */}
+                            <div className="md:hidden">
+                                {currentCreators.length > 0 ? currentCreators.map(user => (
+                                    <div key={user.id} className="p-4 border-b last:border-b-0">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold text-gray-800">{user.name}</p>
+                                                <p className="text-sm text-gray-500">{user.email}</p>
+                                                <p className="text-xs text-gray-500 mt-1">Campaigns: {user.campaignsCount}</p>
+                                            </div>
+                                            <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(user.status)}`}>{user.status}</span>
+                                        </div>
+                                        <div className="flex justify-end space-x-2 mt-2">
+                                            <button className="p-1.5 rounded-full hover:bg-gray-100"><Eye size={16} /></button>
+                                            <button className="p-1.5 rounded-full hover:bg-gray-100"><Edit size={16} /></button>
+                                            <button onClick={() => handleDeleteClick(user.id, 'creator', user.name)} className="p-1.5 rounded-full hover:bg-red-50"><Trash size={16} className="text-red-600"/></button>
+                                        </div>
+                                    </div>
+                                )) : <p className="p-4 text-center text-gray-500">No creators found.</p>}
+                            </div>
+                            {/* Desktop View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full">
-                                    <thead>
-                                        <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
-                                            <th className="px-6 py-3 font-medium">ID</th>
-                                            <th className="px-6 py-3 font-medium">Name</th>
-                                            <th className="px-6 py-3 font-medium">Email</th>
-                                            <th className="px-6 py-3 font-medium">Campaigns Created</th>
-                                            <th className="px-6 py-3 font-medium">Funding Goal (Est.)</th>
-                                            <th className="px-6 py-3 font-medium">Status</th>
-                                            <th className="px-6 py-3 font-medium">Actions</th>
-                                        </tr>
-                                    </thead>
+                                    <thead className="bg-gray-50"><tr className="text-left text-xs text-gray-500"><th className="px-6 py-3 font-medium">Name</th><th className="px-6 py-3 font-medium">Email</th><th className="px-6 py-3 font-medium">Campaigns</th><th className="px-6 py-3 font-medium">Status</th><th className="px-6 py-3 font-medium">Actions</th></tr></thead>
                                     <tbody>
-                                        {currentCreators.length > 0 ? (
-                                            currentCreators
-                                                .map((creator) => (
-                                                    <tr key={creator.id} className="border-b last:border-b-0 hover:bg-gray-50">
-                                                        <td className="px-6 py-4 text-sm">{creator.id}</td>
-                                                        <td className="px-6 py-4 text-sm">{creator.name}</td>
-                                                        <td className="px-6 py-4 text-sm">{creator.email}</td>
-                                                        <td className="px-6 py-4 text-sm">{creator.campaignName}</td>
-                                                        <td className="px-6 py-4 text-sm">{creator.fundingGoal}</td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            <span className={`px-2 py-1 text-xs rounded-full ${creator.status === 'Verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                                {creator.status}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex space-x-2">
-                                                                <button
-                                                                    onClick={() => handleView(creator.id, "creator")}
-                                                                    className="p-1 rounded-full hover:bg-gray-100"
-                                                                    title="View"
-                                                                >
-                                                                    <Eye className="h-4 w-4 text-gray-500" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleEdit(creator.id, "creator")}
-                                                                    className="p-1 rounded-full hover:bg-gray-100"
-                                                                    title="Edit"
-                                                                >
-                                                                    <Edit className="h-4 w-4 text-gray-500" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDelete(creator.id, "creator")}
-                                                                    className="p-1 rounded-full hover:bg-gray-100"
-                                                                    title="Delete"
-                                                                >
-                                                                    <Trash className="h-4 w-4 text-gray-500" />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No campaign creators found.</td>
-                                            </tr>
-                                        )}
+                                        {currentCreators.length > 0 ? currentCreators.map(user => (
+                                            <tr key={user.id} className="border-b hover:bg-gray-50"><td className="px-6 py-4 text-sm font-medium">{user.name}</td><td className="px-6 py-4 text-sm">{user.email}</td><td className="px-6 py-4 text-sm">{user.campaignsCount}</td><td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(user.status)}`}>{user.status}</span></td><td className="px-6 py-4"><div className="flex space-x-2"><button className="p-1 rounded-full hover:bg-gray-200"><Eye size={16}/></button><button className="p-1 rounded-full hover:bg-gray-200"><Edit size={16}/></button><button onClick={() => handleDeleteClick(user.id, 'creator', user.name)} className="p-1 rounded-full hover:bg-red-100"><Trash size={16} className="text-red-600"/></button></div></td></tr>
+                                        )) : <tr><td colSpan="5" className="text-center py-8 text-gray-500">No creators found.</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Pagination */}
-                            <div className="px-6 py-3 flex items-center justify-between border-t">
-                                <div className="text-sm text-gray-500">
-                                    Showing {(creatorsPage - 1) * itemsPerPage + 1}–{Math.min(creatorsPage * itemsPerPage, filteredCreators.length)} of {totalItemsCreators}
-                                </div>
-                                <div className="flex space-x-1">
-                                    <button
-                                        className="px-3 py-1 rounded border text-sm"
-                                        onClick={() => setCreatorsPage(Math.max(1, creatorsPage - 1))}
-                                        disabled={creatorsPage === 1}
-                                    >
-                                        &lt;
-                                    </button>
-                                    <button
-                                        className="px-3 py-1 rounded border bg-gray-100 text-sm"
-                                        onClick={() => setCreatorsPage(creatorsPage + 1)}
-                                        disabled={creatorsPage * itemsPerPage >= totalItemsCreators}
-                                    >
-                                        &gt;
-                                    </button>
-                                </div>
-                            </div>
+                            {/* Pagination for Creators */}
+                            <div className="px-6 py-3 border-t flex justify-between items-center text-sm"><p>Showing {Math.min(1 + (creatorsPage - 1) * itemsPerPage, filteredCreators.length)}-{Math.min(creatorsPage * itemsPerPage, filteredCreators.length)} of {filteredCreators.length}</p><div><button onClick={() => setCreatorsPage(creatorsPage - 1)} disabled={creatorsPage === 1} className="p-1 border rounded disabled:opacity-50">⟨</button><button onClick={() => setCreatorsPage(creatorsPage + 1)} disabled={creatorsPage * itemsPerPage >= filteredCreators.length} className="ml-1 p-1 border rounded disabled:opacity-50">⟩</button></div></div>
                         </div>
                     </div>
 
                     {/* Backers Section */}
                     <div>
-                        <h1 className="text-2xl font-bold mb-6">Backers</h1>
+                        <h2 className="text-xl font-bold mb-4">Backers</h2>
                         <div className="bg-white rounded-lg shadow-sm overflow-hidden">
-                            <div className="overflow-x-auto">
+                            {/* Mobile View */}
+                            <div className="md:hidden">
+                                {currentBackers.length > 0 ? currentBackers.map(user => (
+                                    <div key={user.id} className="p-4 border-b last:border-b-0">
+                                        <div className="flex justify-between items-start">
+                                            <div>
+                                                <p className="font-semibold text-gray-800">{user.name}</p>
+                                                <p className="text-sm text-gray-500">{user.email}</p>
+                                                <p className="text-xs text-gray-500 mt-1">Backed: {user.campaignsCount} campaigns</p>
+                                            </div>
+                                            <span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(user.status)}`}>{user.status}</span>
+                                        </div>
+                                        <div className="flex justify-end space-x-2 mt-2">
+                                            <button className="p-1.5 rounded-full hover:bg-gray-100"><Eye size={16} /></button>
+                                            <button className="p-1.5 rounded-full hover:bg-gray-100"><Edit size={16} /></button>
+                                            <button onClick={() => handleDeleteClick(user.id, 'backer', user.name)} className="p-1.5 rounded-full hover:bg-red-50"><Trash size={16} className="text-red-600"/></button>
+                                        </div>
+                                    </div>
+                                )) : <p className="p-4 text-center text-gray-500">No backers found.</p>}
+                            </div>
+                            {/* Desktop View */}
+                            <div className="hidden md:block overflow-x-auto">
                                 <table className="w-full">
-                                    <thead>
-                                        <tr className="text-left text-xs text-gray-500 border-b bg-gray-50">
-                                            <th className="px-6 py-3 font-medium">ID</th>
-                                            <th className="px-6 py-3 font-medium">Name</th>
-                                            <th className="px-6 py-3 font-medium">Email</th>
-                                            <th className="px-6 py-3 font-medium">Backed Campaigns</th>
-                                            <th className="px-6 py-3 font-medium">Backed Amount (Est.)</th>
-                                            <th className="px-6 py-3 font-medium">Status</th>
-                                            <th className="px-6 py-3 font-medium">Actions</th>
-                                        </tr>
-                                    </thead>
+                                    <thead className="bg-gray-50"><tr className="text-left text-xs text-gray-500"><th className="px-6 py-3 font-medium">Name</th><th className="px-6 py-3 font-medium">Email</th><th className="px-6 py-3 font-medium">Backed</th><th className="px-6 py-3 font-medium">Status</th><th className="px-6 py-3 font-medium">Actions</th></tr></thead>
                                     <tbody>
-                                        {currentBackers.length > 0 ? (
-                                            currentBackers
-                                                .map((backer) => (
-                                                    <tr key={backer.id} className="border-b last:border-b-0 hover:bg-gray-50">
-                                                        <td className="px-6 py-4 text-sm">{backer.id}</td>
-                                                        <td className="px-6 py-4 text-sm">{backer.name}</td>
-                                                        <td className="px-6 py-4 text-sm">{backer.email}</td>
-                                                        <td className="px-6 py-4 text-sm">{backer.campaignName}</td>
-                                                        <td className="px-6 py-4 text-sm">{backer.backedAmount}</td>
-                                                        <td className="px-6 py-4 text-sm">
-                                                            <span className={`px-2 py-1 text-xs rounded-full ${backer.status === 'Verified' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'}`}>
-                                                                {backer.status}
-                                                            </span>
-                                                        </td>
-                                                        <td className="px-6 py-4">
-                                                            <div className="flex space-x-2">
-                                                                <button
-                                                                    onClick={() => handleView(backer.id, "backer")}
-                                                                    className="p-1 rounded-full hover:bg-gray-100"
-                                                                    title="View"
-                                                                >
-                                                                    <Eye className="h-4 w-4 text-gray-500" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleEdit(backer.id, "backer")}
-                                                                    className="p-1 rounded-full hover:bg-gray-100"
-                                                                    title="Edit"
-                                                                >
-                                                                    <Edit className="h-4 w-4 text-gray-500" />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => handleDelete(backer.id, "backer")}
-                                                                    className="p-1 rounded-full hover:bg-gray-100"
-                                                                    title="Delete"
-                                                                >
-                                                                    <Trash className="h-4 w-4 text-gray-500" />
-                                                                </button>
-                                                            </div>
-                                                        </td>
-                                                    </tr>
-                                                ))
-                                        ) : (
-                                            <tr>
-                                                <td colSpan="7" className="px-6 py-4 text-center text-gray-500">No backers found.</td>
-                                            </tr>
-                                        )}
+                                        {currentBackers.length > 0 ? currentBackers.map(user => (
+                                            <tr key={user.id} className="border-b hover:bg-gray-50"><td className="px-6 py-4 text-sm font-medium">{user.name}</td><td className="px-6 py-4 text-sm">{user.email}</td><td className="px-6 py-4 text-sm">{user.campaignsCount}</td><td className="px-6 py-4"><span className={`px-2 py-1 text-xs rounded-full ${getStatusClass(user.status)}`}>{user.status}</span></td><td className="px-6 py-4"><div className="flex space-x-2"><button className="p-1 rounded-full hover:bg-gray-200"><Eye size={16}/></button><button className="p-1 rounded-full hover:bg-gray-200"><Edit size={16}/></button><button onClick={() => handleDeleteClick(user.id, 'backer', user.name)} className="p-1 rounded-full hover:bg-red-100"><Trash size={16} className="text-red-600"/></button></div></td></tr>
+                                        )) : <tr><td colSpan="5" className="text-center py-8 text-gray-500">No backers found.</td></tr>}
                                     </tbody>
                                 </table>
                             </div>
-
-                            {/* Pagination */}
-                            <div className="px-6 py-3 flex items-center justify-between border-t">
-                                <div className="text-sm text-gray-500">
-                                    Showing {(backersPage - 1) * itemsPerPage + 1}–{Math.min(backersPage * itemsPerPage, filteredBackers.length)} of {totalItemsBackers}
-                                </div>
-                                <div className="flex space-x-1">
-                                    <button
-                                        className="px-3 py-1 rounded border text-sm"
-                                        onClick={() => setBackersPage(Math.max(1, backersPage - 1))}
-                                        disabled={backersPage === 1}
-                                    >
-                                        &lt;
-                                    </button>
-                                    <button
-                                        className="px-3 py-1 rounded border bg-gray-100 text-sm"
-                                        onClick={() => setBackersPage(backersPage + 1)}
-                                        disabled={backersPage * itemsPerPage >= totalItemsBackers}
-                                    >
-                                        &gt;
-                                    </button>
-                                </div>
-                            </div>
+                            {/* Pagination for Backers */}
+                            <div className="px-6 py-3 border-t flex justify-between items-center text-sm"><p>Showing {Math.min(1 + (backersPage - 1) * itemsPerPage, filteredBackers.length)}-{Math.min(backersPage * itemsPerPage, filteredBackers.length)} of {filteredBackers.length}</p><div><button onClick={() => setBackersPage(backersPage - 1)} disabled={backersPage === 1} className="p-1 border rounded disabled:opacity-50">⟨</button><button onClick={() => setBackersPage(backersPage + 1)} disabled={backersPage * itemsPerPage >= filteredBackers.length} className="ml-1 p-1 border rounded disabled:opacity-50">⟩</button></div></div>
                         </div>
                     </div>
-                </div>
+                </main>
             </div>
         </div>
     )

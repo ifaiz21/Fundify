@@ -393,7 +393,7 @@ function ProjectView() {
                 {/* Backers and Days Left */}
                 <div className="grid grid-cols-2 gap-4 mb-6">
                   <div>
-                    <div className="text-2xl font-bold">{totalBackersCount}</div> {/* Dynamic backers count */}
+                    <div className="text-2xl font-bold">{totalBackersCount}</div>
                     <div className="text-sm text-gray-600">backers</div>
                   </div>
                   <div>
@@ -405,7 +405,7 @@ function ProjectView() {
                 {/* Predicted Status */}
                 <div className="text-right mb-4">
                   <span className="text-sm">
-                    Predicted Status: <span className="font-medium text-green-600">{campaignData.status}</span>
+                    Status: <span className="font-medium text-green-600">{campaignData.status}</span>
                   </span>
                 </div>
 
