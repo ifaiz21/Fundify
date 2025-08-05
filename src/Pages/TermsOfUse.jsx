@@ -1,15 +1,66 @@
-import React from "react";
+import React, { useEffect, useRef } from "react";
+// GSAP aur ScrollTrigger ko import karein
+import { gsap } from "gsap";
+import { ScrollTrigger } from "gsap/ScrollTrigger";
+
 import HeaderLayout from "./Layout/HeaderLayout";
 import FooterLayout from "./Layout/FooterLayout";
 
+// ScrollTrigger plugin ko GSAP ke saath register karein
+gsap.registerPlugin(ScrollTrigger);
+
 const TermsOfUse = () => {
+  // Aik ref banayein jo poore main content area ko point karega. 
+  // Hum is ref ko animation context ke liye istemal kareinge.
+  const mainContentRef = useRef(null);
+
+  // useEffect hook animation logic ke liye
+  useEffect(() => {
+    // gsap.context() istemal karna behtreen practice hai.
+    // Ye animations ko scope karta hai aur cleanup aasan banata hai.
+    const ctx = gsap.context(() => {
+      
+      // Animation 1: Poora policy card load par animate ho
+      gsap.from('.policy-card', {
+        duration: 0.8,
+        opacity: 0,
+        y: 50, // 50px neechay se ooper aaye ga
+        ease: 'power3.out',
+        delay: 0.2
+      });
+
+      // Animation 2: Har section heading scroll par animate ho
+      const headings = gsap.utils.toArray('.section-heading');
+      headings.forEach(heading => {
+        gsap.from(heading, {
+          duration: 0.6,
+          opacity: 0,
+          x: -30, // Left se aayega
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: heading,
+            start: 'top 85%', // Jab heading ka top viewport ke 85% hissay tak pohanchay
+            end: 'bottom 20%',
+            toggleActions: 'play none none none', // Sirf aik baar play ho
+          },
+        });
+      });
+
+    }, mainContentRef); // Context ko main content ref se scope karein
+
+    // Cleanup function: Jab component unmount ho, to saari animations ko revert kar dein.
+    // Is se memory leaks se bacha ja sakta hai.
+    return () => ctx.revert(); 
+    
+  }, []); // Khali array [] ka matlab ye effect sirf aik baar component mount hone par chalega.
+
   return (
     <div className="terms-of-use-page flex flex-col min-h-screen bg-gray-50">
       {/* Header */}
       <HeaderLayout />
 
-      {/* Main Content */}
-      <main className="flex-grow container mx-auto my-8 sm:my-12 px-4 sm:px-6">
+      {/* Main Content - Yahan ref ko attach karein */}
+      <main ref={mainContentRef} className="flex-grow container mx-auto my-8 sm:my-12 px-4 sm:px-6">
         <div className="policy-card max-w-4xl mx-auto p-6 sm:p-10 bg-white shadow-lg rounded-lg">
           <div className="policy-header mb-8">
             <h1 className="text-3xl sm:text-4xl font-bold text-gray-800 mb-2">Terms of Use</h1>
@@ -21,6 +72,7 @@ const TermsOfUse = () => {
               Welcome to <strong>Fundify</strong>! These Terms of Use (“Terms”) govern your access to and use of our platform, services, and content. By accessing or using Fundify, you agree to be bound by these Terms and our Privacy Policy.
             </p>
 
+            {/* In sab headings par animation apply hogi */}
             <h3 className="section-heading">1. Eligibility</h3>
             <p>You must be at least 18 years old and legally capable of forming a binding contract to create an account and use our services. If you are using Fundify on behalf of an organization, you represent that you have the authority to bind that entity to these Terms.</p>
 
@@ -34,10 +86,10 @@ const TermsOfUse = () => {
             </ul>
 
             <h3 className="section-heading">3. Project Creation & Contributions</h3>
-             <ul>
-              <li><strong>For Creators:</strong> You are responsible for providing transparent, accurate, and lawful details about your campaign. You are obligated to fulfill any promises or rewards offered to your backers.</li>
-              <li><strong>For Backers:</strong> You understand that contributing to a campaign does not guarantee its success or the delivery of a reward. Fundify does not offer refunds; any disputes are between the creator and the backer.</li>
-            </ul>
+              <ul>
+                <li><strong>For Creators:</strong> You are responsible for providing transparent, accurate, and lawful details about your campaign. You are obligated to fulfill any promises or rewards offered to your backers.</li>
+                <li><strong>For Backers:</strong> You understand that contributing to a campaign does not guarantee its success or the delivery of a reward. Fundify does not offer refunds; any disputes are between the creator and the backer.</li>
+              </ul>
 
 
             <h3 className="section-heading">4. Fees and Payments</h3>
@@ -59,7 +111,7 @@ const TermsOfUse = () => {
             <p>The Fundify platform is provided on an "as is" and "as available" basis. We make no guarantees regarding platform uptime, reliability, or the accuracy of user-provided content. We disclaim all warranties, express or implied.</p>
             
             <h3 className="section-heading">8. Limitation of Liability</h3>
-            <p>To the fullest extent permitted by law, Fundify shall not be liable for any indirect, incidental, or consequential damages arising from your use of the platform. Our total liability to you for any claims shall not exceed the amount of fees paid by you to us in the 12 months prior to the claim, if any.</p>
+            <p>To the fullest extent permitted by law, Fundify shall not be liable for any indirect, incidental, or consequential damages from your use of the platform. Our total liability to you for any claims shall not exceed the amount of fees paid by you to us in the 12 months prior to the claim, if any.</p>
             
             <h3 className="section-heading">9. Governing Law</h3>
             <p>These Terms are governed by and construed in accordance with the laws of the <strong>Islamic Republic of Pakistan</strong>, without regard to its conflict of law provisions.</p>
@@ -102,18 +154,18 @@ const TermsOfUse = () => {
 
         /* --- Prose Content Styling (for the policy text itself) --- */
         .prose {
-           color: var(--text-primary);
-           line-height: 1.75;
+          color: var(--text-primary);
+          line-height: 1.75;
         }
         
         .prose .section-heading {
-            margin-top: 2rem;
-            margin-bottom: 1rem;
-            font-size: 1.25rem; /* text-xl */
-            font-weight: 600; /* font-semibold */
-            color: #111827; /* text-gray-900 */
-            padding-bottom: 0.5rem;
-            border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
+          margin-top: 2rem;
+          margin-bottom: 1rem;
+          font-size: 1.25rem; /* text-xl */
+          font-weight: 600; /* font-semibold */
+          color: #111827; /* text-gray-900 */
+          padding-bottom: 0.5rem;
+          border-bottom: 1px solid #e5e7eb; /* border-gray-200 */
         }
 
         .prose strong {

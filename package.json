@@ -25,6 +25,7 @@
     "dompurify": "^3.2.6",
     "dotenv": "^16.6.1",
     "express": "^5.1.0",
+    "gsap": "^3.13.0",
     "https-browserify": "^1.0.0",
     "jsonwebtoken": "^9.0.2",
     "lucide-react": "^0.475.0",

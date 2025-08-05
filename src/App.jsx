@@ -8,7 +8,6 @@ import { useDispatch } from 'react-redux';
 import { loadUser } from './actions/userActions';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-//import { setAuthUser } from './features/authSlice';
 
 // Import all your page and component files
 import LoginPage from "./Pages/LoginPage";
@@ -50,7 +49,6 @@ import WalletPage from "./Pages/AdminSide/Wallet";
 import CampaignsPage from "./Pages/AdminSide/CampaignsPage";
 import VerificationPage from "./Pages/AdminSide/VerificationPage";
 import FeedbacksPage from "./Pages/AdminSide/Feedbacks";
-//import ChatWrapper from './components/ChatWrapper';
 import ConditionalChatWrapper from './components/ConditionalChatWrapper';
 import { UserProvider } from './context/UserContext';
 import CampaignReviewPage from "./Pages/AdminSide/CampaignReviewPage";
